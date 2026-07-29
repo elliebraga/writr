@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3aba;
+
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f4f4f5;
+  --color-neutral-200: #e4e4e7;
+  --color-neutral-300: #d4d4d8;
+  --color-neutral-400: #a1a1aa;
+  --color-neutral-500: #71717a;
+  --color-neutral-600: #52525b;
+  --color-neutral-700: #3f3f46;
+  --color-neutral-800: #27272a;
+  --color-neutral-900: #18181b;
+  --color-neutral-950: #09090b;
+
+  --color-paper: #FAF6F0;
+
+  --color-feedback-success-bg: #D0F9B6;
+  --color-feedback-success-text: #15803d;
+  --color-feedback-warning-bg: #fef9c3;
+  --color-feedback-warning-text: #a16207;
+  --color-feedback-danger-bg: #fee2e2;
+  --color-feedback-danger-text: #b91c1c;
+
+  --font-sans: "Figtree", system-ui, sans-serif;
+  --font-title: "Fraunces", serif;
+  --font-funnel: "Fraunces", serif;
+  --font-fraunces: "Fraunces", serif;
+  
+  --radius-card: 12px;
+  --radius-input: 8px;
+}
+
+@layer base {
+  h1, h2, h3, h4 {
+    font-family: var(--font-fraunces);
+  }
+}
