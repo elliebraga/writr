@@ -89,30 +89,19 @@ export default function App() {
     } else {
       setSessionUser(null);
       setUserName("Escritor");
-      const saved = localStorage.getItem("writr_local_books");
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed.length > 0) {
-            const sanitized = parsed.map((b: Book) => ({ ...b, id: ensureValidUuid(b.id) }));
-            setBooks(sanitized);
-            setScreen("dashboard");
-            return;
-          }
-        } catch (e) {}
-      }
-      setScreen("signin");
+      fetchBooks();
+      setScreen("dashboard");
     }
   };
 
-  const fetchBooks = async (userId: string) => {
+  const fetchBooks = async (userId?: string) => {
     setIsLoadingBooks(true);
     try {
-      const { data, error } = await supabase
-        .from("books")
-        .select("*")
-        .eq("id_user", userId)
-        .order("created_at", { ascending: false });
+      let query = supabase.from("books").select("*");
+      if (userId) {
+        query = query.or(`id_user.eq.${userId},id_user.is.null`);
+      }
+      const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) {
         console.error("Erro ao buscar livros do Supabase:", error.message);
