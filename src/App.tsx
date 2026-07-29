@@ -109,12 +109,19 @@ export default function App() {
         const remoteBooks = data.map((b: any) => ({
           ...b,
           id: ensureValidUuid(b.id),
+          book_name: b.book_name || "Sem título",
+          synopsis: b.resume || b.synopsis || "",
+          resume: b.resume || b.synopsis || "",
+          cover_url: b.image_ref || b.cover_url || "",
+          image_ref: b.image_ref || b.cover_url || "",
+          status: b.status || "rascunho",
         })) as Book[];
 
         setBooks((prev) => {
-          const existingIds = new Set(remoteBooks.map((b) => b.id));
-          const localOnly = prev.filter((b) => !existingIds.has(b.id));
-          return [...remoteBooks, ...localOnly];
+          const map = new Map<string, Book>();
+          prev.forEach((b) => map.set(b.id, b));
+          remoteBooks.forEach((b) => map.set(b.id, b));
+          return Array.from(map.values());
         });
       }
     } catch (err) {
@@ -162,7 +169,7 @@ export default function App() {
     cover_url?: string;
     status: BookStatus;
   }) => {
-    const userId = sessionUser?.id || null;
+    const userId = sessionUser?.id || "a3d665b8-36b8-4e40-9799-b18e71950cfa";
     const generatedId = ensureValidUuid();
 
     const newBookRecord: Book = {
@@ -174,7 +181,7 @@ export default function App() {
       resume: bookData.synopsis,
       cover_url: bookData.cover_url,
       image_ref: bookData.cover_url,
-      status: bookData.status,
+      status: bookData.status || "rascunho",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -190,11 +197,11 @@ export default function App() {
     try {
       const payload: any = {
         id: newBookRecord.id,
-        id_user: sessionUser?.id || "a3d665b8-36b8-4e40-9799-b18e71950cfa",
+        id_user: userId,
         book_name: bookData.book_name,
         resume: bookData.synopsis || null,
         image_ref: bookData.cover_url || null,
-        status: (bookData.status || "rascunho").toString().toLowerCase(),
+        status: "rascunho",
       };
 
       const { data, error } = await supabase
@@ -205,6 +212,8 @@ export default function App() {
 
       if (!error && data) {
         newBookRecord.id = data.id;
+      } else if (error) {
+        console.error("Erro ao salvar livro no Supabase:", error.message);
       }
     } catch (err) {
       console.log("Livro mantido localmente.");
@@ -260,6 +269,7 @@ export default function App() {
                 Obras &rarr;
               </button>
             </header>
+
             {activeTab === "chapters" && (
               <ChapterFlow
                 activeBook={safeBook}
