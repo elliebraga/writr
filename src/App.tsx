@@ -10,7 +10,7 @@ import { RelationsFlow } from "./features/relations/RelationsFlow";
 import { NewBookDrawer } from "./components/books/NewBookDrawer";
 import BookCard from "./components/ui/BookCard";
 import Button from "./components/ui/Button";
-import { BookOpen, Plus } from "lucide-react";
+import { BookOpen, Plus, Menu } from "lucide-react";
 import { ensureValidUuid } from "./utils/uuidUtils";
 
 export default function App() {
@@ -38,6 +38,7 @@ export default function App() {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [activeTab, setActiveTab] = useState<SidebarTab>("chapters");
   const [isNewBookModalOpen, setIsNewBookModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Efeito para salvar obras no localStorage sempre que o estado mudar
   useEffect(() => {
@@ -235,15 +236,43 @@ export default function App() {
       };
 
       return (
-        <div className="flex h-screen bg-white font-sans overflow-hidden select-none">
+        <div className="flex flex-col md:flex-row h-screen bg-white font-sans overflow-hidden select-none">
           <Sidebar
             activeBook={safeBook}
             activeTab={activeTab}
+            isOpenMobile={isMobileMenuOpen}
+            onCloseMobile={() => setIsMobileMenuOpen(false)}
             onTabChange={(tab) => setActiveTab(tab)}
             onBackToBooks={() => setSelectedBook(null)}
           />
 
-          <main className="flex-1 flex flex-col overflow-y-auto bg-white">
+          <main className="flex-1 flex flex-col overflow-y-auto bg-white min-w-0">
+            {/* Header Mobile de Navegação */}
+            <header className="md:hidden flex items-center justify-between p-3.5 bg-white border-b border-slate-200 sticky top-0 z-30 shrink-0">
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="p-2 text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
+                title="Abrir Menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-2 min-w-0 px-2">
+                <span className="font-bold font-funnel text-slate-900 truncate text-sm">
+                  {safeBook.book_name}
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 border border-slate-200 uppercase">
+                  {activeTab}
+                </span>
+              </div>
+
+              <button
+                onClick={() => setSelectedBook(null)}
+                className="text-xs font-semibold text-slate-600 hover:text-slate-900 px-2 py-1 rounded-full hover:bg-slate-100 transition-colors shrink-0"
+              >
+                Obras &rarr;
+              </button>
+            </header>
             {activeTab === "chapters" && (
               <ChapterFlow
                 activeBook={safeBook}

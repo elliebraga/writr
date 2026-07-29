@@ -359,6 +359,12 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onTouchMove={(e) => {
+              if (e.touches[0]) {
+                handleMouseMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY } as any);
+              }
+            }}
+            onTouchEnd={handleMouseUp}
             className="flex-1 relative bg-white overflow-auto cursor-crosshair select-none"
             style={{
               backgroundImage:

@@ -53,6 +53,11 @@ export const RelationNodeCard: React.FC<RelationNodeCardProps> = ({
         height: CARD_HEIGHT,
       }}
       onMouseDown={(e) => onDragStart(character.id, e)}
+      onTouchStart={(e) => {
+        if (e.touches[0]) {
+          onDragStart(character.id, { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY } as any);
+        }
+      }}
       className={`absolute top-0 left-0 bg-white border rounded-2xl p-3.5 shadow-sm transition-shadow select-none cursor-grab active:cursor-grabbing flex flex-col justify-between group z-20 ${
         isSelected
           ? "border-slate-900 ring-2 ring-slate-900/10 shadow-md"
