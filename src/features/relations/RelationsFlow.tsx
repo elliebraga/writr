@@ -64,17 +64,19 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
     fetchCharactersAndRelations();
   }, [safeBookId]);
 
-  // Carrega personagens do Supabase/localStorage
+  // Carrega personagens e conexões do Supabase + localStorage
   const fetchCharactersAndRelations = async () => {
     try {
-      const { data, error } = await supabase
+      // 1. Carrega Personagens
+      const { data: charData, error: charError } = await supabase
         .from("characters")
         .select("*")
         .eq("id_book", safeBookId)
         .order("created_at", { ascending: true });
 
-      if (!error && data && data.length > 0) {
-        const loadedChars: Character[] = data.map((c: any) => ({
+      let loadedChars = characters;
+      if (!charError && charData && charData.length > 0) {
+        loadedChars = charData.map((c: any) => ({
           ...c,
           id: ensureValidUuid(c.id),
           character_name: c.character_name || c.name || "Personagem",
@@ -82,10 +84,35 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
           image_url: c.character_images && c.character_images.length > 0 ? c.character_images[0] : c.image_url,
         }));
         setCharacters(loadedChars);
-        autoLayoutNodesIfNeeded(loadedChars);
-      } else if (characters.length > 0) {
-        autoLayoutNodesIfNeeded(characters);
       }
+
+      // 2. Carrega Conexões de Relacionamentos do Supabase
+      const { data: relData, error: relError } = await supabase
+        .from("relationships")
+        .select("*")
+        .eq("id_book", safeBookId);
+
+      if (!relError && relData && relData.length > 0) {
+        const remoteLinks: CharacterRelationLink[] = relData.map((r: any) => ({
+          id: ensureValidUuid(r.id),
+          from_character_id: ensureValidUuid(r.from_character_id || r.id_character_from),
+          to_character_id: ensureValidUuid(r.to_character_id || r.id_character_to),
+          label: r.label || r.relationship_type || "Conexão",
+          description: r.description || undefined,
+          line_style: r.line_style || "solid",
+          created_at: r.created_at,
+        }));
+
+        setRelationsData((prev) => {
+          const map = new Map<string, CharacterRelationLink>();
+          prev.links.forEach((l) => map.set(l.id, l));
+          remoteLinks.forEach((l) => map.set(l.id, l));
+          const mergedLinks = Array.from(map.values());
+          return { ...prev, links: mergedLinks };
+        });
+      }
+
+      autoLayoutNodesIfNeeded(loadedChars);
     } catch (err) {
       if (characters.length > 0) {
         autoLayoutNodesIfNeeded(characters);
@@ -194,16 +221,18 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
     setDraggingCharId(null);
   };
 
-  // Criar nova conexão entre dois personagens
-  const handleCreateRelation = (relationData: {
+  // Criar nova conexão no localStorage e sincronizar no Supabase
+  const handleCreateRelation = async (relationData: {
     from_character_id: string;
     to_character_id: string;
     label: string;
     description?: string;
     line_style?: "solid" | "dashed";
   }) => {
+    const generatedId = ensureValidUuid();
+
     const newLink: CharacterRelationLink = {
-      id: "link_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+      id: generatedId,
       from_character_id: relationData.from_character_id,
       to_character_id: relationData.to_character_id,
       label: relationData.label,
@@ -212,27 +241,69 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
       created_at: new Date().toISOString(),
     };
 
+    // 1. Atualização instantânea no estado e localStorage
     setRelationsData((prev) => ({
       ...prev,
       links: [...prev.links, newLink],
     }));
+
+    // 2. Sincronização no Supabase
+    try {
+      const payload: any = {
+        id: generatedId,
+        id_book: safeBookId,
+        from_character_id: relationData.from_character_id,
+        to_character_id: relationData.to_character_id,
+        label: relationData.label,
+        description: relationData.description || null,
+        line_style: relationData.line_style || "solid",
+      };
+
+      const { data, error } = await supabase
+        .from("relationships")
+        .insert([payload])
+        .select()
+        .single();
+
+      if (error) {
+        console.log("Conexão mantida localmente (Supabase pendente):", error.message);
+      } else if (data) {
+        newLink.id = data.id;
+      }
+    } catch (err) {
+      console.log("Conexão salva no armazenamento local.");
+    }
   };
 
-  // Excluir uma conexão
-  const handleDeleteLink = (linkId: string) => {
+  // Excluir uma conexão do localStorage e Supabase
+  const handleDeleteLink = async (linkId: string) => {
+    const safeLinkId = ensureValidUuid(linkId);
+
     setRelationsData((prev) => ({
       ...prev,
-      links: prev.links.filter((l) => l.id !== linkId),
+      links: prev.links.filter((l) => l.id !== linkId && l.id !== safeLinkId),
     }));
+
+    try {
+      await supabase.from("relationships").delete().eq("id", safeLinkId);
+    } catch (err) {
+      console.log("Removido localmente.");
+    }
   };
 
   // Limpar todas as ligações
-  const handleClearAllLinks = () => {
+  const handleClearAllLinks = async () => {
     if (confirm("Deseja remover todas as setas de ligação do whiteboard?")) {
       setRelationsData((prev) => ({
         ...prev,
         links: [],
       }));
+
+      try {
+        await supabase.from("relationships").delete().eq("id_book", safeBookId);
+      } catch (err) {
+        console.log("Ligações removidas localmente.");
+      }
     }
   };
 
@@ -482,7 +553,7 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
               {/* Nós de Cards de Personagens Arrastáveis */}
               {characters.map((char) => {
                 const pos = relationsData.nodes[char.id];
-                if (!pos) return null; // Só renderiza no canvas se estiver adicionado ao nó
+                if (!pos) return null;
 
                 return (
                   <RelationNodeCard
