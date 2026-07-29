@@ -182,6 +182,7 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
     from_character_id: string;
     to_character_id: string;
     label: string;
+    description?: string;
     line_style?: "solid" | "dashed";
   }) => {
     const newLink: CharacterRelationLink = {
@@ -189,6 +190,7 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
       from_character_id: relationData.from_character_id,
       to_character_id: relationData.to_character_id,
       label: relationData.label,
+      description: relationData.description,
       line_style: relationData.line_style || "solid",
       created_at: new Date().toISOString(),
     };

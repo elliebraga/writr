@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Link2, Sparkles } from "lucide-react";
+import { X, Link2, Sparkles, FileText } from "lucide-react";
 import type { Character } from "../../types/character";
 import type { RelationPresetType } from "../../types/relation";
 import Button from "../ui/Button";
@@ -14,6 +14,7 @@ interface NewRelationModalProps {
     from_character_id: string;
     to_character_id: string;
     label: string;
+    description?: string;
     line_style?: "solid" | "dashed";
   }) => void;
 }
@@ -40,6 +41,7 @@ export const NewRelationModal: React.FC<NewRelationModalProps> = ({
   const [toId, setToId] = useState("");
   const [label, setLabel] = useState<string>("Aliados");
   const [customLabel, setCustomLabel] = useState("");
+  const [description, setDescription] = useState("");
   const [lineStyle, setLineStyle] = useState<"solid" | "dashed">("solid");
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +54,7 @@ export const NewRelationModal: React.FC<NewRelationModalProps> = ({
       );
       setLabel("Aliados");
       setCustomLabel("");
+      setDescription("");
       setLineStyle("solid");
       setError(null);
     }
@@ -77,6 +80,7 @@ export const NewRelationModal: React.FC<NewRelationModalProps> = ({
       from_character_id: fromId,
       to_character_id: toId,
       label: finalLabel,
+      description: description.trim() || undefined,
       line_style: lineStyle,
     });
 
@@ -103,7 +107,7 @@ export const NewRelationModal: React.FC<NewRelationModalProps> = ({
                 Criar Ligação entre Personagens
               </h3>
               <p className="text-xs text-slate-500 font-sans">
-                Conecte dois membros do elenco com uma seta de relacionamento.
+                Conecte dois membros do elenco com uma seta e explicação.
               </p>
             </div>
           </div>
@@ -189,9 +193,24 @@ export const NewRelationModal: React.FC<NewRelationModalProps> = ({
                 placeholder="Ex: Mestre & Aprendiz, Cúmplices..."
                 value={customLabel}
                 onChange={(e) => setCustomLabel(e.target.value)}
-                className="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white"
+                className="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white mb-2"
               />
             )}
+          </div>
+
+          {/* Campo de Descrição Detalhada da Relação */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 text-slate-400" />
+              <span>Explicação / História da Relação (Opcional)</span>
+            </label>
+            <textarea
+              rows={2}
+              placeholder="Ex: Eram melhores amigos na infância, mas tornaram-se rivais após a disputa pelo trono..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-2xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white leading-relaxed resize-none"
+            />
           </div>
 
           {/* Estilo da Linha */}
