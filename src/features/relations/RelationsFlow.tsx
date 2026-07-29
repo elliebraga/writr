@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Share2, Plus, Sparkles, RefreshCw, Trash2, ZoomIn, ZoomOut, Maximize2, Users } from "lucide-react";
+import { Share2, Plus, Sparkles, RefreshCw, Trash2, ZoomIn, ZoomOut, Maximize2, Users, GripHorizontal, User } from "lucide-react";
 import type { Book } from "../../types/book";
 import type { Character } from "../../types/character";
 import type { CharacterRelationLink, NodePosition, RelationsData } from "../../types/relation";
@@ -64,7 +64,7 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
     fetchCharactersAndRelations();
   }, [safeBookId]);
 
-  // Carrega personagens e inicializa posições no whiteboard se necessário
+  // Carrega personagens do Supabase/localStorage
   const fetchCharactersAndRelations = async () => {
     try {
       const { data, error } = await supabase
@@ -148,7 +148,24 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
     }));
   };
 
-  // Início do arraste do nó
+  // Adicionar ou focar personagem ao clicar na barra horizontal
+  const handleAddOrFocusCharacterOnCanvas = (charId: string) => {
+    setRelationsData((prev) => {
+      if (prev.nodes[charId]) return prev;
+      const count = Object.keys(prev.nodes).length;
+      const newX = 80 + (count % 3) * (CARD_WIDTH + 60);
+      const newY = 80 + Math.floor(count / 3) * (CARD_HEIGHT + 60);
+      return {
+        ...prev,
+        nodes: {
+          ...prev.nodes,
+          [charId]: { x: newX, y: newY },
+        },
+      };
+    });
+  };
+
+  // Início do arraste do nó no Canvas
   const handleDragStart = (characterId: string, e: React.MouseEvent) => {
     const currentPos = relationsData.nodes[characterId] || { x: 100, y: 100 };
     setDraggingCharId(characterId);
@@ -273,7 +290,7 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
         <div className="flex-1 flex flex-col h-full overflow-hidden">
           
           {/* Header Superior do Whiteboard */}
-          <div className="px-6 py-4 border-b border-slate-200 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 z-30">
+          <div className="px-6 py-3.5 border-b border-slate-200 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 z-30">
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-bold font-funnel text-slate-900 tracking-tight">
@@ -284,7 +301,7 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-sans mt-0.5">
-                Arraste os cards e conecte o elenco com setas interativas.
+                Arraste o elenco do menu horizontal para o whiteboard e conecte com setas.
               </p>
             </div>
 
@@ -355,6 +372,56 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
             </div>
           </div>
 
+          {/* MENU HORIZONTAL DO ELENCO PARA DRAG & DROP NO WHITEBOARD */}
+          <div className="px-6 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center gap-3 overflow-x-auto shrink-0 z-20 scrollbar-none">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 shrink-0 flex items-center gap-1.5">
+              <GripHorizontal className="w-3.5 h-3.5 text-slate-400" />
+              <span>Elenco (Arraste para soltar no whiteboard):</span>
+            </span>
+
+            <div className="flex items-center gap-2">
+              {characters.map((char) => {
+                const isOnCanvas = !!relationsData.nodes[char.id];
+                const charName = char.character_name || char.name || "Personagem";
+                const avatarUrl = char.image_url || (char.character_images && char.character_images[0]);
+
+                return (
+                  <div
+                    key={char.id}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("text/plain", char.id);
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
+                    onClick={() => handleAddOrFocusCharacterOnCanvas(char.id)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border cursor-grab active:cursor-grabbing transition-all shrink-0 select-none ${
+                      isOnCanvas
+                        ? "bg-white text-slate-900 border-slate-300 shadow-xs hover:border-slate-900"
+                        : "bg-slate-100 text-slate-600 border-slate-200 hover:bg-white hover:text-slate-900"
+                    }`}
+                    title="Arraste para soltar no whiteboard ou clique para adicionar"
+                  >
+                    <div className="w-5 h-5 rounded-full bg-slate-200 overflow-hidden shrink-0 flex items-center justify-center border border-slate-300">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt={charName} className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-3 h-3 text-slate-500" />
+                      )}
+                    </div>
+
+                    <span className="font-bold font-funnel truncate max-w-[110px]">
+                      {charName}
+                    </span>
+
+                    {isOnCanvas && (
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Inserido no Whiteboard" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Área de Trabalho do Whiteboard (Canvas Infinito com Grid) */}
           <div
             ref={canvasRef}
@@ -367,6 +434,27 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
               }
             }}
             onTouchEnd={handleMouseUp}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "move";
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              const charId = e.dataTransfer.getData("text/plain");
+              if (charId && canvasRef.current) {
+                const rect = canvasRef.current.getBoundingClientRect();
+                const dropX = Math.max(20, Math.round((e.clientX - rect.left) / zoomLevel - CARD_WIDTH / 2));
+                const dropY = Math.max(20, Math.round((e.clientY - rect.top) / zoomLevel - CARD_HEIGHT / 2));
+
+                setRelationsData((prev) => ({
+                  ...prev,
+                  nodes: {
+                    ...prev.nodes,
+                    [charId]: { x: dropX, y: dropY },
+                  },
+                }));
+              }
+            }}
             className="flex-1 relative bg-white overflow-auto cursor-crosshair select-none"
             style={{
               backgroundImage:
@@ -393,7 +481,9 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
 
               {/* Nós de Cards de Personagens Arrastáveis */}
               {characters.map((char) => {
-                const pos = relationsData.nodes[char.id] || { x: 100, y: 100 };
+                const pos = relationsData.nodes[char.id];
+                if (!pos) return null; // Só renderiza no canvas se estiver adicionado ao nó
+
                 return (
                   <RelationNodeCard
                     key={char.id}
