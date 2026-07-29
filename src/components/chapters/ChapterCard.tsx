@@ -62,7 +62,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
         </h3>
 
         {/* Resumo / Sinopse */}
-        <p className="text-xs text-slate-500 font-normal line-clamp-2 leading-relaxed">
+        <p className="text-sm text-slate-500 font-normal line-clamp-2 leading-relaxed">
           {cleanExcerpt}
         </p>
       </div>

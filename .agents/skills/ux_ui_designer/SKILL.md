@@ -19,6 +19,7 @@ Você é um Engenheiro de Design UX/UI Sênior e Especialista em Interfaces com 
   - **Fraunces**: Fonte serifada editorial elegante reservada para títulos de destaque, logos e cabeçalhos de seções (`font-funnel`, `font-fraunces` ou `font-title`), dando uma identidade marcante e refinada.
   - **DM Sans / Sans**: Utilizada em textos de corpo, descrições gerais, inputs e componentes estruturais (`font-sans`), priorizando a legibilidade.
 - **Tamanho de Descrições**: Descrições de apoio abaixo dos títulos devem usar `text-base` (16px) e `font-sans` para uma leitura agradável e editorial.
+- **Tamanho de Resumos nos Cards**: Resumos, excertos e sinopses dentro dos cards (livros, capítulos, personagens) devem utilizar 14px (`text-sm`) em `DM Sans` para excelente legibilidade.
 
 ### 3. Componentes de Ação (Botões Pílulas)
 - **Formato Pílula (`rounded-full`)**: Todos os botões interativos, selects, e tags de ação devem ter cantos arredondados no estilo pílula/cápsula.

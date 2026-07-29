@@ -87,7 +87,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
           )}
         </div>
 
-        <p className="text-xs text-slate-500 font-sans line-clamp-3 leading-relaxed mt-2">
+        <p className="text-sm text-slate-500 font-sans line-clamp-3 leading-relaxed mt-2">
           {character.summary && character.summary.trim()
             ? character.summary
             : "Nenhum resumo cadastrado para este personagem."}
