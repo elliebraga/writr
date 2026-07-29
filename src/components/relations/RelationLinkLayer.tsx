@@ -18,8 +18,8 @@ function calculateCardEdgeIntersection(
   y2: number
 ): { targetX: number; targetY: number } {
   const angle = Math.atan2(y2 - y1, x2 - x1);
-  const hw = CARD_WIDTH / 2 + 10; // 10px de folga externa para a seta
-  const hh = CARD_HEIGHT / 2 + 10;
+  const hw = CARD_WIDTH / 2 + 6; // 6px de folga para ponta da seta no estilo rascunho
+  const hh = CARD_HEIGHT / 2 + 6;
 
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
@@ -57,30 +57,44 @@ export const RelationLinkLayer: React.FC<RelationLinkLayerProps> = ({
   return (
     <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible">
       <defs>
-        {/* Seta Padrão Nítida e Proeminente */}
+        {/* Seta Delicada Estilo Doodle / Rascunho à Mão Livre */}
         <marker
-          id="relation-arrowhead"
-          viewBox="0 0 12 12"
-          refX="10"
-          refY="6"
-          markerWidth="11"
-          markerHeight="11"
+          id="relation-arrowhead-doodle"
+          viewBox="0 0 8 8"
+          refX="6"
+          refY="4"
+          markerWidth="7"
+          markerHeight="7"
           orient="auto-start-reverse"
         >
-          <path d="M 0 1.5 L 12 6 L 0 10.5 L 3 6 z" fill="#0f172a" />
+          <path
+            d="M 1.5 1.5 L 6.5 4 L 1.5 6.5"
+            fill="none"
+            stroke="#334155"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </marker>
 
-        {/* Seta Vermelha Nítida para Rivalidades */}
+        {/* Seta Doodle Vermelha para Rivalidades */}
         <marker
-          id="relation-arrowhead-danger"
-          viewBox="0 0 12 12"
-          refX="10"
-          refY="6"
-          markerWidth="11"
-          markerHeight="11"
+          id="relation-arrowhead-doodle-danger"
+          viewBox="0 0 8 8"
+          refX="6"
+          refY="4"
+          markerWidth="7"
+          markerHeight="7"
           orient="auto-start-reverse"
         >
-          <path d="M 0 1.5 L 12 6 L 0 10.5 L 3 6 z" fill="#dc2626" />
+          <path
+            d="M 1.5 1.5 L 6.5 4 L 1.5 6.5"
+            fill="none"
+            stroke="#dc2626"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </marker>
       </defs>
 
@@ -98,15 +112,18 @@ export const RelationLinkLayer: React.FC<RelationLinkLayerProps> = ({
         const cx2 = toNode.x + CARD_WIDTH / 2;
         const cy2 = toNode.y + CARD_HEIGHT / 2;
 
-        // Cálculo da interseção exata com a borda externa para que a seta NUNCA fique oculta sob o card!
+        // Cálculo da interseção exata com a borda externa do card
         const { targetX, targetY } = calculateCardEdgeIntersection(x1, y1, cx2, cy2);
 
-        // Curva Bezier Suave
+        // Traço Curvo Orgânico Estilo Rascunho / Doodle
         const dx = targetX - x1;
+        
+        // Leve curvatura orgânica artesanal
+        const organicOffset = Math.sin((x1 + targetY) * 0.01) * 12;
         const cx1 = x1 + dx * 0.5;
-        const cy1 = y1;
+        const cy1 = y1 + organicOffset;
         const cx2Control = x1 + dx * 0.5;
-        const cy2Control = targetY;
+        const cy2Control = targetY - organicOffset;
 
         const pathData = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2Control} ${cy2Control}, ${targetX} ${targetY}`;
 
@@ -117,22 +134,26 @@ export const RelationLinkLayer: React.FC<RelationLinkLayerProps> = ({
         const isDanger =
           link.label.toLowerCase().includes("inimig") ||
           link.label.toLowerCase().includes("rival");
-        const strokeColor = isDanger ? "#dc2626" : "#0f172a";
-        const markerId = isDanger ? "url(#relation-arrowhead-danger)" : "url(#relation-arrowhead)";
+        const strokeColor = isDanger ? "#dc2626" : "#334155";
+        const markerId = isDanger
+          ? "url(#relation-arrowhead-doodle-danger)"
+          : "url(#relation-arrowhead-doodle)";
 
         const isTooltipOpen = activeTooltipLinkId === link.id;
 
         return (
           <g key={link.id} className="group">
-            {/* Linha da Conexão */}
+            {/* Traço Organico Estilo Rascunho / Doodle */}
             <path
               d={pathData}
               fill="none"
               stroke={strokeColor}
-              strokeWidth="2.5"
-              strokeDasharray={link.line_style === "dashed" ? "7,7" : undefined}
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeDasharray={link.line_style === "dashed" ? "5,5" : undefined}
               markerEnd={markerId}
-              className="transition-all duration-200 opacity-90 group-hover:opacity-100 group-hover:stroke-width-3"
+              className="transition-all duration-200 opacity-80 group-hover:opacity-100 group-hover:stroke-width-2.5"
             />
 
             {/* Badge Rótulo do Relacionamento no Centro da Seta */}
