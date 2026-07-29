@@ -17,7 +17,7 @@ Você é um Engenheiro de Design UX/UI Sênior e Especialista em Interfaces com 
 ### 2. Tipografia e Legibilidade
 - **Fontes com Propósito**: 
   - **Fraunces**: Fonte serifada editorial elegante reservada para títulos de destaque, logos e cabeçalhos de seções (`font-funnel`, `font-fraunces` ou `font-title`), dando uma identidade marcante e refinada.
-  - **Figtree / Sans**: Utilizada em textos de corpo, descrições gerais, inputs e componentes estruturais (`font-sans`), priorizando a legibilidade.
+  - **DM Sans / Sans**: Utilizada em textos de corpo, descrições gerais, inputs e componentes estruturais (`font-sans`), priorizando a legibilidade.
 - **Tamanho de Descrições**: Descrições de apoio abaixo dos títulos devem usar `text-base` (16px) e `font-sans` para uma leitura agradável e editorial.
 
 ### 3. Componentes de Ação (Botões Pílulas)

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -34,7 +34,7 @@
   --color-feedback-danger-bg: #fee2e2;
   --color-feedback-danger-text: #b91c1c;
 
-  --font-sans: "Figtree", system-ui, sans-serif;
+  --font-sans: "DM Sans", system-ui, sans-serif;
   --font-title: "Fraunces", serif;
   --font-funnel: "Fraunces", serif;
   --font-fraunces: "Fraunces", serif;

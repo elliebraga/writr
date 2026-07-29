@@ -1,8 +1,8 @@
 import React from "react";
-import { BookOpen, Layers, Users, Settings, ArrowLeft, Book as BookIcon } from "lucide-react";
+import { BookOpen, Layers, Users, Share2, Settings, ArrowLeft, Book as BookIcon } from "lucide-react";
 import type { Book } from "../../types/book";
 
-export type SidebarTab = "overview" | "chapters" | "characters" | "settings";
+export type SidebarTab = "overview" | "chapters" | "characters" | "relations" | "settings";
 
 interface SidebarProps {
   activeBook: Book;
@@ -88,6 +88,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <Users className="w-4 h-4" />
           <span>Personagens</span>
+        </button>
+
+        <button
+          onClick={() => onTabChange("relations")}
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all ${
+            activeTab === "relations"
+              ? "bg-slate-900 text-white font-semibold shadow-xs"
+              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          }`}
+        >
+          <Share2 className="w-4 h-4" />
+          <span>Relações</span>
         </button>
 
         <button

@@ -49,7 +49,7 @@ module.exports = {
         paper: '#FAF6F0'
       },
       fontFamily: {
-        sans: ['Figtree', 'system-ui', 'sans-serif'],
+        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
         title: ['Fraunces', 'serif'],
         funnel: ['Fraunces', 'serif'],
         fraunces: ['Fraunces', 'serif'],

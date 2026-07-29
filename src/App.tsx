@@ -6,6 +6,7 @@ import type { Book, BookStatus } from "./types/book";
 import { Sidebar, type SidebarTab } from "./components/layout/Sidebar";
 import { ChapterFlow } from "./features/chapters/ChapterFlow";
 import { CharacterFlow } from "./features/characters/CharacterFlow";
+import { RelationsFlow } from "./features/relations/RelationsFlow";
 import { NewBookDrawer } from "./components/books/NewBookDrawer";
 import BookCard from "./components/ui/BookCard";
 import Button from "./components/ui/Button";
@@ -252,6 +253,13 @@ export default function App() {
             {activeTab === "characters" && (
               <CharacterFlow
                 activeBook={safeBook}
+              />
+            )}
+
+            {activeTab === "relations" && (
+              <RelationsFlow
+                activeBook={safeBook}
+                onNavigateToCharacters={() => setActiveTab("characters")}
               />
             )}
 
