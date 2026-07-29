@@ -252,6 +252,8 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
       const payload: any = {
         id: generatedId,
         id_book: safeBookId,
+        character_id: relationData.from_character_id,
+        related_character_id: relationData.to_character_id,
         from_character_id: relationData.from_character_id,
         to_character_id: relationData.to_character_id,
         label: relationData.label,

@@ -190,14 +190,12 @@ export default function App() {
     try {
       const payload: any = {
         id: newBookRecord.id,
+        id_user: sessionUser?.id || "a3d665b8-36b8-4e40-9799-b18e71950cfa",
         book_name: bookData.book_name,
         resume: bookData.synopsis || null,
         image_ref: bookData.cover_url || null,
-        status: bookData.status,
+        status: (bookData.status || "rascunho").toString().toLowerCase(),
       };
-      if (sessionUser?.id) {
-        payload.id_user = sessionUser.id;
-      }
 
       const { data, error } = await supabase
         .from("books")
