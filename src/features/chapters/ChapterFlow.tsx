@@ -8,7 +8,7 @@ import { NewChapterModal } from "../../components/chapters/NewChapterModal";
 import { TiptapEditor } from "../../components/editor/TiptapEditor";
 import { PdfExportModal } from "../../components/export/PdfExportModal";
 import { exportBookToDocx, exportBookToPdf } from "../../utils/exportUtils";
-import { supabase } from "../../supabaseClient";
+import { chapterService } from "../../services";
 import Button from "../../components/ui/Button";
 import { ensureValidUuid } from "../../utils/uuidUtils";
 
@@ -55,24 +55,8 @@ export const ChapterFlow: React.FC<ChapterFlowProps> = ({ activeBook }) => {
   // Carrega os capítulos do Supabase e mescla sem perder os salvos no localStorage
   const fetchChapters = async () => {
     try {
-      const { data, error } = await supabase
-        .from("chapters")
-        .select("*")
-        .eq("id_book", safeBookId)
-        .order("created_at", { ascending: true });
-
-      if (!error && data && data.length > 0) {
-        const remoteChapters: Chapter[] = data.map((c: any) => ({
-          ...c,
-          id: ensureValidUuid(c.id),
-          id_book: safeBookId,
-          book_id: safeBookId,
-          title: c.title || "Capítulo Sem Título",
-          content: c.text || c.content || "",
-          text: c.text || c.content || "",
-          word_count: c.word_count || (c.text || c.content || "").replace(/<[^>]*>/g, " ").trim().split(/\s+/).filter(Boolean).length || 0,
-        }));
-
+      const remoteChapters = await chapterService.getChapters(safeBookId);
+      if (remoteChapters.length > 0) {
         setChapters((prev) => {
           const map = new Map<string, Chapter>();
           prev.forEach((ch) => map.set(ch.id, ch));
@@ -98,54 +82,17 @@ export const ChapterFlow: React.FC<ChapterFlowProps> = ({ activeBook }) => {
 
   // Criar Novo Capítulo
   const handleCreateChapter = async (title: string) => {
-    const generatedId = ensureValidUuid();
-
-    const newChapter: Chapter = {
-      id: generatedId,
-      id_book: safeBookId,
-      book_id: safeBookId,
-      title: title.trim(),
-      text: "",
-      content: "",
-      synopsis: "",
-      word_count: 0,
-      order_index: chapters.length,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    const created = await chapterService.createChapter(safeBookId, title, chapters.length);
 
     setChapters((prev) => {
-      const updated = [...prev, newChapter];
+      const updated = [...prev, created];
       try {
         localStorage.setItem(localStorageKey, JSON.stringify(updated));
       } catch (e) {}
       return updated;
     });
 
-    try {
-      const payload = {
-        id: generatedId,
-        id_book: safeBookId,
-        title: newChapter.title,
-        text: "",
-      };
-
-      const { data, error } = await supabase
-        .from("chapters")
-        .insert([payload])
-        .select()
-        .single();
-
-      if (!error && data) {
-        newChapter.id = data.id;
-      } else if (error) {
-        console.log("Sincronização do capítulo no Supabase pendente:", error.message);
-      }
-    } catch (err) {
-      console.log("Capítulo preservado localmente.");
-    }
-
-    setActiveEditingChapter(newChapter);
+    setActiveEditingChapter(created);
   };
 
   // Salvar Capítulo (ao editar no Tiptap)
@@ -166,24 +113,10 @@ export const ChapterFlow: React.FC<ChapterFlowProps> = ({ activeBook }) => {
       setActiveEditingChapter((prev) => (prev ? { ...prev, ...updatedData, id: safeChapterId } : null));
     }
 
-    try {
-      const payload: any = {
-        title: updatedData.title,
-        text: updatedData.content !== undefined ? updatedData.content : updatedData.text,
-        updated_at: new Date().toISOString(),
-      };
-
-      const { error } = await supabase
-        .from("chapters")
-        .update(payload)
-        .eq("id", safeChapterId);
-
-      if (error) {
-        console.log("Alterações salvas localmente (Supabase pendente):", error.message);
-      }
-    } catch (err) {
-      console.log("Salvo com sucesso na memória local.");
-    }
+    await chapterService.updateChapter(safeChapterId, {
+      title: updatedData.title,
+      text: (updatedData.content !== undefined ? updatedData.content : updatedData.text) || undefined,
+    });
   };
 
   // Excluir Capítulo
@@ -197,11 +130,7 @@ export const ChapterFlow: React.FC<ChapterFlowProps> = ({ activeBook }) => {
       return updated;
     });
 
-    try {
-      await supabase.from("chapters").delete().eq("id", safeChapterId);
-    } catch (err) {
-      console.log("Removido localmente.");
-    }
+    await chapterService.deleteChapter(safeChapterId);
   };
 
   const handleConfirmBookPdfExport = (options: PdfExportOptions) => {

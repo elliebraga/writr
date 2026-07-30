@@ -6,7 +6,7 @@ import type { CharacterRelationLink, NodePosition, RelationsData } from "../../t
 import { RelationNodeCard, CARD_WIDTH, CARD_HEIGHT } from "../../components/relations/RelationNodeCard";
 import { RelationLinkLayer } from "../../components/relations/RelationLinkLayer";
 import { NewRelationModal } from "../../components/relations/NewRelationModal";
-import { supabase } from "../../supabaseClient";
+import { characterService, relationService } from "../../services";
 import Button from "../../components/ui/Button";
 import { ensureValidUuid } from "../../utils/uuidUtils";
 
@@ -68,41 +68,14 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
   const fetchCharactersAndRelations = async () => {
     try {
       // 1. Carrega Personagens
-      const { data: charData, error: charError } = await supabase
-        .from("characters")
-        .select("*")
-        .eq("id_book", safeBookId)
-        .order("created_at", { ascending: true });
-
-      let loadedChars = characters;
-      if (!charError && charData && charData.length > 0) {
-        loadedChars = charData.map((c: any) => ({
-          ...c,
-          id: ensureValidUuid(c.id),
-          character_name: c.character_name || c.name || "Personagem",
-          name: c.character_name || c.name || "Personagem",
-          image_url: c.character_images && c.character_images.length > 0 ? c.character_images[0] : c.image_url,
-        }));
+      const loadedChars = await characterService.getCharacters(safeBookId);
+      if (loadedChars.length > 0) {
         setCharacters(loadedChars);
       }
 
       // 2. Carrega Conexões de Relacionamentos do Supabase
-      const { data: relData, error: relError } = await supabase
-        .from("relationships")
-        .select("*")
-        .eq("id_book", safeBookId);
-
-      if (!relError && relData && relData.length > 0) {
-        const remoteLinks: CharacterRelationLink[] = relData.map((r: any) => ({
-          id: ensureValidUuid(r.id),
-          from_character_id: ensureValidUuid(r.from_character_id || r.id_character_from),
-          to_character_id: ensureValidUuid(r.to_character_id || r.id_character_to),
-          label: r.label || r.relationship_type || "Conexão",
-          description: r.description || undefined,
-          line_style: r.line_style || "solid",
-          created_at: r.created_at,
-        }));
-
+      const remoteLinks = await relationService.getRelations(safeBookId);
+      if (remoteLinks.length > 0) {
         setRelationsData((prev) => {
           const map = new Map<string, CharacterRelationLink>();
           prev.links.forEach((l) => map.set(l.id, l));
@@ -112,7 +85,7 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
         });
       }
 
-      autoLayoutNodesIfNeeded(loadedChars);
+      autoLayoutNodesIfNeeded(loadedChars.length > 0 ? loadedChars : characters);
     } catch (err) {
       if (characters.length > 0) {
         autoLayoutNodesIfNeeded(characters);
@@ -229,52 +202,12 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
     description?: string;
     line_style?: "solid" | "dashed";
   }) => {
-    const generatedId = ensureValidUuid();
+    const createdLink = await relationService.createRelation(safeBookId, relationData);
 
-    const newLink: CharacterRelationLink = {
-      id: generatedId,
-      from_character_id: relationData.from_character_id,
-      to_character_id: relationData.to_character_id,
-      label: relationData.label,
-      description: relationData.description,
-      line_style: relationData.line_style || "solid",
-      created_at: new Date().toISOString(),
-    };
-
-    // 1. Atualização instantânea no estado e localStorage
     setRelationsData((prev) => ({
       ...prev,
-      links: [...prev.links, newLink],
+      links: [...prev.links, createdLink],
     }));
-
-    // 2. Sincronização no Supabase
-    try {
-      const payload: any = {
-        id: generatedId,
-        id_book: safeBookId,
-        character_id: relationData.from_character_id,
-        related_character_id: relationData.to_character_id,
-        from_character_id: relationData.from_character_id,
-        to_character_id: relationData.to_character_id,
-        label: relationData.label,
-        description: relationData.description || null,
-        line_style: relationData.line_style || "solid",
-      };
-
-      const { data, error } = await supabase
-        .from("relationships")
-        .insert([payload])
-        .select()
-        .single();
-
-      if (error) {
-        console.log("Conexão mantida localmente (Supabase pendente):", error.message);
-      } else if (data) {
-        newLink.id = data.id;
-      }
-    } catch (err) {
-      console.log("Conexão salva no armazenamento local.");
-    }
   };
 
   // Excluir uma conexão do localStorage e Supabase
@@ -286,11 +219,7 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
       links: prev.links.filter((l) => l.id !== linkId && l.id !== safeLinkId),
     }));
 
-    try {
-      await supabase.from("relationships").delete().eq("id", safeLinkId);
-    } catch (err) {
-      console.log("Removido localmente.");
-    }
+    await relationService.deleteRelation(safeLinkId);
   };
 
   // Limpar todas as ligações
@@ -301,11 +230,7 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
         links: [],
       }));
 
-      try {
-        await supabase.from("relationships").delete().eq("id_book", safeBookId);
-      } catch (err) {
-        console.log("Ligações removidas localmente.");
-      }
+      await relationService.clearBookRelations(safeBookId);
     }
   };
 

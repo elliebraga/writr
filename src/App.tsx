@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import SignIn from "./features/auth/SignIn";
 import SignUp from "./features/auth/SignUp";
-import { supabase } from "./supabaseClient";
 import type { Book, BookStatus } from "./types/book";
 import { Sidebar, type SidebarTab } from "./components/layout/Sidebar";
 import { ChapterFlow } from "./features/chapters/ChapterFlow";
@@ -11,6 +10,7 @@ import { NewBookDrawer } from "./components/books/NewBookDrawer";
 import BookCard from "./components/ui/BookCard";
 import Button from "./components/ui/Button";
 import { BookOpen, Plus, Menu } from "lucide-react";
+import { authService, bookService } from "./services";
 import { ensureValidUuid } from "./utils/uuidUtils";
 
 export default function App() {
@@ -51,11 +51,11 @@ export default function App() {
 
   // Sync sessão do Supabase ao montar
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    authService.getSession().then((session) => {
       handleSession(session);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const subscription = authService.onAuthStateChange((_event, session) => {
       handleSession(session);
     });
 
@@ -68,21 +68,8 @@ export default function App() {
     if (session && session.user) {
       setSessionUser(session.user);
 
-      try {
-        const { data: profile, error } = await supabase
-          .from("profiles")
-          .select("user_name")
-          .eq("id", session.user.id)
-          .single();
-
-        if (!error && profile) {
-          setUserName(profile.user_name);
-        } else {
-          setUserName(session.user.raw_user_meta_data?.user_name || session.user.email?.split("@")[0] || "Escritor");
-        }
-      } catch (err) {
-        setUserName(session.user.email?.split("@")[0] || "Escritor");
-      }
+      const name = await authService.getUserProfile(session.user.id);
+      setUserName(name || session.user.email?.split("@")[0] || "Escritor");
 
       fetchBooks(session.user.id);
       setScreen("dashboard");
@@ -97,26 +84,8 @@ export default function App() {
   const fetchBooks = async (userId?: string) => {
     setIsLoadingBooks(true);
     try {
-      let query = supabase.from("books").select("*");
-      if (userId) {
-        query = query.or(`id_user.eq.${userId},id_user.is.null`);
-      }
-      const { data, error } = await query.order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Erro ao buscar livros do Supabase:", error.message);
-      } else if (data && data.length > 0) {
-        const remoteBooks = data.map((b: any) => ({
-          ...b,
-          id: ensureValidUuid(b.id),
-          book_name: b.book_name || "Sem título",
-          synopsis: b.resume || b.synopsis || "",
-          resume: b.resume || b.synopsis || "",
-          cover_url: b.image_ref || b.cover_url || "",
-          image_ref: b.image_ref || b.cover_url || "",
-          status: b.status || "rascunho",
-        })) as Book[];
-
+      const remoteBooks = await bookService.getBooks(userId);
+      if (remoteBooks.length > 0) {
         setBooks((prev) => {
           const map = new Map<string, Book>();
           prev.forEach((b) => map.set(b.id, b));
@@ -132,28 +101,21 @@ export default function App() {
   };
 
   const handleSignInSubmit = async (formData: any) => {
-    const { email, password } = formData;
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    await authService.signIn(formData);
   };
 
   const handleSignUpSubmit = async (formData: any) => {
-    const { fullName, email, password } = formData;
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { user_name: fullName } },
-    });
-    if (error) throw error;
+    const data = await authService.signUp(formData);
     if (data.user && !data.session) {
       alert("Cadastro realizado! Verifique seu e-mail para ativar a conta.");
     }
   };
 
   const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      alert("Erro ao deslogar: " + error.message);
+    try {
+      await authService.signOut();
+    } catch (err: any) {
+      alert("Erro ao deslogar: " + err.message);
     }
     setBooks([]);
     setSelectedBook(null);
@@ -169,57 +131,21 @@ export default function App() {
     cover_url?: string;
     status: BookStatus;
   }) => {
-    const userId = sessionUser?.id || "a3d665b8-36b8-4e40-9799-b18e71950cfa";
-    const generatedId = ensureValidUuid();
-
-    const newBookRecord: Book = {
-      id: generatedId,
-      id_user: userId,
-      book_name: bookData.book_name,
-      expected_pages: bookData.expected_pages,
-      synopsis: bookData.synopsis,
-      resume: bookData.synopsis,
-      cover_url: bookData.cover_url,
-      image_ref: bookData.cover_url,
-      status: bookData.status || "rascunho",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    const userId = sessionUser?.id;
+    const createdBook = await bookService.createBook({
+      ...bookData,
+      userId,
+    });
 
     setBooks((prev) => {
-      const updated = [newBookRecord, ...prev];
+      const updated = [createdBook, ...prev];
       try {
         localStorage.setItem("writr_local_books", JSON.stringify(updated));
       } catch (e) {}
       return updated;
     });
 
-    try {
-      const payload: any = {
-        id: newBookRecord.id,
-        id_user: userId,
-        book_name: bookData.book_name,
-        resume: bookData.synopsis || null,
-        image_ref: bookData.cover_url || null,
-        status: "rascunho",
-      };
-
-      const { data, error } = await supabase
-        .from("books")
-        .insert([payload])
-        .select()
-        .single();
-
-      if (!error && data) {
-        newBookRecord.id = data.id;
-      } else if (error) {
-        console.error("Erro ao salvar livro no Supabase:", error.message);
-      }
-    } catch (err) {
-      console.log("Livro mantido localmente.");
-    }
-
-    setSelectedBook(newBookRecord);
+    setSelectedBook(createdBook);
     setActiveTab("chapters");
   };
 
