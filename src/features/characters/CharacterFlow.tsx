@@ -10,9 +10,13 @@ import { ensureValidUuid } from "../../utils/uuidUtils";
 
 interface CharacterFlowProps {
   activeBook: Book;
+  onNavigateToTimeline?: (characterId: string) => void;
 }
 
-export const CharacterFlow: React.FC<CharacterFlowProps> = ({ activeBook }) => {
+export const CharacterFlow: React.FC<CharacterFlowProps> = ({
+  activeBook,
+  onNavigateToTimeline,
+}) => {
   const safeBookId = ensureValidUuid(activeBook.id);
   const localStorageKey = `writr_characters_${safeBookId}`;
 
@@ -140,6 +144,7 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({ activeBook }) => {
         }}
         onSaveCharacter={handleSaveCharacter}
         onDeleteCharacter={handleDeleteCharacter}
+        onNavigateToTimeline={onNavigateToTimeline}
       />
 
       {/* Condicional de Estado: Carregando vs Vazio vs Lista de Cards */}
@@ -211,6 +216,7 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({ activeBook }) => {
                 key={character.id}
                 character={character}
                 onSelect={() => handleOpenEditDrawer(character)}
+                onNavigateToTimeline={onNavigateToTimeline}
               />
             ))}
           </div>

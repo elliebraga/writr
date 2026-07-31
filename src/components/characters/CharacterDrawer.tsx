@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { X, User, Image as ImageIcon, Sparkles, Trash2, EyeOff, Flame, Heart, Compass, Camera, Upload } from "lucide-react";
+import { X, User, Image as ImageIcon, Sparkles, Trash2, EyeOff, Flame, Heart, Compass, Camera, Upload, Calendar } from "lucide-react";
 import type { Character, CharacterRoleType } from "../../types/character";
 import Button from "../ui/Button";
+import { useDialog } from "../ui/DialogProvider";
 
 interface CharacterDrawerProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ interface CharacterDrawerProps {
     summary?: string;
   }) => Promise<void> | void;
   onDeleteCharacter?: (characterId: string) => Promise<void> | void;
+  onNavigateToTimeline?: (characterId: string) => void;
 }
 
 const ROLE_OPTIONS: CharacterRoleType[] = [
@@ -55,7 +57,9 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
   onClose,
   onSaveCharacter,
   onDeleteCharacter,
+  onNavigateToTimeline,
 }) => {
+  const { showConfirm } = useDialog();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [characterName, setCharacterName] = useState("");
@@ -170,7 +174,15 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
   const handleDelete = async () => {
     if (!characterToEdit || !onDeleteCharacter) return;
     const currentName = characterToEdit.character_name || characterToEdit.name || "este personagem";
-    if (confirm(`Tem certeza que deseja excluir o personagem "${currentName}"?`)) {
+    
+    const confirmed = await showConfirm(
+      `Tem certeza que deseja excluir o personagem "${currentName}"?`,
+      "Excluir Personagem",
+      "Excluir",
+      "Cancelar"
+    );
+
+    if (confirmed) {
       setIsSubmitting(true);
       try {
         await onDeleteCharacter(characterToEdit.id);
@@ -430,7 +442,21 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
 
           {/* Footer Fixo */}
           <div className="p-5 border-t border-slate-200 bg-white flex items-center justify-between gap-3">
-            <div>
+            <div className="flex items-center gap-1">
+              {characterToEdit && onNavigateToTimeline && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onNavigateToTimeline(characterToEdit.id);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors cursor-pointer"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>Linha do Tempo</span>
+                </button>
+              )}
+
               {characterToEdit && onDeleteCharacter && (
                 <button
                   type="button"

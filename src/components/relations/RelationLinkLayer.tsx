@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import type { CharacterRelationLink, NodePosition } from "../../types/relation";
 import { CARD_WIDTH, CARD_HEIGHT } from "./RelationNodeCard";
 import { Trash2, Info } from "lucide-react";
+import { useDialog } from "../ui/DialogProvider";
 
 interface RelationLinkLayerProps {
   nodes: Record<string, NodePosition>;
@@ -52,6 +53,7 @@ export const RelationLinkLayer: React.FC<RelationLinkLayerProps> = ({
   onDeleteLink,
   onSelectLink,
 }) => {
+  const { showConfirm } = useDialog();
   const [activeTooltipLinkId, setActiveTooltipLinkId] = useState<string | null>(null);
 
   return (
@@ -185,9 +187,15 @@ export const RelationLinkLayer: React.FC<RelationLinkLayerProps> = ({
                   {onDeleteLink && (
                     <button
                       type="button"
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
-                        if (confirm(`Excluir conexão "${link.label}"?`)) {
+                        const confirmed = await showConfirm(
+                          `Excluir conexão "${link.label}"?`,
+                          "Excluir Conexão",
+                          "Excluir",
+                          "Cancelar"
+                        );
+                        if (confirmed) {
                           onDeleteLink(link.id);
                         }
                       }}

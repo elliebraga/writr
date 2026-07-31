@@ -9,6 +9,7 @@ import { NewRelationModal } from "../../components/relations/NewRelationModal";
 import { characterService, relationService } from "../../services";
 import Button from "../../components/ui/Button";
 import { ensureValidUuid } from "../../utils/uuidUtils";
+import { useDialog } from "../../components/ui/DialogProvider";
 
 interface RelationsFlowProps {
   activeBook: Book;
@@ -19,6 +20,7 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
   activeBook,
   onNavigateToCharacters,
 }) => {
+  const { showConfirm } = useDialog();
   const safeBookId = ensureValidUuid(activeBook.id);
   const localStorageKey = `writr_relations_${safeBookId}`;
   const charStorageKey = `writr_characters_${safeBookId}`;
@@ -224,7 +226,13 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
 
   // Limpar todas as ligações
   const handleClearAllLinks = async () => {
-    if (confirm("Deseja remover todas as setas de ligação do whiteboard?")) {
+    const confirmed = await showConfirm(
+      "Deseja remover todas as setas de ligação do whiteboard?",
+      "Limpar Ligações",
+      "Limpar",
+      "Cancelar"
+    );
+    if (confirmed) {
       setRelationsData((prev) => ({
         ...prev,
         links: [],

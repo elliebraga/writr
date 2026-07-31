@@ -12,8 +12,11 @@ import Button from "./components/ui/Button";
 import { BookOpen, Plus, Menu } from "lucide-react";
 import { authService, bookService } from "./services";
 import { ensureValidUuid } from "./utils/uuidUtils";
+import { useDialog } from "./components/ui/DialogProvider";
+import { TimelineFlow } from "./features/timeline/TimelineFlow";
 
 export default function App() {
+  const { showAlert } = useDialog();
   const [screen, setScreen] = useState<"signin" | "signup" | "dashboard">("signin");
   const [userName, setUserName] = useState("Escritor");
   const [sessionUser, setSessionUser] = useState<any>(null);
@@ -37,6 +40,7 @@ export default function App() {
   // Estado do Livro Ativo e Abas do Workspace
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [activeTab, setActiveTab] = useState<SidebarTab>("chapters");
+  const [timelineCharacterFilter, setTimelineCharacterFilter] = useState<string | null>(null);
   const [isNewBookModalOpen, setIsNewBookModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -107,7 +111,7 @@ export default function App() {
   const handleSignUpSubmit = async (formData: any) => {
     const data = await authService.signUp(formData);
     if (data.user && !data.session) {
-      alert("Cadastro realizado! Verifique seu e-mail para ativar a conta.");
+      await showAlert("Cadastro realizado! Verifique seu e-mail para ativar a conta.", "Cadastro Realizado");
     }
   };
 
@@ -115,7 +119,7 @@ export default function App() {
     try {
       await authService.signOut();
     } catch (err: any) {
-      alert("Erro ao deslogar: " + err.message);
+      await showAlert("Erro ao deslogar: " + err.message, "Erro");
     }
     setBooks([]);
     setSelectedBook(null);
@@ -205,6 +209,10 @@ export default function App() {
             {activeTab === "characters" && (
               <CharacterFlow
                 activeBook={safeBook}
+                onNavigateToTimeline={(charId) => {
+                  setTimelineCharacterFilter(charId);
+                  setActiveTab("timeline");
+                }}
               />
             )}
 
@@ -212,6 +220,14 @@ export default function App() {
               <RelationsFlow
                 activeBook={safeBook}
                 onNavigateToCharacters={() => setActiveTab("characters")}
+              />
+            )}
+
+            {activeTab === "timeline" && (
+              <TimelineFlow
+                activeBook={safeBook}
+                initialCharacterFilter={timelineCharacterFilter}
+                onClearInitialFilter={() => setTimelineCharacterFilter(null)}
               />
             )}
 

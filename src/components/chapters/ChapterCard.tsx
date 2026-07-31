@@ -1,6 +1,7 @@
 import React from "react";
 import { FileText, Clock, Trash2 } from "lucide-react";
 import type { Chapter } from "../../types/book";
+import { useDialog } from "../ui/DialogProvider";
 
 interface ChapterCardProps {
   chapter: Chapter;
@@ -15,6 +16,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
   onSelect,
   onDelete,
 }) => {
+  const { showConfirm } = useDialog();
   // Estimativa de páginas (média de 250 palavras por página padrão)
   const estimatedPages = Math.max(1, Math.ceil((chapter.word_count || 0) / 250));
 
@@ -42,9 +44,15 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
 
           {onDelete && (
             <button
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                if (confirm(`Deseja excluir o capítulo "${chapter.title}"?`)) {
+                const confirmed = await showConfirm(
+                  `Deseja excluir o capítulo "${chapter.title || `Capítulo ${index + 1}`}"?`,
+                  "Excluir Capítulo",
+                  "Excluir",
+                  "Cancelar"
+                );
+                if (confirmed) {
                   onDelete(chapter.id);
                 }
               }}

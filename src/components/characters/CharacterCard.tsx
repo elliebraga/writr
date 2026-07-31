@@ -1,11 +1,13 @@
 import React from "react";
-import { User, Trash2 } from "lucide-react";
+import { User, Trash2, Calendar } from "lucide-react";
 import type { Character } from "../../types/character";
+import { useDialog } from "../ui/DialogProvider";
 
 interface CharacterCardProps {
   character: Character;
   onSelect: (character: Character) => void;
   onDelete?: (characterId: string) => void;
+  onNavigateToTimeline?: (characterId: string) => void;
 }
 
 const getBadgeStyles = (role?: string | null) => {
@@ -29,7 +31,9 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
   character,
   onSelect,
   onDelete,
+  onNavigateToTimeline,
 }) => {
+  const { showConfirm } = useDialog();
   const characterName = character.character_name || character.name || "Personagem sem nome";
   const roleType = character.role_type || "Protagonista";
 
@@ -71,20 +75,41 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
             </div>
           </div>
 
-          {onDelete && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (confirm(`Deseja excluir o personagem "${characterName}"?`)) {
-                  onDelete(character.id);
-                }
-              }}
-              className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 transition-all p-1.5 rounded-full hover:bg-slate-100"
-              title="Excluir personagem"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          )}
+          <div className="flex items-center gap-1.5">
+            {onNavigateToTimeline && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNavigateToTimeline(character.id);
+                }}
+                className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-900 transition-all p-1.5 rounded-full hover:bg-slate-100"
+                title="Ver Linha do Tempo"
+              >
+                <Calendar className="w-4 h-4" />
+              </button>
+            )}
+
+            {onDelete && (
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  const confirmed = await showConfirm(
+                    `Deseja excluir o personagem "${characterName}"?`,
+                    "Excluir Personagem",
+                    "Excluir",
+                    "Cancelar"
+                  );
+                  if (confirmed) {
+                    onDelete(character.id);
+                  }
+                }}
+                className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 transition-all p-1.5 rounded-full hover:bg-slate-100"
+                title="Excluir personagem"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
         <p className="text-sm text-slate-500 font-sans line-clamp-3 leading-relaxed mt-2">
