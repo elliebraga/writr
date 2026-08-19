@@ -13,6 +13,7 @@
     "@supabase/supabase-js": "^2.110.7",
     "@tiptap/extension-character-count": "^3.28.0",
     "@tiptap/extension-font-family": "^3.28.0",
+    "@tiptap/extension-image": "^3.28.0",
     "@tiptap/extension-text-align": "^3.28.0",
     "@tiptap/extension-text-style": "^3.28.0",
     "@tiptap/extension-underline": "^3.28.0",

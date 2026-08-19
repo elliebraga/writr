@@ -12,6 +12,7 @@ export interface PdfExportOptions {
   fontSizePt: number;
   lineHeight: number;
   showPageNumbers: boolean;
+  showHeader?: boolean;
 }
 
 export const DEFAULT_PDF_OPTIONS: PdfExportOptions = {
@@ -24,4 +25,5 @@ export const DEFAULT_PDF_OPTIONS: PdfExportOptions = {
   fontSizePt: 12,
   lineHeight: 1.6,
   showPageNumbers: true,
+  showHeader: true,
 };

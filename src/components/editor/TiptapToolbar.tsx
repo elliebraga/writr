@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Editor } from "@tiptap/react";
 import {
   Bold,
@@ -14,14 +14,35 @@ import {
   Quote,
   Undo,
   Redo,
+  Image as ImageIcon,
 } from "lucide-react";
+import { ImageInsertModal } from "./ImageInsertModal";
 
 interface TiptapToolbarProps {
   editor: Editor | null;
 }
 
 export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({ editor }) => {
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
   if (!editor) return null;
+
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const size = e.target.value;
+    if (size === "default") {
+      editor.chain().focus().unsetFontSize().run();
+    } else {
+      editor.chain().focus().setFontSize(size).run();
+    }
+  };
+
+  const getCurrentFontSize = () => {
+    return editor.getAttributes("textStyle").fontSize || "default";
+  };
+
+  const handleInsertImage = (src: string) => {
+    editor.chain().focus().setImage({ src }).run();
+  };
 
   // Handler para trocar família de fonte
   const handleFontFamilyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -106,6 +127,27 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({ editor }) => {
             <option value="h1">Título 1 (H1)</option>
             <option value="h2">Título 2 (H2)</option>
             <option value="h3">Título 3 (H3)</option>
+          </select>
+        </div>
+
+        {/* Dropdown Tamanho de Fonte Numérico */}
+        <div className="relative flex items-center">
+          <select
+            value={getCurrentFontSize()}
+            onChange={handleFontSizeChange}
+            className="h-8 pl-3 pr-7 text-xs font-medium bg-white border border-slate-200 rounded-full text-slate-800 focus:outline-none focus:border-slate-900 cursor-pointer"
+          >
+            <option value="default">Tamanho: Padrão</option>
+            <option value="12px">12 px</option>
+            <option value="14px">14 px</option>
+            <option value="16px">16 px (Base)</option>
+            <option value="18px">18 px</option>
+            <option value="20px">20 px</option>
+            <option value="24px">24 px</option>
+            <option value="28px">28 px</option>
+            <option value="32px">32 px</option>
+            <option value="36px">36 px</option>
+            <option value="48px">48 px</option>
           </select>
         </div>
 
@@ -269,6 +311,21 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({ editor }) => {
             <Quote className="w-4 h-4" />
           </button>
         </div>
+
+        {/* Divisor */}
+        <div className="w-px h-5 bg-slate-200 mx-1" />
+
+        {/* Mídias: Imagem */}
+        <div className="flex items-center gap-0.5 border border-slate-200 rounded-full p-0.5 px-1">
+          <button
+            type="button"
+            onClick={() => setIsImageModalOpen(true)}
+            className="p-1.5 rounded transition-colors text-slate-600 hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
+            title="Inserir Imagem"
+          >
+            <ImageIcon className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Desfazer / Refazer */}
@@ -293,6 +350,12 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({ editor }) => {
           <Redo className="w-4 h-4" />
         </button>
       </div>
+
+      <ImageInsertModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        onConfirm={handleInsertImage}
+      />
     </div>
   );
 };

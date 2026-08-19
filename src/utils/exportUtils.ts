@@ -27,6 +27,7 @@ export function exportChapterToPdf(
   if (!printWindow) return;
 
   const pageDimensions = getPageCssDimensions(options.pageSize, options.orientation);
+  const showHeader = options.showHeader !== false;
 
   printWindow.document.write(`
     <!DOCTYPE html>
@@ -140,9 +141,14 @@ export function exportChapterToPdf(
       </style>
     </head>
     <body>
+      ${
+        showHeader
+          ? `
       <div class="chapter-header">
         <h1>${title}</h1>
-      </div>
+      </div>`
+          : ""
+      }
 
       <div class="tiptap-export">
         ${contentHtml || "<p>Capítulo sem conteúdo.</p>"}
@@ -208,14 +214,20 @@ export function exportBookToPdf(
   if (!printWindow) return;
 
   const pageDimensions = getPageCssDimensions(options.pageSize, options.orientation);
+  const showHeader = options.showHeader !== false;
 
   const chaptersHtml = chapters
     .map(
       (ch, idx) => `
       <section class="chapter-page">
+        ${
+          showHeader
+            ? `
         <div class="chapter-header">
           <h2>Capítulo ${idx + 1}: ${ch.title}</h2>
-        </div>
+        </div>`
+            : ""
+        }
         <div class="tiptap-export">
           ${ch.content || "<p>Sem conteúdo.</p>"}
         </div>

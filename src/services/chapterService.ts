@@ -84,7 +84,10 @@ export const chapterService = {
   },
 
   // Atualizar capítulo (título / conteúdo)
-  async updateChapter(chapterId: string, updatedData: { title?: string; text?: string; content?: string }): Promise<boolean> {
+  async updateChapter(
+    chapterId: string,
+    updatedData: { title?: string; text?: string; content?: string; word_count?: number }
+  ): Promise<boolean> {
     const safeChapterId = ensureValidUuid(chapterId);
 
     try {
@@ -94,6 +97,9 @@ export const chapterService = {
       if (updatedData.title !== undefined) payload.title = updatedData.title;
       if (updatedData.text !== undefined || updatedData.content !== undefined) {
         payload.text = updatedData.text !== undefined ? updatedData.text : updatedData.content;
+      }
+      if (updatedData.word_count !== undefined) {
+        payload.word_count = updatedData.word_count;
       }
 
       const { error } = await supabase

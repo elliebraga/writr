@@ -8,7 +8,7 @@ import { NewChapterModal } from "../../components/chapters/NewChapterModal";
 import { TiptapEditor } from "../../components/editor/TiptapEditor";
 import { PdfExportModal } from "../../components/export/PdfExportModal";
 import { exportBookToDocx, exportBookToPdf } from "../../utils/exportUtils";
-import { chapterService } from "../../services";
+import { chapterService, progressService } from "../../services";
 import Button from "../../components/ui/Button";
 import { ensureValidUuid } from "../../utils/uuidUtils";
 
@@ -101,6 +101,16 @@ export const ChapterFlow: React.FC<ChapterFlowProps> = ({ activeBook }) => {
   ) => {
     const safeChapterId = ensureValidUuid(updatedData.id);
 
+    // Calcula a diferença de palavras (novas palavras escritas)
+    const oldChapter = chapters.find((ch) => ch.id === updatedData.id || ch.id === safeChapterId);
+    const oldWordCount = oldChapter?.word_count || 0;
+    const newWordCount = updatedData.word_count || 0;
+    const delta = newWordCount - oldWordCount;
+
+    if (delta > 0) {
+      progressService.recordProgress(safeBookId, delta);
+    }
+
     setChapters((prev) => {
       const updated = prev.map((ch) => (ch.id === updatedData.id || ch.id === safeChapterId ? { ...ch, ...updatedData, id: safeChapterId } : ch));
       try {
@@ -116,6 +126,7 @@ export const ChapterFlow: React.FC<ChapterFlowProps> = ({ activeBook }) => {
     await chapterService.updateChapter(safeChapterId, {
       title: updatedData.title,
       text: (updatedData.content !== undefined ? updatedData.content : updatedData.text) || undefined,
+      word_count: newWordCount,
     });
   };
 

@@ -306,18 +306,33 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
               </div>
             </div>
 
-            {/* Seção 5: Número de Páginas */}
-            <div className="flex items-center justify-between pt-1">
-              <label htmlFor="showPageNumbers" className="text-xs font-semibold text-slate-700 cursor-pointer">
-                Exibir número de páginas no rodapé
-              </label>
-              <input
-                id="showPageNumbers"
-                type="checkbox"
-                checked={options.showPageNumbers}
-                onChange={(e) => setOptions((prev) => ({ ...prev, showPageNumbers: e.target.checked }))}
-                className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
-              />
+            {/* Seção 5: Opções de Exibição de Cabeçalho e Rodapé */}
+            <div className="space-y-2.5 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <label htmlFor="showHeader" className="text-xs font-semibold text-slate-700 cursor-pointer">
+                  Exibir cabeçalho do capítulo/obra
+                </label>
+                <input
+                  id="showHeader"
+                  type="checkbox"
+                  checked={options.showHeader !== false}
+                  onChange={(e) => setOptions((prev) => ({ ...prev, showHeader: e.target.checked }))}
+                  className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label htmlFor="showPageNumbers" className="text-xs font-semibold text-slate-700 cursor-pointer">
+                  Exibir número de páginas no rodapé
+                </label>
+                <input
+                  id="showPageNumbers"
+                  type="checkbox"
+                  checked={options.showPageNumbers}
+                  onChange={(e) => setOptions((prev) => ({ ...prev, showPageNumbers: e.target.checked }))}
+                  className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
+                />
+              </div>
             </div>
           </form>
 
@@ -352,14 +367,16 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
 
               {/* Conteúdo Textual Falso */}
               <div className="flex-1 flex flex-col overflow-hidden justify-start">
-                <div 
-                  className="font-serif text-slate-800 font-bold leading-none mb-2 text-center select-none"
-                  style={{
-                    fontSize: `${Math.max(5, options.fontSizePt * 0.55)}px`,
-                  }}
-                >
-                  Título do Capítulo
-                </div>
+                {options.showHeader !== false && (
+                  <div 
+                    className="font-serif text-slate-800 font-bold leading-none mb-2 text-center select-none"
+                    style={{
+                      fontSize: `${Math.max(5, options.fontSizePt * 0.55)}px`,
+                    }}
+                  >
+                    Título do Capítulo
+                  </div>
+                )}
                 
                 <div 
                   className="flex flex-col gap-1 overflow-hidden"

@@ -10,7 +10,9 @@ export const bookService = {
     try {
       let query = supabase.from("books").select("*");
       if (userId) {
-        query = query.or(`id_user.eq.${userId},id_user.is.null`);
+        query = query.eq("id_user", userId);
+      } else {
+        query = query.is("id_user", null);
       }
       const { data, error } = await query.order("created_at", { ascending: false });
 
@@ -49,7 +51,7 @@ export const bookService = {
     userId?: string;
   }): Promise<Book> {
     const generatedId = ensureValidUuid();
-    const userId = bookData.userId || DEFAULT_USER_ID;
+    const userId = bookData.userId || null;
 
     const newBook: Book = {
       id: generatedId,

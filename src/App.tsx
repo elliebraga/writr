@@ -14,6 +14,7 @@ import { authService, bookService } from "./services";
 import { ensureValidUuid } from "./utils/uuidUtils";
 import { useDialog } from "./components/ui/DialogProvider";
 import { TimelineFlow } from "./features/timeline/TimelineFlow";
+import { BookOverview } from "./components/books/BookOverview";
 
 export default function App() {
   const { showAlert } = useDialog();
@@ -89,14 +90,19 @@ export default function App() {
     setIsLoadingBooks(true);
     try {
       const remoteBooks = await bookService.getBooks(userId);
-      if (remoteBooks.length > 0) {
-        setBooks((prev) => {
-          const map = new Map<string, Book>();
-          prev.forEach((b) => map.set(b.id, b));
+      setBooks((prev) => {
+        const map = new Map<string, Book>();
+        if (userId) {
+          // Preserva apenas livros locais associados a este usuário e combina com os do Supabase
+          prev.filter((b) => b.id_user === userId).forEach((b) => map.set(b.id, b));
           remoteBooks.forEach((b) => map.set(b.id, b));
-          return Array.from(map.values());
-        });
-      }
+        } else {
+          // Para visitantes, mantém apenas livros locais não associados a nenhum usuário
+          prev.filter((b) => !b.id_user).forEach((b) => map.set(b.id, b));
+          remoteBooks.forEach((b) => map.set(b.id, b));
+        }
+        return Array.from(map.values());
+      });
     } catch (err) {
       console.error("Erro na consulta de livros:", err);
     } finally {
@@ -232,35 +238,10 @@ export default function App() {
             )}
 
             {activeTab === "overview" && (
-              <div className="p-8 max-w-4xl mx-auto w-full">
-                <h2 className="text-2xl font-bold font-funnel text-slate-900 mb-2">Visão Geral do Livro</h2>
-                <p className="text-base text-slate-500 font-sans mb-6">Informações e métricas sobre a obra.</p>
-
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 space-y-4">
-                  <div>
-                    <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Título</span>
-                    <h3 className="text-xl font-bold font-funnel text-slate-900 mt-0.5">{safeBook.book_name}</h3>
-                  </div>
-
-                  {safeBook.synopsis && (
-                    <div>
-                      <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Sinopse</span>
-                      <p className="text-sm text-slate-700 mt-1 leading-relaxed">{safeBook.synopsis}</p>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
-                    <div>
-                      <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Status</span>
-                      <p className="text-sm font-semibold text-slate-900 mt-0.5">{safeBook.status}</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Páginas Previstas</span>
-                      <p className="text-sm font-semibold text-slate-900 mt-0.5">{safeBook.expected_pages || "Não informada"}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <BookOverview
+                activeBook={safeBook}
+                onTabChange={(tab) => setActiveTab(tab)}
+              />
             )}
 
             {activeTab === "settings" && (
