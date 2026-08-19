@@ -1,7 +1,7 @@
-import { BookOpen, Layers, Users, Share2, Settings, ArrowLeft, Book as BookIcon, X, Calendar } from "lucide-react";
+import { BookOpen, Layers, Users, Share2, Settings, ArrowLeft, Book as BookIcon, X, Calendar, MapPin } from "lucide-react";
 import type { Book } from "../../types/book";
 
-export type SidebarTab = "overview" | "chapters" | "characters" | "relations" | "timeline" | "settings";
+export type SidebarTab = "overview" | "chapters" | "characters" | "relations" | "scenarios" | "timeline" | "settings";
 
 interface SidebarProps {
   activeBook: Book;
@@ -126,6 +126,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <Share2 className="w-4 h-4" />
           <span>Relações</span>
+        </button>
+
+        <button
+          onClick={() => {
+            onTabChange("scenarios");
+            onCloseMobile?.();
+          }}
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all ${
+            activeTab === "scenarios"
+              ? "bg-neutral-800 text-white font-semibold"
+              : "text-neutral-400 hover:bg-neutral-900 hover:text-white"
+          }`}
+        >
+          <MapPin className="w-4 h-4" />
+          <span>Cenários</span>
         </button>
 
         <button

@@ -15,6 +15,9 @@ import { ensureValidUuid } from "./utils/uuidUtils";
 import { useDialog } from "./components/ui/DialogProvider";
 import { TimelineFlow } from "./features/timeline/TimelineFlow";
 import { BookOverview } from "./components/books/BookOverview";
+import { ScenarioFlow } from "./features/scenarios/ScenarioFlow";
+import { characterService } from "./services";
+import type { Character } from "./types/character";
 
 export default function App() {
   const { showAlert } = useDialog();
@@ -44,6 +47,19 @@ export default function App() {
   const [timelineCharacterFilter, setTimelineCharacterFilter] = useState<string | null>(null);
   const [isNewBookModalOpen, setIsNewBookModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [bookCharacters, setBookCharacters] = useState<Character[]>([]);
+
+  // Carregar personagens da obra ativa
+  useEffect(() => {
+    if (selectedBook) {
+      const safeId = ensureValidUuid(selectedBook.id);
+      characterService.getCharacters(safeId).then((data) => {
+        setBookCharacters(data);
+      });
+    } else {
+      setBookCharacters([]);
+    }
+  }, [selectedBook?.id]);
 
   // Efeito para salvar obras no localStorage sempre que o estado mudar
   useEffect(() => {
@@ -53,6 +69,7 @@ export default function App() {
       console.error("Erro ao salvar livros no localStorage", e);
     }
   }, [books]);
+
 
   // Sync sessão do Supabase ao montar
   useEffect(() => {
@@ -228,6 +245,14 @@ export default function App() {
                 onNavigateToCharacters={() => setActiveTab("characters")}
               />
             )}
+
+            {activeTab === "scenarios" && (
+              <ScenarioFlow
+                activeBook={safeBook}
+                characters={bookCharacters}
+              />
+            )}
+
 
             {activeTab === "timeline" && (
               <TimelineFlow
