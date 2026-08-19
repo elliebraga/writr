@@ -121,6 +121,26 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     exportChapterToPdf(chapterTitle, editor?.getHTML() || "", options);
   };
 
+  // Cálculo das dimensões reais da folha em mm para a visualização no editor
+  let pageWidthMm = 210; // A4 por padrão
+  let pageHeightMm = 297;
+  if (pageFormatOptions.pageSize === "A5") {
+    pageWidthMm = 148;
+    pageHeightMm = 210;
+  } else if (pageFormatOptions.pageSize === "Letter") {
+    pageWidthMm = 216;
+    pageHeightMm = 279;
+  } else if (pageFormatOptions.pageSize === "Pocket") {
+    pageWidthMm = 125;
+    pageHeightMm = 180;
+  }
+
+  if (pageFormatOptions.orientation === "landscape") {
+    const tmp = pageWidthMm;
+    pageWidthMm = pageHeightMm;
+    pageHeightMm = tmp;
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col h-screen w-screen overflow-hidden select-none">
       
@@ -230,23 +250,17 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       <TiptapToolbar editor={editor} />
 
       {/* Área Principal de Escrita com Layout Dinâmico da Folha */}
-      <main className="flex-1 overflow-y-auto bg-slate-50/50 py-8 px-4 flex justify-center">
+      <main className="flex-1 overflow-y-auto bg-slate-100/60 py-8 px-4 flex justify-center">
         <div
-          className="w-full bg-white border border-slate-200 rounded-lg shadow-2xs min-h-[calc(100vh-220px)] my-auto select-text transition-all duration-300 relative overflow-hidden"
+          className="w-full bg-white border border-slate-200 rounded-lg shadow-sm min-h-[calc(100vh-220px)] my-auto select-text transition-all duration-300 relative overflow-hidden"
           style={
             {
-              maxWidth:
-                pageFormatOptions.pageSize === "A5"
-                  ? "640px"
-                  : pageFormatOptions.pageSize === "Pocket"
-                  ? "520px"
-                  : pageFormatOptions.pageSize === "Letter"
-                  ? "750px"
-                  : "820px",
-              paddingTop: `${Math.max(20, pageFormatOptions.marginTopMm * 2)}px`,
-              paddingRight: `${Math.max(20, pageFormatOptions.marginRightMm * 2)}px`,
-              paddingBottom: `${Math.max(20, pageFormatOptions.marginBottomMm * 2)}px`,
-              paddingLeft: `${Math.max(20, pageFormatOptions.marginLeftMm * 2)}px`,
+              width: "100%",
+              maxWidth: `min(100%, ${pageWidthMm}mm)`,
+              paddingTop: `${pageFormatOptions.marginTopMm}mm`,
+              paddingRight: `${pageFormatOptions.marginRightMm}mm`,
+              paddingBottom: `${pageFormatOptions.marginBottomMm}mm`,
+              paddingLeft: `${pageFormatOptions.marginLeftMm}mm`,
               fontFamily: pageFormatOptions.fontFamily,
               "--editor-font-family": pageFormatOptions.fontFamily,
               "--editor-font-size": `${pageFormatOptions.fontSizePt}pt`,
@@ -254,11 +268,23 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             } as React.CSSProperties
           }
         >
+          {/* Guia visual pontilhada das margens ativas */}
+          <div
+            className="absolute inset-0 pointer-events-none border border-dashed border-indigo-200/50 rounded-xs transition-all duration-300"
+            style={{
+              top: `${pageFormatOptions.marginTopMm}mm`,
+              right: `${pageFormatOptions.marginRightMm}mm`,
+              bottom: `${pageFormatOptions.marginBottomMm}mm`,
+              left: `${pageFormatOptions.marginLeftMm}mm`,
+            }}
+          />
+
           <style>{`
             .ProseMirror {
               font-family: var(--editor-font-family) !important;
               font-size: var(--editor-font-size) !important;
               line-height: var(--editor-line-height) !important;
+              min-height: 100%;
             }
             .ProseMirror p {
               font-family: var(--editor-font-family) !important;
