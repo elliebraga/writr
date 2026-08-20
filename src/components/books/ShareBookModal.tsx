@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { X, UserPlus, Users, Trash2, Mail, Check, Copy } from "lucide-react";
 import type { Book } from "../../types/book";
 import type { BookCollaborator, CollaboratorRole } from "../../types/collaborator";
-import { collaboratorService } from "../../services";
+import { collaboratorService, emailService } from "../../services";
 import Button from "../ui/Button";
 
 interface ShareBookModalProps {
@@ -22,11 +22,17 @@ export const ShareBookModal: React.FC<ShareBookModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedInviteText, setCopiedInviteText] = useState(false);
+  const [invitedEmail, setInvitedEmail] = useState<string | null>(null);
+  const [invitedRole, setInvitedRole] = useState<CollaboratorRole>("editor");
+  const [emailStatus, setEmailStatus] = useState<{ sent: boolean; message: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && activeBook?.id) {
       loadCollaborators();
+      setInvitedEmail(null);
+      setEmailStatus(null);
     }
   }, [isOpen, activeBook?.id]);
 
@@ -52,12 +58,16 @@ export const ShareBookModal: React.FC<ShareBookModalProps> = ({
     }
 
     setError(null);
+    setEmailStatus(null);
     setIsSubmitting(true);
+    const targetEmail = email.trim();
+    const selectedRole = role;
+
     try {
       const newMember = await collaboratorService.addCollaborator(
         activeBook.id,
-        email.trim(),
-        role
+        targetEmail,
+        selectedRole
       );
 
       setCollaborators((prev) => {
@@ -65,7 +75,22 @@ export const ShareBookModal: React.FC<ShareBookModalProps> = ({
         return [...filtered, newMember];
       });
 
+      setInvitedEmail(targetEmail);
+      setInvitedRole(selectedRole);
       setEmail("");
+
+      // Tentar enviar e-mail automático via EmailJS
+      const res = await emailService.sendInviteEmail({
+        toEmail: targetEmail,
+        bookName: activeBook.book_name,
+        role: selectedRole,
+        inviteLink: window.location.href,
+      });
+
+      setEmailStatus({
+        sent: res.success,
+        message: res.message,
+      });
     } catch (err: any) {
       setError(err.message || "Erro ao convidar colaborador.");
     } finally {
@@ -87,6 +112,25 @@ export const ShareBookModal: React.FC<ShareBookModalProps> = ({
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const getInviteBodyText = () => {
+    const roleText = invitedRole === "editor" ? "Editor (Pode escrever)" : "Leitor (Apenas leitura)";
+    const link = window.location.href;
+    return `Olá!\n\nVocê foi convidado(a) para colaborar no livro "${activeBook.book_name}" no Writr com permissão de ${roleText}.\n\nAcesse o link abaixo para visualizar e colaborar:\n${link}\n\nBom trabalho!`;
+  };
+
+  const handleOpenMailClient = () => {
+    if (!invitedEmail) return;
+    const subject = encodeURIComponent(`Convite de Colaboração: ${activeBook.book_name}`);
+    const body = encodeURIComponent(getInviteBodyText());
+    window.open(`mailto:${invitedEmail}?subject=${subject}&body=${body}`, "_blank");
+  };
+
+  const handleCopyInviteText = () => {
+    navigator.clipboard.writeText(getInviteBodyText());
+    setCopiedInviteText(true);
+    setTimeout(() => setCopiedInviteText(false), 2000);
   };
 
   return (
@@ -171,6 +215,51 @@ export const ShareBookModal: React.FC<ShareBookModalProps> = ({
                 Convidar
               </Button>
             </div>
+
+            {invitedEmail && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2 text-xs animate-in fade-in duration-200">
+                <div className="flex items-center justify-between text-emerald-800 font-semibold">
+                  <span>
+                    {emailStatus?.sent
+                      ? `🎉 E-mail enviado para ${invitedEmail}!`
+                      : `✅ Permissão concedida para ${invitedEmail}!`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInvitedEmail(null);
+                      setEmailStatus(null);
+                    }}
+                    className="text-emerald-600 hover:text-emerald-900 text-sm font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
+                <p className="text-emerald-700 text-[11px]">
+                  {emailStatus?.sent
+                    ? "O convite foi entregue com sucesso na caixa de entrada do colaborador."
+                    : "O colaborador foi cadastrado no banco de dados. Você também pode enviar um e-mail pelo seu app local ou copiar o convite:"}
+                </p>
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleOpenMailClient}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    {emailStatus?.sent ? "Reenviar pelo App" : "Abrir App de E-mail"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyInviteText}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-emerald-300 hover:bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
+                  >
+                    {copiedInviteText ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Copy className="w-3.5 h-3.5 text-emerald-700" />}
+                    {copiedInviteText ? "Texto Copiado!" : "Copiar Texto de Convite"}
+                  </button>
+                </div>
+              </div>
+            )}
           </form>
 
           <hr className="border-slate-100" />

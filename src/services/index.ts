@@ -8,3 +8,4 @@ export { progressService } from "./progressService";
 export { scenarioService } from "./scenarioService";
 export { collaboratorService } from "./collaboratorService";
 export { whiteboardService } from "./whiteboardService";
+export { emailService } from "./emailService";
