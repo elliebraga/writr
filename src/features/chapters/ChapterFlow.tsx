@@ -228,7 +228,7 @@ export const ChapterFlow: React.FC<ChapterFlowProps> = ({ activeBook }) => {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-start sm:justify-end">
               
               <div className="relative">
                 <Button
@@ -241,7 +241,7 @@ export const ChapterFlow: React.FC<ChapterFlowProps> = ({ activeBook }) => {
                 </Button>
 
                 {showExportBookMenu && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg p-1 z-30 text-xs">
+                  <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg p-1 z-30 text-xs">
                     <button
                       onClick={() => {
                         setShowExportBookMenu(false);

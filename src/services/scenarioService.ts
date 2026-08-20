@@ -1,6 +1,6 @@
 import { supabase } from "../supabaseClient";
 import type { Scenario } from "../types/scenario";
-import { ensureValidUuid } from "../utils/uuidUtils";
+import { ensureValidUuid, ensureParentBookExists } from "../utils/uuidUtils";
 
 const LOCAL_STORAGE_KEY_PREFIX = "writr_scenarios_";
 
@@ -29,7 +29,7 @@ export const scenarioService = {
         })) as Scenario[];
       }
     } catch (err) {
-      console.warn("Tabela 'scenarios' não encontrada no Supabase, usando armazenamento local:", err);
+      console.warn("Aviso ao buscar cenários no Supabase, usando armazenamento local:", err);
     }
 
     // Fallback LocalStorage
@@ -56,6 +56,8 @@ export const scenarioService = {
     const safeBookId = ensureValidUuid(bookId);
     const safeScenarioId = ensureValidUuid(scenarioData.id);
 
+    await ensureParentBookExists(safeBookId);
+
     const now = new Date().toISOString();
 
     const scenarioToSave: Scenario = {
@@ -74,27 +76,56 @@ export const scenarioService = {
 
     // Tenta salvar no Supabase
     try {
-      const payload: any = {
+      const payloadPrimary: any = {
         id: safeScenarioId,
         id_book: safeBookId,
         name: scenarioToSave.name,
+        scenario_name: scenarioToSave.name,
         type: scenarioToSave.type,
+        scenario_type: scenarioToSave.type,
         description: scenarioToSave.description,
         sensory_details: scenarioToSave.sensory_details,
         history_notes: scenarioToSave.history_notes,
         images: scenarioToSave.images,
+        reference_images: scenarioToSave.images,
         associated_character_ids: scenarioToSave.associated_character_ids,
         updated_at: now,
       };
 
       const { data, error } = await supabase
         .from("scenarios")
-        .upsert([payload])
+        .upsert([payloadPrimary])
         .select()
         .single();
 
       if (!error && data) {
+        console.log("✅ [Supabase] Cenário salvo com sucesso:", data.id);
         scenarioToSave.id = ensureValidUuid(data.id);
+      } else if (error) {
+        console.warn("⚠️ Erro ao salvar cenário no Supabase (tentando fallback):", error.message);
+        
+        // Payload simplificado fallback
+        const payloadFallback: any = {
+          id: safeScenarioId,
+          id_book: safeBookId,
+          name: scenarioToSave.name,
+          type: scenarioToSave.type,
+          description: scenarioToSave.description,
+          updated_at: now,
+        };
+
+        const { data: fbData, error: fbErr } = await supabase
+          .from("scenarios")
+          .upsert([payloadFallback])
+          .select()
+          .single();
+
+        if (!fbErr && fbData) {
+          console.log("✅ [Supabase] Cenário salvo via fallback:", fbData.id);
+          scenarioToSave.id = ensureValidUuid(fbData.id);
+        } else if (fbErr) {
+          console.error("❌ [Supabase] Erro ao salvar cenário (fallback):", fbErr.message);
+        }
       }
     } catch (err) {
       console.warn("Erro ao persistir cenário no Supabase:", err);
@@ -130,7 +161,7 @@ export const scenarioService = {
     try {
       await supabase.from("scenarios").delete().eq("id", safeScenarioId);
     } catch (err) {
-      console.warn("Exceção ao remover do Supabase:", err);
+      console.warn("Exceção ao remover cenário do Supabase:", err);
     }
 
     // Remove do LocalStorage

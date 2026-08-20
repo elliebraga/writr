@@ -145,6 +145,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
         appearance: appearance.trim(),
         secrets: secrets.trim(),
         notes: summary.trim(),
+        role_type: roleType,
       });
 
       const imagesArray = imageUrl.trim() ? [imageUrl.trim()] : [];

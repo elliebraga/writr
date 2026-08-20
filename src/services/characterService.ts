@@ -14,7 +14,7 @@ export const characterService = {
         .order("created_at", { ascending: true });
 
       if (error) {
-        console.error("Erro ao buscar personagens no Supabase:", error.message);
+        console.error("⚠️ [Supabase] Erro ao buscar personagens:", error.message);
         return [];
       }
 
@@ -23,23 +23,27 @@ export const characterService = {
           let appearanceStr = c.appearance || null;
           let secretsStr = c.secrets || null;
           let summaryStr = c.summary || null;
+          let roleTypeStr = c.role_type || null;
 
           if (c.character_details) {
             try {
-              const parsed = JSON.parse(c.character_details);
+              const parsed = typeof c.character_details === "string"
+                ? JSON.parse(c.character_details)
+                : c.character_details;
               if (typeof parsed === "object" && parsed !== null) {
                 appearanceStr = appearanceStr || parsed.appearance || null;
                 secretsStr = secretsStr || parsed.secrets || null;
                 summaryStr = summaryStr || parsed.notes || null;
+                roleTypeStr = roleTypeStr || parsed.role_type || null;
               }
             } catch (e) {
               summaryStr = summaryStr || c.character_details;
             }
           }
 
-          const imgUrl = c.character_images && c.character_images.length > 0
+          const imgUrl = Array.isArray(c.character_images) && c.character_images.length > 0
             ? c.character_images[0]
-            : c.image_url || null;
+            : c.image_url || c.character_images || null;
 
           return {
             ...c,
@@ -48,11 +52,14 @@ export const characterService = {
             book_id: safeBookId,
             character_name: c.character_name || c.name || "Personagem sem nome",
             name: c.character_name || c.name || "Personagem sem nome",
-            role_type: c.role_type || "Secondary",
+            role_type: (roleTypeStr || c.role_type || "Protagonista") as CharacterRoleType,
+            character_sign: c.character_sign || null,
+            character_personality: c.character_personality || null,
+            character_motivations: c.character_motivations || null,
             appearance: appearanceStr,
             secrets: secretsStr,
             summary: summaryStr,
-            image_url: imgUrl,
+            image_url: typeof imgUrl === "string" ? imgUrl : undefined,
           } as Character;
         });
       }
@@ -64,7 +71,7 @@ export const characterService = {
     }
   },
 
-  // Salvar (criar ou atualizar) personagem
+  // Salvar (criar ou atualizar) personagem no Supabase
   async saveCharacter(
     bookId: string,
     characterData: {
@@ -84,7 +91,39 @@ export const characterService = {
     const safeBookId = ensureValidUuid(bookId);
     const safeCharId = ensureValidUuid(characterData.id);
 
-    const payload: any = {
+    // 1. Garantir que a obra pai existe no Supabase para evitar erro de FK (id_book)
+    try {
+      const { data: bookCheck } = await supabase
+        .from("books")
+        .select("id")
+        .eq("id", safeBookId)
+        .maybeSingle();
+
+      if (!bookCheck) {
+        console.log("ℹ️ [Supabase] Obra pai não encontrada no banco. Criando registro pai automaticamente...");
+        await supabase.from("books").upsert([
+          {
+            id: safeBookId,
+            book_name: "Obra",
+            status: "rascunho",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ]);
+      }
+    } catch (e) {
+      console.warn("⚠️ Aviso ao verificar obra no Supabase:", e);
+    }
+
+    // 2. Montar objeto JSON serializado de detalhes
+    const serializedDetails = characterData.character_details || JSON.stringify({
+      appearance: characterData.appearance || "",
+      secrets: characterData.secrets || "",
+      notes: characterData.summary || "",
+      role_type: characterData.role_type || "Protagonista",
+    });
+
+    const payloadPrimary: any = {
       id: safeCharId,
       id_book: safeBookId,
       character_name: characterData.character_name,
@@ -92,7 +131,7 @@ export const characterService = {
       character_personality: characterData.character_personality || null,
       character_motivations: characterData.character_motivations || null,
       character_images: characterData.character_images || [],
-      character_details: characterData.character_details || null,
+      character_details: serializedDetails,
       updated_at: new Date().toISOString(),
     };
 
@@ -109,25 +148,50 @@ export const characterService = {
       appearance: characterData.appearance,
       secrets: characterData.secrets,
       summary: characterData.summary,
+      character_details: serializedDetails,
       image_url: characterData.character_images && characterData.character_images.length > 0 ? characterData.character_images[0] : undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
+    // 3. Tentar persistência no Supabase com tratamento de fallback
     try {
       const { data, error } = await supabase
         .from("characters")
-        .upsert([payload])
+        .upsert([payloadPrimary])
         .select()
         .single();
 
       if (!error && data) {
+        console.log("✅ [Supabase] Personagem salvo com sucesso:", data.id);
         savedRecord.id = ensureValidUuid(data.id);
       } else if (error) {
-        console.error("Erro no Supabase ao salvar personagem:", error.message);
+        console.warn("⚠️ Erro na primeira tentativa de upsert no Supabase:", error.message);
+        
+        // Tentar payload secundário simplificado (caso colunas adicionais não existam no esquema)
+        const payloadFallback: any = {
+          id: safeCharId,
+          id_book: safeBookId,
+          character_name: characterData.character_name,
+          character_details: serializedDetails,
+          updated_at: new Date().toISOString(),
+        };
+
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from("characters")
+          .upsert([payloadFallback])
+          .select()
+          .single();
+
+        if (!fallbackError && fallbackData) {
+          console.log("✅ [Supabase] Personagem salvo via payload fallback:", fallbackData.id);
+          savedRecord.id = ensureValidUuid(fallbackData.id);
+        } else if (fallbackError) {
+          console.error("❌ [Supabase] Erro ao salvar personagem (fallback):", fallbackError.message, fallbackError.details);
+        }
       }
     } catch (err) {
-      console.error("Exceção ao salvar personagem:", err);
+      console.error("❌ Exceção ao salvar personagem:", err);
     }
 
     return savedRecord;
@@ -139,7 +203,7 @@ export const characterService = {
     try {
       const { error } = await supabase.from("characters").delete().eq("id", safeCharId);
       if (error) {
-        console.error("Erro ao excluir personagem:", error.message);
+        console.error("Erro ao excluir personagem no Supabase:", error.message);
         return false;
       }
       return true;

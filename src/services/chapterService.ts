@@ -1,6 +1,6 @@
 import { supabase } from "../supabaseClient";
 import type { Chapter } from "../types/book";
-import { ensureValidUuid } from "../utils/uuidUtils";
+import { ensureValidUuid, ensureParentBookExists } from "../utils/uuidUtils";
 
 export const chapterService = {
   // Buscar capítulos de uma obra
@@ -14,7 +14,7 @@ export const chapterService = {
         .order("created_at", { ascending: true });
 
       if (error) {
-        console.error("Erro ao buscar capítulos no Supabase:", error.message);
+        console.error("⚠️ [Supabase] Erro ao buscar capítulos:", error.message);
         return [];
       }
 
@@ -44,6 +44,8 @@ export const chapterService = {
     const safeBookId = ensureValidUuid(bookId);
     const generatedId = ensureValidUuid();
 
+    await ensureParentBookExists(safeBookId);
+
     const newChapter: Chapter = {
       id: generatedId,
       id_book: safeBookId,
@@ -58,11 +60,16 @@ export const chapterService = {
     };
 
     try {
-      const payload = {
+      const payload: any = {
         id: generatedId,
         id_book: safeBookId,
         title: newChapter.title,
         text: "",
+        content: "",
+        word_count: 0,
+        order_index: orderIndex,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       const { data, error } = await supabase
@@ -72,9 +79,31 @@ export const chapterService = {
         .single();
 
       if (!error && data) {
+        console.log("✅ [Supabase] Capítulo criado com sucesso:", data.id);
         newChapter.id = ensureValidUuid(data.id);
       } else if (error) {
-        console.error("Erro no Supabase ao criar capítulo:", error.message);
+        console.warn("⚠️ Erro na primeira tentativa de criar capítulo:", error.message);
+        
+        // Tentar payload minimalista (caso colunas adicionais variem)
+        const fallbackPayload = {
+          id: generatedId,
+          id_book: safeBookId,
+          title: newChapter.title,
+          text: "",
+        };
+
+        const { data: fbData, error: fbErr } = await supabase
+          .from("chapters")
+          .insert([fallbackPayload])
+          .select()
+          .single();
+
+        if (!fbErr && fbData) {
+          console.log("✅ [Supabase] Capítulo criado via fallback:", fbData.id);
+          newChapter.id = ensureValidUuid(fbData.id);
+        } else if (fbErr) {
+          console.error("❌ [Supabase] Erro ao criar capítulo (fallback):", fbErr.message);
+        }
       }
     } catch (err) {
       console.error("Exceção ao criar capítulo:", err);
@@ -83,7 +112,7 @@ export const chapterService = {
     return newChapter;
   },
 
-  // Atualizar capítulo (título / conteúdo)
+  // Atualizar capítulo (título / conteúdo / contagem de palavras)
   async updateChapter(
     chapterId: string,
     updatedData: { title?: string; text?: string; content?: string; word_count?: number }
@@ -96,7 +125,9 @@ export const chapterService = {
       };
       if (updatedData.title !== undefined) payload.title = updatedData.title;
       if (updatedData.text !== undefined || updatedData.content !== undefined) {
-        payload.text = updatedData.text !== undefined ? updatedData.text : updatedData.content;
+        const textVal = updatedData.text !== undefined ? updatedData.text : updatedData.content;
+        payload.text = textVal;
+        payload.content = textVal;
       }
       if (updatedData.word_count !== undefined) {
         payload.word_count = updatedData.word_count;
@@ -108,8 +139,24 @@ export const chapterService = {
         .eq("id", safeChapterId);
 
       if (error) {
-        console.error("Erro ao atualizar capítulo no Supabase:", error.message);
-        return false;
+        console.warn("⚠️ [Supabase] Erro ao atualizar capítulo completo, tentando payload simplificado:", error.message);
+        
+        // Tentar update com apenas title e text
+        const simplePayload: any = { updated_at: new Date().toISOString() };
+        if (updatedData.title !== undefined) simplePayload.title = updatedData.title;
+        if (updatedData.text !== undefined || updatedData.content !== undefined) {
+          simplePayload.text = updatedData.text !== undefined ? updatedData.text : updatedData.content;
+        }
+
+        const { error: simpleErr } = await supabase
+          .from("chapters")
+          .update(simplePayload)
+          .eq("id", safeChapterId);
+
+        if (simpleErr) {
+          console.error("❌ [Supabase] Erro definitivo ao atualizar capítulo:", simpleErr.message);
+          return false;
+        }
       }
 
       return true;

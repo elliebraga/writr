@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -18,6 +18,7 @@ import { exportChapterToPdf, exportChapterToDocx } from "../../utils/exportUtils
 import { PdfExportModal } from "../export/PdfExportModal";
 import { PageFormatDrawer, type PageFormatOptions } from "./PageFormatDrawer";
 import Button from "../ui/Button";
+import { useChapterRealtime } from "../../hooks/useChapterRealtime";
 
 interface TiptapEditorProps {
   chapter: Chapter;
@@ -38,6 +39,21 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [isPageDrawerOpen, setIsPageDrawerOpen] = useState(false);
+
+  const handleRemoteContentChange = useCallback(({ html, title }: { html: string; title?: string }) => {
+    if (editor && html && html !== editor.getHTML()) {
+      editor.commands.setContent(html, { emitUpdate: false });
+    }
+    if (title && title !== chapterTitle) {
+      setChapterTitle(title);
+    }
+  }, []);
+
+  const { activeUsers, broadcastContentChange } = useChapterRealtime({
+    chapterId: chapter.id,
+    userName: "Escritor",
+    onRemoteContentChange: handleRemoteContentChange,
+  });
 
   const [pageFormatOptions, setPageFormatOptions] = useState<PageFormatOptions>(() => {
     try {
@@ -79,6 +95,9 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       CharacterCount.configure(),
     ],
     content: chapter.content || "",
+    onUpdate: ({ editor }) => {
+      broadcastContentChange(editor.getHTML(), chapterTitle);
+    },
     editorProps: {
       attributes: {
         class:
@@ -161,41 +180,69 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         onExportPdf={() => exportChapterToPdf(chapterTitle, editor?.getHTML() || "", pageFormatOptions)}
       />
 
-      {/* Header Fixo Distração Zero */}
-      <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between gap-4 z-40">
+      {/* Header Fixo Distração Zero com Presença ao Vivo */}
+      <header className="bg-white border-b border-slate-200 px-3 md:px-6 py-2.5 flex items-center justify-between gap-2 md:gap-4 z-40">
         
         {/* Esquerda: Voltar / Título do Capítulo */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
           <button
             onClick={onClose}
-            className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors shrink-0"
+            className="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-full transition-colors shrink-0"
             title="Sair para a lista de capítulos"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Voltar à Lista</span>
+            <span className="hidden sm:inline">Voltar à Lista</span>
           </button>
 
-          <div className="h-4 w-px bg-slate-200 shrink-0" />
+          <div className="h-4 w-px bg-slate-200 shrink-0 hidden sm:block" />
 
           <input
             type="text"
             value={chapterTitle}
-            onChange={(e) => setChapterTitle(e.target.value)}
+            onChange={(e) => {
+              const newTitle = e.target.value;
+              setChapterTitle(newTitle);
+              if (editor) broadcastContentChange(editor.getHTML(), newTitle);
+            }}
             placeholder="Nome do Capítulo..."
-            className="text-sm font-semibold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-slate-900 focus:outline-none px-1 py-0.5 truncate transition-colors max-w-xs md:max-w-md"
+            className="text-xs md:text-sm font-semibold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-slate-900 focus:outline-none px-1 py-0.5 truncate transition-colors w-full max-w-[140px] sm:max-w-xs md:max-w-md"
           />
         </div>
 
-        {/* Direita: Formatador de Página, Exportar e Salvar */}
+        {/* Direita: Usuários Online (Presença) + Formatador de Página, Exportar e Salvar */}
         <div className="flex items-center gap-2 shrink-0">
           
+          {/* Barra de Co-Autores Online em Tempo Real */}
+          {activeUsers.length > 0 && (
+            <div className="flex items-center -space-x-2 mr-1" title={`${activeUsers.length} co-autor(es) online neste documento`}>
+              {activeUsers.slice(0, 4).map((user) => (
+                <div
+                  key={user.user_id}
+                  className="w-7 h-7 rounded-full text-white font-bold text-[10px] flex items-center justify-center border-2 border-white shadow-xs transition-transform hover:scale-110 relative group"
+                  style={{ backgroundColor: user.color }}
+                >
+                  {user.user_name[0].toUpperCase()}
+                  <span className="absolute bottom-full mb-1 hidden group-hover:block bg-slate-900 text-white text-[10px] py-1 px-2 rounded-md whitespace-nowrap z-50">
+                    {user.user_name} (Online)
+                  </span>
+                </div>
+              ))}
+              {activeUsers.length > 4 && (
+                <div className="w-7 h-7 rounded-full bg-slate-800 text-white text-[10px] font-semibold flex items-center justify-center border-2 border-white">
+                  +{activeUsers.length - 4}
+                </div>
+              )}
+            </div>
+          )}
+
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsPageDrawerOpen(true)}
             leftIcon={<Sliders className="w-3.5 h-3.5 text-indigo-600" />}
           >
-            Formatador de Página
+            <span className="hidden md:inline">Formatador de Página</span>
+            <span className="md:hidden">Página</span>
           </Button>
 
           <div className="relative">
@@ -205,7 +252,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
               onClick={() => setShowExportMenu(!showExportMenu)}
               leftIcon={<Download className="w-3.5 h-3.5" />}
             >
-              Exportar
+              <span className="hidden sm:inline">Exportar</span>
             </Button>
 
             {showExportMenu && (

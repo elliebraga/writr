@@ -1,6 +1,6 @@
 import { supabase } from "../supabaseClient";
 import type { CharacterRelationLink } from "../types/relation";
-import { ensureValidUuid } from "../utils/uuidUtils";
+import { ensureValidUuid, ensureParentBookExists } from "../utils/uuidUtils";
 
 export const relationService = {
   // Buscar ligações de relacionamentos de uma obra
@@ -13,7 +13,7 @@ export const relationService = {
         .eq("id_book", safeBookId);
 
       if (error) {
-        console.error("Erro ao buscar relacionamentos no Supabase:", error.message);
+        console.error("⚠️ [Supabase] Erro ao buscar relacionamentos:", error.message);
         return [];
       }
 
@@ -52,6 +52,8 @@ export const relationService = {
     const fromId = ensureValidUuid(relationData.from_character_id);
     const toId = ensureValidUuid(relationData.to_character_id);
 
+    await ensureParentBookExists(safeBookId);
+
     const newLink: CharacterRelationLink = {
       id: generatedId,
       from_character_id: fromId,
@@ -63,28 +65,53 @@ export const relationService = {
     };
 
     try {
-      const payload: any = {
+      const payloadPrimary: any = {
         id: generatedId,
         id_book: safeBookId,
-        character_id: fromId,
-        related_character_id: toId,
         from_character_id: fromId,
         to_character_id: toId,
+        character_id: fromId,
+        related_character_id: toId,
         label: relationData.label,
+        relationship_type: relationData.label,
         description: relationData.description || null,
         line_style: relationData.line_style || "solid",
+        created_at: new Date().toISOString(),
       };
 
       const { data, error } = await supabase
         .from("relationships")
-        .insert([payload])
+        .insert([payloadPrimary])
         .select()
         .single();
 
       if (!error && data) {
+        console.log("✅ [Supabase] Relação salva com sucesso:", data.id);
         newLink.id = ensureValidUuid(data.id);
       } else if (error) {
-        console.error("Erro no Supabase ao criar relação:", error.message);
+        console.warn("⚠️ Erro no Supabase ao criar relação (tentando fallback):", error.message);
+        
+        // Payload simplificado fallback
+        const payloadFallback: any = {
+          id: generatedId,
+          id_book: safeBookId,
+          from_character_id: fromId,
+          to_character_id: toId,
+          label: relationData.label,
+        };
+
+        const { data: fbData, error: fbErr } = await supabase
+          .from("relationships")
+          .insert([payloadFallback])
+          .select()
+          .single();
+
+        if (!fbErr && fbData) {
+          console.log("✅ [Supabase] Relação salva via fallback:", fbData.id);
+          newLink.id = ensureValidUuid(fbData.id);
+        } else if (fbErr) {
+          console.error("❌ [Supabase] Erro ao criar relação (fallback):", fbErr.message);
+        }
       }
     } catch (err) {
       console.error("Exceção ao criar relação:", err);
@@ -99,7 +126,7 @@ export const relationService = {
     try {
       const { error } = await supabase.from("relationships").delete().eq("id", safeRelationId);
       if (error) {
-        console.error("Erro ao excluir relação:", error.message);
+        console.error("Erro ao excluir relação no Supabase:", error.message);
         return false;
       }
       return true;
@@ -115,7 +142,7 @@ export const relationService = {
     try {
       const { error } = await supabase.from("relationships").delete().eq("id_book", safeBookId);
       if (error) {
-        console.error("Erro ao limpar relações do livro:", error.message);
+        console.error("Erro ao limpar relações do livro no Supabase:", error.message);
         return false;
       }
       return true;

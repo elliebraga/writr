@@ -6,5 +6,5 @@ export { relationService } from "./relationService";
 export { timelineService } from "./timelineService";
 export { progressService } from "./progressService";
 export { scenarioService } from "./scenarioService";
-
-
+export { collaboratorService } from "./collaboratorService";
+export { whiteboardService } from "./whiteboardService";

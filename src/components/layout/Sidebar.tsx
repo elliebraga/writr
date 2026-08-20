@@ -1,7 +1,7 @@
-import { BookOpen, Layers, Users, Share2, Settings, ArrowLeft, Book as BookIcon, X, Calendar, MapPin } from "lucide-react";
+import { BookOpen, Layers, Users, Share2, Settings, ArrowLeft, Book as BookIcon, X, Calendar, MapPin, UserPlus, StickyNote } from "lucide-react";
 import type { Book } from "../../types/book";
 
-export type SidebarTab = "overview" | "chapters" | "characters" | "relations" | "scenarios" | "timeline" | "settings";
+export type SidebarTab = "overview" | "chapters" | "characters" | "relations" | "scenarios" | "timeline" | "whiteboard" | "settings";
 
 interface SidebarProps {
   activeBook: Book;
@@ -10,6 +10,7 @@ interface SidebarProps {
   onCloseMobile?: () => void;
   onTabChange: (tab: SidebarTab) => void;
   onBackToBooks: () => void;
+  onOpenShareModal?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -19,6 +20,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
   onTabChange,
   onBackToBooks,
+  onOpenShareModal,
 }) => {
   const content = (
     <div className="w-64 bg-black text-white rounded-2xl flex flex-col h-full select-none overflow-hidden">
@@ -59,9 +61,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <h2 className="text-sm font-semibold text-white truncate" title={activeBook.book_name}>
               {activeBook.book_name}
             </h2>
-            <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider bg-neutral-900 text-neutral-300 inline-block mt-0.5">
-              {activeBook.status || "Rascunho"}
-            </span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider bg-neutral-900 text-neutral-300 inline-block">
+                {activeBook.status || "Rascunho"}
+              </span>
+
+              {onOpenShareModal && (
+                <button
+                  onClick={onOpenShareModal}
+                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors p-0.5 px-1.5 rounded-full hover:bg-neutral-900"
+                  title="Convidar co-autores"
+                >
+                  <UserPlus className="w-3 h-3" />
+                  <span>Convidar</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -156,6 +171,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <Calendar className="w-4 h-4" />
           <span>Linha do Tempo</span>
+        </button>
+
+        <button
+          onClick={() => {
+            onTabChange("whiteboard");
+            onCloseMobile?.();
+          }}
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all ${
+            activeTab === "whiteboard"
+              ? "bg-neutral-800 text-white font-semibold"
+              : "text-neutral-400 hover:bg-neutral-900 hover:text-white"
+          }`}
+        >
+          <StickyNote className="w-4 h-4 text-amber-400" />
+          <span>Quadro de Ideias</span>
         </button>
 
         <button

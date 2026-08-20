@@ -18,6 +18,8 @@ import { BookOverview } from "./components/books/BookOverview";
 import { ScenarioFlow } from "./features/scenarios/ScenarioFlow";
 import { characterService } from "./services";
 import type { Character } from "./types/character";
+import { ShareBookModal } from "./components/books/ShareBookModal";
+import { WhiteboardFlow } from "./features/whiteboard/WhiteboardFlow";
 
 export default function App() {
   const { showAlert } = useDialog();
@@ -46,6 +48,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<SidebarTab>("chapters");
   const [timelineCharacterFilter, setTimelineCharacterFilter] = useState<string | null>(null);
   const [isNewBookModalOpen, setIsNewBookModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [bookCharacters, setBookCharacters] = useState<Character[]>([]);
 
@@ -186,6 +189,12 @@ export default function App() {
 
       return (
         <div className="flex flex-col md:flex-row h-screen bg-white font-sans overflow-hidden select-none">
+          <ShareBookModal
+            isOpen={isShareModalOpen}
+            activeBook={safeBook}
+            onClose={() => setIsShareModalOpen(false)}
+          />
+
           <Sidebar
             activeBook={safeBook}
             activeTab={activeTab}
@@ -193,6 +202,7 @@ export default function App() {
             onCloseMobile={() => setIsMobileMenuOpen(false)}
             onTabChange={(tab) => setActiveTab(tab)}
             onBackToBooks={() => setSelectedBook(null)}
+            onOpenShareModal={() => setIsShareModalOpen(true)}
           />
 
           <main className="flex-1 flex flex-col overflow-y-auto bg-white min-w-0">
@@ -259,6 +269,12 @@ export default function App() {
                 activeBook={safeBook}
                 initialCharacterFilter={timelineCharacterFilter}
                 onClearInitialFilter={() => setTimelineCharacterFilter(null)}
+              />
+            )}
+
+            {activeTab === "whiteboard" && (
+              <WhiteboardFlow
+                activeBook={safeBook}
               />
             )}
 
