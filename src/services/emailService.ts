@@ -1,10 +1,11 @@
 import emailjs from "@emailjs/browser";
+import type { CollaboratorRole } from "../types/collaborator";
 
 export interface InviteEmailParams {
   toEmail: string;
   toName?: string;
   bookName: string;
-  role: "editor" | "viewer";
+  role: CollaboratorRole;
   inviteLink: string;
 }
 
@@ -36,7 +37,12 @@ export const emailService = {
     }
 
     try {
-      const roleText = params.role === "editor" ? "Editor (Permissão de escrita)" : "Leitor (Apenas leitura)";
+      const roleText =
+        params.role === "editor"
+          ? "Editor (Permissão de escrita)"
+          : params.role === "owner"
+          ? "Dono da Obra"
+          : "Leitor (Apenas leitura)";
       
       const templateParams = {
         to_email: params.toEmail,
