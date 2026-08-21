@@ -1,5 +1,5 @@
 import React from "react";
-import { User, Trash2, Calendar } from "lucide-react";
+import { User, Trash2, Calendar, Image as ImageIcon } from "lucide-react";
 import type { Character } from "../../types/character";
 import { useDialog } from "../ui/DialogProvider";
 
@@ -37,6 +37,21 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
   const characterName = character.character_name || character.name || "Personagem sem nome";
   const roleType = character.role_type || "Protagonista";
 
+  const refImagesCount = (() => {
+    if (Array.isArray(character.character_images) && character.character_images.length > 1) {
+      return character.character_images.length - 1;
+    }
+    if (character.character_details) {
+      try {
+        const parsed = JSON.parse(character.character_details);
+        if (Array.isArray(parsed.reference_images)) {
+          return parsed.reference_images.length;
+        }
+      } catch (e) {}
+    }
+    return 0;
+  })();
+
   return (
     <div
       onClick={() => onSelect(character)}
@@ -65,13 +80,25 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
                 {characterName}
               </h3>
               
-              <span
-                className={`inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full border mt-1.5 ${getBadgeStyles(
-                  roleType
-                )}`}
-              >
-                {roleType}
-              </span>
+              <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
+                <span
+                  className={`inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${getBadgeStyles(
+                    roleType
+                  )}`}
+                >
+                  {roleType}
+                </span>
+
+                {refImagesCount > 0 && (
+                  <span
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200"
+                    title={`${refImagesCount} imagens de referência`}
+                  >
+                    <ImageIcon className="w-3 h-3 text-slate-500" />
+                    <span>{refImagesCount} ref</span>
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 

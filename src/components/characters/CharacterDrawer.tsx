@@ -1,5 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
-import { X, User, Image as ImageIcon, Sparkles, Trash2, EyeOff, Flame, Heart, Compass, Camera, Upload, Calendar } from "lucide-react";
+import {
+  X,
+  User,
+  Image as ImageIcon,
+  Sparkles,
+  Trash2,
+  EyeOff,
+  Flame,
+  Heart,
+  Compass,
+  Camera,
+  Upload,
+  Calendar,
+  Plus,
+  Maximize2,
+  Link as LinkIcon,
+} from "lucide-react";
 import type { Character, CharacterRoleType } from "../../types/character";
 import Button from "../ui/Button";
 import { useDialog } from "../ui/DialogProvider";
@@ -35,7 +51,7 @@ const ROLE_OPTIONS: CharacterRoleType[] = [
 ];
 
 function parseDetails(rawDetails?: string | null) {
-  if (!rawDetails) return { appearance: "", secrets: "", notes: "" };
+  if (!rawDetails) return { appearance: "", secrets: "", notes: "", reference_images: [] };
   try {
     const parsed = JSON.parse(rawDetails);
     if (typeof parsed === "object" && parsed !== null) {
@@ -43,12 +59,13 @@ function parseDetails(rawDetails?: string | null) {
         appearance: parsed.appearance || "",
         secrets: parsed.secrets || "",
         notes: parsed.notes || "",
+        reference_images: Array.isArray(parsed.reference_images) ? parsed.reference_images : [],
       };
     }
   } catch (e) {
     // Se for texto simples
   }
-  return { appearance: "", secrets: "", notes: rawDetails };
+  return { appearance: "", secrets: "", notes: rawDetails, reference_images: [] };
 }
 
 export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
@@ -61,16 +78,22 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
 }) => {
   const { showConfirm } = useDialog();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const refFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [characterName, setCharacterName] = useState("");
   const [roleType, setRoleType] = useState<CharacterRoleType>("Protagonista");
   const [imageUrl, setImageUrl] = useState("");
+  const [referenceImages, setReferenceImages] = useState<string[]>([]);
   const [characterSign, setCharacterSign] = useState("");
   const [personality, setPersonality] = useState("");
   const [appearance, setAppearance] = useState("");
   const [motivations, setMotivations] = useState("");
   const [secrets, setSecrets] = useState("");
   const [summary, setSummary] = useState("");
+
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [refUrlInput, setRefUrlInput] = useState("");
+  const [selectedPreviewImage, setSelectedPreviewImage] = useState<string | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,17 +102,30 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
     if (characterToEdit) {
       setCharacterName(characterToEdit.character_name || characterToEdit.name || "");
       setRoleType((characterToEdit.role_type as CharacterRoleType) || "Protagonista");
-      
-      const firstImg = characterToEdit.character_images && characterToEdit.character_images.length > 0
-        ? characterToEdit.character_images[0]
-        : characterToEdit.image_url || "";
+
+      const firstImg =
+        characterToEdit.character_images && characterToEdit.character_images.length > 0
+          ? characterToEdit.character_images[0]
+          : characterToEdit.image_url || "";
       setImageUrl(firstImg);
+
+      // Carrega imagens de referência adicionais (até 8)
+      const detailsObj = parseDetails(characterToEdit.character_details);
+      let refs: string[] = [];
+      if (detailsObj.reference_images && detailsObj.reference_images.length > 0) {
+        refs = detailsObj.reference_images;
+      } else if (
+        Array.isArray(characterToEdit.character_images) &&
+        characterToEdit.character_images.length > 1
+      ) {
+        refs = characterToEdit.character_images.slice(1);
+      }
+      setReferenceImages(refs.slice(0, 8));
 
       setCharacterSign(characterToEdit.character_sign || "");
       setPersonality(characterToEdit.character_personality || "");
       setMotivations(characterToEdit.character_motivations || "");
 
-      const detailsObj = parseDetails(characterToEdit.character_details);
       setAppearance(characterToEdit.appearance || detailsObj.appearance);
       setSecrets(characterToEdit.secrets || detailsObj.secrets);
       setSummary(characterToEdit.summary || detailsObj.notes);
@@ -97,6 +133,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
       setCharacterName("");
       setRoleType("Protagonista");
       setImageUrl("");
+      setReferenceImages([]);
       setCharacterSign("");
       setPersonality("");
       setAppearance("");
@@ -104,12 +141,14 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
       setSecrets("");
       setSummary("");
     }
+    setShowUrlInput(false);
+    setRefUrlInput("");
     setError(null);
   }, [characterToEdit, isOpen]);
 
   if (!isOpen) return null;
 
-  // Processa o arquivo selecionado localmente no computador
+  // Processa o avatar principal
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -130,6 +169,61 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
     reader.readAsDataURL(file);
   };
 
+  // Adiciona imagens de referência por arquivo (Upload)
+  const handleAddReferenceFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    if (referenceImages.length >= 8) {
+      setError("Você já atingiu o limite máximo de 8 imagens de referência.");
+      return;
+    }
+
+    const spaceLeft = 8 - referenceImages.length;
+    const filesToProcess = files.slice(0, spaceLeft);
+
+    filesToProcess.forEach((file) => {
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Uma das imagens excede 5MB e não foi carregada.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64String = event.target?.result as string;
+        if (base64String) {
+          setReferenceImages((prev) => {
+            if (prev.length >= 8) return prev;
+            return [...prev, base64String];
+          });
+          setError(null);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    if (refFileInputRef.current) refFileInputRef.current.value = "";
+  };
+
+  // Adiciona imagem de referência por URL
+  const handleAddReferenceUrl = () => {
+    if (!refUrlInput.trim()) return;
+    if (referenceImages.length >= 8) {
+      setError("Você já atingiu o limite máximo de 8 imagens de referência.");
+      return;
+    }
+
+    setReferenceImages((prev) => [...prev, refUrlInput.trim()]);
+    setRefUrlInput("");
+    setShowUrlInput(false);
+    setError(null);
+  };
+
+  // Remove uma imagem de referência específica
+  const handleRemoveReferenceImage = (indexToRemove: number) => {
+    setReferenceImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!characterName.trim()) {
@@ -146,9 +240,13 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
         secrets: secrets.trim(),
         notes: summary.trim(),
         role_type: roleType,
+        reference_images: referenceImages,
       });
 
-      const imagesArray = imageUrl.trim() ? [imageUrl.trim()] : [];
+      const imagesArray = [
+        ...(imageUrl.trim() ? [imageUrl.trim()] : []),
+        ...referenceImages,
+      ];
 
       await onSaveCharacter({
         id: characterToEdit?.id,
@@ -175,7 +273,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
   const handleDelete = async () => {
     if (!characterToEdit || !onDeleteCharacter) return;
     const currentName = characterToEdit.character_name || characterToEdit.name || "este personagem";
-    
+
     const confirmed = await showConfirm(
       `Tem certeza que deseja excluir o personagem "${currentName}"?`,
       "Excluir Personagem",
@@ -207,7 +305,6 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
       {/* Painel Lateral (Drawer Slide-Over) */}
       <aside className="fixed inset-y-0 right-0 max-w-full flex pl-10 z-50">
         <div className="w-screen max-w-lg bg-white border-l border-slate-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300 ease-out">
-          
           {/* Header */}
           <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-white">
             <div className="flex items-center gap-2.5">
@@ -218,9 +315,9 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
                 <h3 className="text-base font-bold font-funnel text-slate-900">
                   {characterToEdit ? "Ficha do Personagem" : "Novo Personagem"}
                 </h3>
-                <p className="text-base text-slate-500 font-sans">
+                <p className="text-xs text-slate-500 font-sans">
                   {characterToEdit
-                    ? "Edite todos os detalhes da ficha do personagem."
+                    ? "Edite os detalhes e imagens de referência."
                     : "Preencha a ficha detalhada do novo personagem."}
                 </p>
               </div>
@@ -242,17 +339,16 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
               </div>
             )}
 
-            {/* Avatar Interativo com Upload do Computador */}
+            {/* Avatar Principal */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-2">
-                Foto / Avatar do Personagem
+                Foto Principal / Avatar
               </label>
               <div className="flex items-center gap-4">
-                {/* Botão Interativo do Avatar */}
                 <div
                   onClick={() => fileInputRef.current?.click()}
                   className="group relative w-16 h-16 rounded-full bg-slate-100 border-2 border-dashed border-slate-300 hover:border-slate-900 overflow-hidden shrink-0 flex items-center justify-center cursor-pointer transition-all shadow-xs"
-                  title="Clique para escolher uma imagem do seu computador"
+                  title="Clique para escolher a foto principal do computador"
                 >
                   {imageUrl ? (
                     <img
@@ -267,14 +363,12 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
                     <User className="w-7 h-7 text-slate-400 group-hover:text-slate-600 transition-colors" />
                   )}
 
-                  {/* Overlay ao passar o mouse */}
                   <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white transition-opacity rounded-full">
                     <Camera className="w-5 h-5 mb-0.5" />
                     <span className="text-[9px] font-semibold">Alterar</span>
                   </div>
                 </div>
 
-                {/* Campo de Upload e URL */}
                 <div className="flex-1 space-y-2">
                   <input
                     ref={fileInputRef}
@@ -305,6 +399,142 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* SEÇÃO: Galeria de 8 Imagens de Referência */}
+            <div className="pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4 text-slate-600" />
+                  <label className="text-xs font-bold text-slate-800 font-funnel">
+                    Imagens de Referência
+                  </label>
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                    {referenceImages.length} / 8
+                  </span>
+                </div>
+
+                {referenceImages.length < 8 && (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      ref={refFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleAddReferenceFiles}
+                      className="hidden"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => refFileInputRef.current?.click()}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
+                      title="Adicionar fotos do computador"
+                    >
+                      <Upload className="w-3 h-3 text-slate-500" />
+                      <span>Upload</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowUrlInput(!showUrlInput)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
+                      title="Adicionar por Link URL"
+                    >
+                      <LinkIcon className="w-3 h-3 text-slate-500" />
+                      <span>URL</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Campo para colar URL de referência se acionado */}
+              {showUrlInput && referenceImages.length < 8 && (
+                <div className="flex items-center gap-2 mb-3 bg-slate-50 p-2 rounded-xl border border-slate-200 animate-in fade-in duration-150">
+                  <input
+                    type="url"
+                    placeholder="Cole a URL da imagem de referência..."
+                    value={refUrlInput}
+                    onChange={(e) => setRefUrlInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddReferenceUrl();
+                      }
+                    }}
+                    className="flex-1 px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-slate-900 bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddReferenceUrl}
+                    className="px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
+                  >
+                    Adicionar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowUrlInput(false)}
+                    className="p-1 text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Grid das Imagens de Referência */}
+              <div className="grid grid-cols-4 gap-2.5">
+                {referenceImages.map((img, idx) => (
+                  <div
+                    key={idx}
+                    className="group relative aspect-square rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shadow-2xs hover:border-slate-400 transition-all"
+                  >
+                    <img
+                      src={img}
+                      alt={`Referência ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+
+                    {/* Overlay de Ações ao passar o mouse */}
+                    <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1.5 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPreviewImage(img)}
+                        className="p-1.5 bg-white/90 hover:bg-white text-slate-900 rounded-full transition-transform hover:scale-105"
+                        title="Ampliar Imagem"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveReferenceImage(idx)}
+                        className="p-1.5 bg-red-600/90 hover:bg-red-600 text-white rounded-full transition-transform hover:scale-105"
+                        title="Remover Imagem"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Botão de Adição no Grid se houver espaço */}
+                {referenceImages.length < 8 && (
+                  <button
+                    type="button"
+                    onClick={() => refFileInputRef.current?.click()}
+                    className="aspect-square rounded-xl border-2 border-dashed border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100 flex flex-col items-center justify-center text-slate-400 hover:text-slate-700 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-5 h-5 mb-0.5" />
+                    <span className="text-[10px] font-semibold">Adicionar</span>
+                  </button>
+                )}
+              </div>
+
+              {referenceImages.length === 8 && (
+                <p className="text-[11px] text-amber-600 font-medium mt-2">
+                  Limite de 8 imagens de referência atingido.
+                </p>
+              )}
             </div>
 
             {/* Nome do Personagem (Obrigatório) & Signo / Arquétipo */}
@@ -339,7 +569,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
               </div>
             </div>
 
-            {/* Tipo de Personagem na História (Badges Pílula Selecionáveis) */}
+            {/* Tipo de Personagem na História */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-2">
                 Tipo de Personagem na História
@@ -370,7 +600,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
               </label>
               <textarea
                 rows={3}
-                placeholder="Altura, olhos, cabelos, vestimentas marcantes, cicatrizes ou postura..."
+                placeholder="Altura, olhos, cabelos, vestimentas marcantes, cicatrizes..."
                 value={appearance}
                 onChange={(e) => setAppearance(e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white resize-none"
@@ -385,7 +615,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
               </label>
               <textarea
                 rows={3}
-                placeholder="O que impulsiona o personagem? Desejos, objetivos principais ou forças motoras..."
+                placeholder="O que impulsiona o personagem? Desejos, objetivos principais..."
                 value={motivations}
                 onChange={(e) => setMotivations(e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white resize-none"
@@ -400,7 +630,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
               </label>
               <textarea
                 rows={3}
-                placeholder="Segredos ocultos, passado misterioso, traumas não revelados ou medos profundos..."
+                placeholder="Segredos ocultos, passado misterioso, traumas não revelados..."
                 value={secrets}
                 onChange={(e) => setSecrets(e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white resize-none"
@@ -414,7 +644,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
               </label>
               <textarea
                 rows={3}
-                placeholder="Tracos de personalidade, modo de falar, virtudes, defeitos..."
+                placeholder="Traços de personalidade, modo de falar, virtudes, defeitos..."
                 value={personality}
                 onChange={(e) => setPersonality(e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white resize-none"
@@ -495,6 +725,29 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
           </div>
         </div>
       </aside>
+
+      {/* Modal Lightbox de Preview da Imagem de Referência em Alta Resolução */}
+      {selectedPreviewImage && (
+        <div
+          className="fixed inset-0 z-60 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200"
+          onClick={() => setSelectedPreviewImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-black border border-slate-800 shadow-2xl">
+            <img
+              src={selectedPreviewImage}
+              alt="Preview Referência"
+              className="w-full h-full object-contain max-h-[85vh]"
+            />
+            <button
+              onClick={() => setSelectedPreviewImage(null)}
+              className="absolute top-3 right-3 p-2 bg-slate-900/80 hover:bg-slate-900 text-white rounded-full transition-colors border border-slate-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+

@@ -29,9 +29,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center justify-between mb-3">
           <button
             onClick={onBackToBooks}
-            className="inline-flex items-center gap-2 text-sm font-medium text-neutral-400 hover:text-white transition-colors group"
+            className="inline-flex items-center gap-2 text-sm font-medium text-neutral-400 hover:text-white transition-colors group cursor-pointer"
           >
-            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+            <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:-translate-x-0.5 transition-transform" />
             <span>Minhas Obras</span>
           </button>
 
@@ -46,7 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         <div className="flex items-center gap-3 pt-1">
-          <div className="w-9 h-12 bg-neutral-900 rounded shrink-0 overflow-hidden flex items-center justify-center">
+          <div className="w-9 h-12 bg-neutral-900 rounded shrink-0 overflow-hidden flex items-center justify-center border border-neutral-800">
             {activeBook.cover_url || activeBook.image_ref ? (
               <img
                 src={activeBook.cover_url || activeBook.image_ref || ""}
@@ -54,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <BookIcon className="w-4 h-4 text-neutral-400" />
+              <BookIcon className="w-4 h-4 text-sky-400" />
             )}
           </div>
           <div className="min-w-0 flex-1">
@@ -62,17 +62,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {activeBook.book_name}
             </h2>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider bg-neutral-900 text-neutral-300 inline-block">
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider bg-neutral-900 text-neutral-300 inline-block border border-neutral-800">
                 {activeBook.status || "Rascunho"}
               </span>
 
               {onOpenShareModal && (
                 <button
                   onClick={onOpenShareModal}
-                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors p-0.5 px-1.5 rounded-full hover:bg-neutral-900"
+                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors p-0.5 px-1.5 rounded-full hover:bg-neutral-900 border border-indigo-500/20"
                   title="Convidar co-autores"
                 >
-                  <UserPlus className="w-3 h-3" />
+                  <UserPlus className="w-3 h-3 text-indigo-400" />
                   <span>Convidar</span>
                 </button>
               )}
@@ -81,20 +81,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Navigation Tabs */}
+      {/* Navigation Tabs com Ícones Coloridos */}
       <nav className="flex-1 p-3 space-y-1">
         <button
           onClick={() => {
             onTabChange("overview");
             onCloseMobile?.();
           }}
-          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all group cursor-pointer ${
             activeTab === "overview"
-              ? "bg-neutral-800 text-white font-semibold"
+              ? "bg-neutral-800/90 text-white font-semibold shadow-xs"
               : "text-neutral-400 hover:bg-neutral-900 hover:text-white"
           }`}
         >
-          <BookOpen className="w-4 h-4" />
+          <BookOpen className="w-4 h-4 text-sky-400 group-hover:scale-110 transition-transform shrink-0" />
           <span>Visão Geral</span>
         </button>
 
@@ -103,13 +103,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onTabChange("chapters");
             onCloseMobile?.();
           }}
-          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all group cursor-pointer ${
             activeTab === "chapters"
-              ? "bg-neutral-800 text-white font-semibold"
+              ? "bg-neutral-800/90 text-white font-semibold shadow-xs"
               : "text-neutral-400 hover:bg-neutral-900 hover:text-white"
           }`}
         >
-          <Layers className="w-4 h-4" />
+          <Layers className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform shrink-0" />
           <span>Capítulos</span>
         </button>
 
@@ -118,13 +118,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onTabChange("characters");
             onCloseMobile?.();
           }}
-          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all group cursor-pointer ${
             activeTab === "characters"
-              ? "bg-neutral-800 text-white font-semibold"
+              ? "bg-neutral-800/90 text-white font-semibold shadow-xs"
               : "text-neutral-400 hover:bg-neutral-900 hover:text-white"
           }`}
         >
-          <Users className="w-4 h-4" />
+          <Users className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform shrink-0" />
           <span>Personagens</span>
         </button>
 
@@ -133,13 +133,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onTabChange("relations");
             onCloseMobile?.();
           }}
-          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all group cursor-pointer ${
             activeTab === "relations"
-              ? "bg-neutral-800 text-white font-semibold"
+              ? "bg-neutral-800/90 text-white font-semibold shadow-xs"
               : "text-neutral-400 hover:bg-neutral-900 hover:text-white"
           }`}
         >
-          <Share2 className="w-4 h-4" />
+          <Share2 className="w-4 h-4 text-rose-400 group-hover:scale-110 transition-transform shrink-0" />
           <span>Relações</span>
         </button>
 
@@ -148,13 +148,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onTabChange("scenarios");
             onCloseMobile?.();
           }}
-          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all group cursor-pointer ${
             activeTab === "scenarios"
-              ? "bg-neutral-800 text-white font-semibold"
+              ? "bg-neutral-800/90 text-white font-semibold shadow-xs"
               : "text-neutral-400 hover:bg-neutral-900 hover:text-white"
           }`}
         >
-          <MapPin className="w-4 h-4" />
+          <MapPin className="w-4 h-4 text-teal-400 group-hover:scale-110 transition-transform shrink-0" />
           <span>Cenários</span>
         </button>
 
@@ -163,13 +163,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onTabChange("timeline");
             onCloseMobile?.();
           }}
-          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all group cursor-pointer ${
             activeTab === "timeline"
-              ? "bg-neutral-800 text-white font-semibold"
+              ? "bg-neutral-800/90 text-white font-semibold shadow-xs"
               : "text-neutral-400 hover:bg-neutral-900 hover:text-white"
           }`}
         >
-          <Calendar className="w-4 h-4" />
+          <Calendar className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform shrink-0" />
           <span>Linha do Tempo</span>
         </button>
 
@@ -178,13 +178,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onTabChange("whiteboard");
             onCloseMobile?.();
           }}
-          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all group cursor-pointer ${
             activeTab === "whiteboard"
-              ? "bg-neutral-800 text-white font-semibold"
+              ? "bg-neutral-800/90 text-white font-semibold shadow-xs"
               : "text-neutral-400 hover:bg-neutral-900 hover:text-white"
           }`}
         >
-          <StickyNote className="w-4 h-4 text-amber-400" />
+          <StickyNote className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform shrink-0" />
           <span>Quadro de Ideias</span>
         </button>
 
@@ -193,13 +193,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onTabChange("settings");
             onCloseMobile?.();
           }}
-          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all group cursor-pointer ${
             activeTab === "settings"
-              ? "bg-neutral-800 text-white font-semibold"
+              ? "bg-neutral-800/90 text-white font-semibold shadow-xs"
               : "text-neutral-400 hover:bg-neutral-900 hover:text-white"
           }`}
         >
-          <Settings className="w-4 h-4" />
+          <Settings className="w-4 h-4 text-cyan-400 group-hover:rotate-45 transition-transform duration-300 shrink-0" />
           <span>Configurações</span>
         </button>
       </nav>

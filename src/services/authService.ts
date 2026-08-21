@@ -54,6 +54,7 @@ export const authService = {
       password: password.trim(),
       options: {
         data: { user_name: fullName.trim() },
+        emailRedirectTo: window.location.origin,
       },
     });
 
