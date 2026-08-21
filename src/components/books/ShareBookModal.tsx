@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { X, UserPlus, Users, Trash2, Mail, Check, Copy } from "lucide-react";
 import type { Book } from "../../types/book";
 import type { BookCollaborator, CollaboratorRole } from "../../types/collaborator";
-import { collaboratorService, emailService } from "../../services";
+import { collaboratorService, emailService, authService } from "../../services";
 import Button from "../ui/Button";
 
 interface ShareBookModalProps {
@@ -39,7 +39,15 @@ export const ShareBookModal: React.FC<ShareBookModalProps> = ({
   const loadCollaborators = async () => {
     setIsLoading(true);
     try {
-      const data = await collaboratorService.getCollaborators(activeBook.id);
+      const session = await authService.getSession();
+      const userEmail = session?.user?.email;
+      const userName = session?.user?.user_metadata?.user_name || userEmail?.split("@")[0];
+      const data = await collaboratorService.getCollaborators(
+        activeBook.id,
+        userEmail,
+        userName,
+        activeBook.book_name
+      );
       setCollaborators(data);
     } catch (e) {
       console.error("Erro ao carregar colaboradores:", e);

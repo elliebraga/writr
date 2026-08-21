@@ -5,8 +5,13 @@ import { ensureValidUuid, ensureParentBookExists } from "../utils/uuidUtils";
 const LOCAL_KEY_PREFIX = "writr_collaborators_";
 
 export const collaboratorService = {
-  // Buscar colaboradores de uma obra
-  async getCollaborators(bookId: string): Promise<BookCollaborator[]> {
+  // Buscar colaboradores de uma obra (com auto-registro dinâmico do criador como owner se ainda não existir)
+  async getCollaborators(
+    bookId: string,
+    authorEmail?: string,
+    authorName?: string,
+    bookName?: string
+  ): Promise<BookCollaborator[]> {
     const safeBookId = ensureValidUuid(bookId);
     const localKey = `${LOCAL_KEY_PREFIX}${safeBookId}`;
 
@@ -28,18 +33,56 @@ export const collaboratorService = {
         return localList;
       }
 
+      let remoteList: BookCollaborator[] = [];
       if (data && data.length > 0) {
-        const remoteList = data.map((c: any) => ({
+        remoteList = data.map((c: any) => ({
           id: ensureValidUuid(c.id),
           id_book: safeBookId,
           user_email: c.user_email || c.email || "",
-          user_name: c.user_name || c.user_email?.split("@")[0] || c.email?.split("@")[0] || "Co-Autor",
+          user_name: c.user_name || c.user_email?.split("@")[0] || c.email?.split("@")[0] || "Membro",
           role: (c.role || "editor") as CollaboratorRole,
           status: (c.status || "accepted") as InvitationStatus,
-          book_name: c.book_name || "Obra Compartilhada",
+          book_name: c.book_name || bookName || "Obra Compartilhada",
           created_at: c.created_at,
         })) as BookCollaborator[];
+      }
 
+      // Se nenhum proprietário ('owner') for encontrado e tivermos o e-mail do autor ativo
+      const hasOwner = remoteList.some((c) => c.role === "owner");
+      if (!hasOwner && authorEmail) {
+        const cleanAuthorEmail = authorEmail.trim().toLowerCase();
+        const ownerName = authorName || cleanAuthorEmail.split("@")[0];
+        const ownerCollab: BookCollaborator = {
+          id: ensureValidUuid(),
+          id_book: safeBookId,
+          user_email: cleanAuthorEmail,
+          user_name: ownerName,
+          role: "owner",
+          status: "accepted",
+          book_name: bookName || "Obra",
+          created_at: new Date().toISOString(),
+        };
+
+        // Adicionar o proprietário no topo da lista
+        remoteList = [ownerCollab, ...remoteList];
+
+        // Persistir no Supabase de forma transparente
+        try {
+          await supabase.from("book_collaborators").insert([
+            {
+              id: ownerCollab.id,
+              id_book: safeBookId,
+              user_email: cleanAuthorEmail,
+              user_name: ownerName,
+              role: "owner",
+              status: "accepted",
+              book_name: bookName || "Obra",
+            },
+          ]);
+        } catch (e) {}
+      }
+
+      if (remoteList.length > 0) {
         try {
           localStorage.setItem(localKey, JSON.stringify(remoteList));
         } catch (e) {}
