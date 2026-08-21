@@ -77,7 +77,7 @@ export default function App() {
   }, [books]);
 
 
-  // Sync sessão do Supabase ao montar
+  // Sync sessão do Supabase ao montar e atualizar ao focar a janela
   useEffect(() => {
     authService.getSession().then((session) => {
       handleSession(session);
@@ -87,8 +87,19 @@ export default function App() {
       handleSession(session);
     });
 
+    const handleFocus = () => {
+      authService.getSession().then((session) => {
+        if (session?.user) {
+          fetchBooks(session.user.id, session.user.email);
+        }
+      });
+    };
+
+    window.addEventListener("focus", handleFocus);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener("focus", handleFocus);
     };
   }, []);
 
