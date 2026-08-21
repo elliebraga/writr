@@ -10,7 +10,7 @@ import { NewBookDrawer } from "./components/books/NewBookDrawer";
 import BookCard from "./components/ui/BookCard";
 import Button from "./components/ui/Button";
 import { BookOpen, Plus, Menu } from "lucide-react";
-import { authService, bookService, collaboratorService } from "./services";
+import { authService, bookService } from "./services";
 import { ensureValidUuid } from "./utils/uuidUtils";
 import { useDialog } from "./components/ui/DialogProvider";
 import { TimelineFlow } from "./features/timeline/TimelineFlow";
@@ -18,10 +18,7 @@ import { BookOverview } from "./components/books/BookOverview";
 import { ScenarioFlow } from "./features/scenarios/ScenarioFlow";
 import { characterService } from "./services";
 import type { Character } from "./types/character";
-import type { BookCollaborator } from "./types/collaborator";
-import { ShareBookModal } from "./components/books/ShareBookModal";
 import { WhiteboardFlow } from "./features/whiteboard/WhiteboardFlow";
-import { InvitationBanner } from "./components/collaborators/InvitationBanner";
 
 export default function App() {
   const { showAlert } = useDialog();
@@ -29,29 +26,26 @@ export default function App() {
   const [userName, setUserName] = useState("Escritor");
   const [sessionUser, setSessionUser] = useState<any>(null);
   
-  const [books, setBooks] = useState<Book[]>(() => {
+  const [books, setBooks] = useState<Book[]>([]);
+
+  // Carregar obras locais do localStorage
+  useEffect(() => {
     try {
       const saved = localStorage.getItem("writr_local_books");
-      if (!saved) return [];
-      const parsed = JSON.parse(saved);
-      return parsed.map((b: Book) => ({
-        ...b,
-        id: ensureValidUuid(b.id),
-      }));
-    } catch (e) {
-      return [];
-    }
-  });
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setBooks(parsed.map((b: Book) => ({ ...b, id: ensureValidUuid(b.id) })));
+      }
+    } catch (e) {}
+  }, []);
 
   const [isLoadingBooks, setIsLoadingBooks] = useState(false);
-  const [pendingInvitations, setPendingInvitations] = useState<BookCollaborator[]>([]);
   
   // Estado do Livro Ativo e Abas do Workspace
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [activeTab, setActiveTab] = useState<SidebarTab>("chapters");
   const [timelineCharacterFilter, setTimelineCharacterFilter] = useState<string | null>(null);
   const [isNewBookModalOpen, setIsNewBookModalOpen] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [bookCharacters, setBookCharacters] = useState<Character[]>([]);
 
@@ -76,8 +70,7 @@ export default function App() {
     }
   }, [books]);
 
-
-  // Sync sessão do Supabase ao montar e atualizar ao focar a janela
+  // Sync sessão do Supabase ao montar
   useEffect(() => {
     authService.getSession().then((session) => {
       handleSession(session);
@@ -87,19 +80,8 @@ export default function App() {
       handleSession(session);
     });
 
-    const handleFocus = () => {
-      authService.getSession().then((session) => {
-        if (session?.user) {
-          fetchBooks(session.user.id, session.user.email);
-        }
-      });
-    };
-
-    window.addEventListener("focus", handleFocus);
-
     return () => {
       subscription.unsubscribe();
-      window.removeEventListener("focus", handleFocus);
     };
   }, []);
 
@@ -110,7 +92,7 @@ export default function App() {
       const name = await authService.getUserProfile(session.user.id);
       setUserName(name || session.user.email?.split("@")[0] || "Escritor");
 
-      fetchBooks(session.user.id, session.user.email);
+      fetchBooks(session.user.id);
       setScreen("dashboard");
     } else {
       setSessionUser(null);
@@ -120,47 +102,25 @@ export default function App() {
     }
   };
 
-  const fetchBooks = async (userId?: string, userEmail?: string) => {
+  const fetchBooks = async (userId?: string) => {
     setIsLoadingBooks(true);
     try {
-      const remoteBooks = await bookService.getBooks(userId, userEmail);
+      const remoteBooks = await bookService.getBooks(userId);
       setBooks((prev) => {
         const map = new Map<string, Book>();
         if (userId) {
-          // Preserva livros locais associados a este usuário ou onde é colaborador e combina com os do Supabase
-          prev.filter((b) => b.id_user === userId || b.is_shared).forEach((b) => map.set(b.id, b));
+          prev.filter((b) => b.id_user === userId).forEach((b) => map.set(b.id, b));
           remoteBooks.forEach((b) => map.set(b.id, b));
         } else {
-          // Para visitantes, mantém apenas livros locais não associados a nenhum usuário
           prev.filter((b) => !b.id_user).forEach((b) => map.set(b.id, b));
           remoteBooks.forEach((b) => map.set(b.id, b));
         }
         return Array.from(map.values());
       });
-
-      // Buscar convites pendentes se houver e-mail de usuário
-      if (userEmail) {
-        const pending = await collaboratorService.getPendingInvitations(userEmail);
-        setPendingInvitations(pending);
-      } else {
-        setPendingInvitations([]);
-      }
     } catch (err) {
       console.error("Erro na consulta de livros:", err);
     } finally {
       setIsLoadingBooks(false);
-    }
-  };
-
-  const handleRespondInvitation = async (invitationId: string, bookId: string, accept: boolean) => {
-    await collaboratorService.respondToInvitation(invitationId, bookId, accept);
-    if (sessionUser?.email) {
-      const remaining = await collaboratorService.getPendingInvitations(sessionUser.email);
-      setPendingInvitations(remaining);
-      fetchBooks(sessionUser.id, sessionUser.email);
-      if (accept) {
-        await showAlert("Convite aceito! A obra agora está disponível no seu painel de escrita.", "Convite Aceito");
-      }
     }
   };
 
@@ -196,12 +156,9 @@ export default function App() {
     status: BookStatus;
   }) => {
     const userId = sessionUser?.id;
-    const userEmail = sessionUser?.email;
     const createdBook = await bookService.createBook({
       ...bookData,
       userId,
-      userEmail,
-      userName,
     });
 
     setBooks((prev) => {
@@ -225,13 +182,7 @@ export default function App() {
       };
 
       return (
-        <div className="flex flex-col md:flex-row h-screen bg-white font-sans overflow-hidden select-none">
-          <ShareBookModal
-            isOpen={isShareModalOpen}
-            activeBook={safeBook}
-            onClose={() => setIsShareModalOpen(false)}
-          />
-
+        <div className="flex h-screen bg-slate-100 overflow-hidden font-sans select-none">
           <Sidebar
             activeBook={safeBook}
             activeTab={activeTab}
@@ -239,7 +190,6 @@ export default function App() {
             onCloseMobile={() => setIsMobileMenuOpen(false)}
             onTabChange={(tab) => setActiveTab(tab)}
             onBackToBooks={() => setSelectedBook(null)}
-            onOpenShareModal={() => setIsShareModalOpen(true)}
           />
 
           <main className="flex-1 flex flex-col overflow-y-auto bg-white min-w-0">
@@ -300,18 +250,10 @@ export default function App() {
               />
             )}
 
-
             {activeTab === "timeline" && (
               <TimelineFlow
                 activeBook={safeBook}
                 initialCharacterFilter={timelineCharacterFilter}
-                onClearInitialFilter={() => setTimelineCharacterFilter(null)}
-              />
-            )}
-
-            {activeTab === "whiteboard" && (
-              <WhiteboardFlow
-                activeBook={safeBook}
               />
             )}
 
@@ -319,6 +261,12 @@ export default function App() {
               <BookOverview
                 activeBook={safeBook}
                 onTabChange={(tab) => setActiveTab(tab)}
+              />
+            )}
+
+            {activeTab === "whiteboard" && (
+              <WhiteboardFlow
+                activeBook={safeBook}
               />
             )}
 
@@ -368,12 +316,6 @@ export default function App() {
         </header>
 
         <main className="flex-1 max-w-5xl w-full mx-auto mt-12 flex flex-col justify-start">
-          {/* Convites In-App Pendentes */}
-          <InvitationBanner
-            invitations={pendingInvitations}
-            onRespond={handleRespondInvitation}
-          />
-
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <h2 className="text-3xl font-bold font-funnel text-slate-900 tracking-tight capitalize">
@@ -418,12 +360,12 @@ export default function App() {
                 onClick={() => setIsNewBookModalOpen(true)}
                 leftIcon={<Plus className="w-4 h-4" />}
               >
-                Criar Livro
+                Criar Primeira Obra
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
-              {books.map((book) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {books.map((book: Book) => (
                 <BookCard
                   key={book.id}
                   title={book.book_name}
@@ -431,39 +373,43 @@ export default function App() {
                   coverImage={book.cover_url || book.image_ref || undefined}
                   status={book.status}
                   pages={book.expected_pages || undefined}
-                  isShared={book.is_shared}
-                  userRole={book.user_role}
-                  updatedAt={new Date(book.created_at).toLocaleDateString("pt-BR")}
-                  onClick={() => {
-                    setSelectedBook(book);
-                    setActiveTab("chapters");
-                  }}
+                  updatedAt={new Date(book.created_at || Date.now()).toLocaleDateString("pt-BR")}
+                  active={(selectedBook as any)?.id === book.id}
+                  onClick={() => setSelectedBook(book)}
                 />
               ))}
+
+              <BookCard
+                variant="add"
+                onClick={() => setIsNewBookModalOpen(true)}
+              />
             </div>
           )}
         </main>
 
-        <footer className="max-w-5xl w-full mx-auto border-t border-slate-200 pt-6 mt-16 text-center text-xs text-slate-400">
-          writr • Plataforma de Escrita e Gestão Editorial
+        <footer className="mt-16 pt-6 border-t border-slate-200 flex items-center justify-between text-xs text-slate-400 max-w-5xl w-full mx-auto font-sans">
+          <span>&copy; {new Date().getFullYear()} writr. Todos os direitos reservados.</span>
+          <span>Sua suíte de escrita inteligente.</span>
         </footer>
       </div>
     );
   }
 
-  if (screen === "signup") {
-    return (
-      <SignUp
-        onSignUpSubmit={handleSignUpSubmit}
-        onNavigateToSignIn={() => setScreen("signin")}
-      />
-    );
-  }
-
   return (
-    <SignIn
-      onSignInSubmit={handleSignInSubmit}
-      onNavigateToSignUp={() => setScreen("signup")}
-    />
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+      {screen === "signin" && (
+        <SignIn
+          onNavigateToSignUp={() => setScreen("signup")}
+          onSignInSubmit={handleSignInSubmit}
+        />
+      )}
+
+      {screen === "signup" && (
+        <SignUp
+          onNavigateToSignIn={() => setScreen("signin")}
+          onSignUpSubmit={handleSignUpSubmit}
+        />
+      )}
+    </div>
   );
 }
