@@ -169,39 +169,71 @@ export const collaboratorService = {
 
     try {
       // 1. Buscar no Supabase por user_email ou email
-      let { data, error } = await supabase
+      let data: any[] = [];
+      const { data: d1, error: e1 } = await supabase
         .from("book_collaborators")
         .select("*")
         .eq("user_email", cleanEmail)
         .eq("status", "pending");
 
-      if (error || !data || data.length === 0) {
-        const resAlt = await supabase
+      if (!e1 && d1 && d1.length > 0) {
+        data = d1;
+      } else {
+        const { data: d2 } = await supabase
           .from("book_collaborators")
           .select("*")
-          .or(`user_email.eq.${cleanEmail},email.eq.${cleanEmail}`);
+          .eq("email", cleanEmail)
+          .eq("status", "pending");
 
-        if (!resAlt.error && resAlt.data) {
-          // Se a coluna status não existir no banco, considera registros como pendentes para validação
-          data = resAlt.data.filter((c: any) => c.status === "pending" || !c.status);
+        if (d2 && d2.length > 0) {
+          data = d2;
+        } else {
+          const { data: dAll } = await supabase
+            .from("book_collaborators")
+            .select("*");
+
+          if (dAll) {
+            data = dAll.filter(
+              (c: any) =>
+                ((c.user_email && c.user_email.trim().toLowerCase() === cleanEmail) ||
+                 (c.email && c.email.trim().toLowerCase() === cleanEmail)) &&
+                (c.status === "pending" || !c.status)
+            );
+          }
         }
       }
 
       if (data && data.length > 0) {
         const bookIds = data.map((c: any) => ensureValidUuid(c.id_book));
         
-        // Buscar títulos das obras correspondentes
-        const { data: booksData } = await supabase
-          .from("books")
-          .select("id, book_name")
-          .in("id", bookIds);
-
+        // Buscar títulos das obras correspondentes (se o RLS permitir)
         const bookTitleMap = new Map<string, string>();
-        if (booksData) {
-          booksData.forEach((b: any) => {
-            bookTitleMap.set(ensureValidUuid(b.id), b.book_name || "Obra sem título");
-          });
-        }
+        try {
+          const { data: booksData } = await supabase
+            .from("books")
+            .select("id, book_name")
+            .in("id", bookIds);
+
+          if (booksData) {
+            booksData.forEach((b: any) => {
+              bookTitleMap.set(ensureValidUuid(b.id), b.book_name || "Obra Compartilhada");
+            });
+          }
+        } catch (e) {}
+
+        // Tentar obter nome de obras também dos livros locais salvos
+        try {
+          const savedLocal = localStorage.getItem("writr_local_books");
+          if (savedLocal) {
+            const parsed = JSON.parse(savedLocal);
+            parsed.forEach((b: any) => {
+              const id = ensureValidUuid(b.id);
+              if (!bookTitleMap.has(id) && b.book_name) {
+                bookTitleMap.set(id, b.book_name);
+              }
+            });
+          }
+        } catch (e) {}
 
         data.forEach((c: any) => {
           const safeId = ensureValidUuid(c.id);
@@ -215,7 +247,7 @@ export const collaboratorService = {
             user_name: c.user_name || emailVal.split("@")[0],
             role: (c.role || "editor") as CollaboratorRole,
             status: "pending",
-            book_name: bookTitleMap.get(safeBookId) || "Obra sem título",
+            book_name: c.book_name || bookTitleMap.get(safeBookId) || "Obra Compartilhada",
             created_at: c.created_at,
           });
         });
