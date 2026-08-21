@@ -42,12 +42,30 @@ export const bookService = {
       // 2. Buscar livros compartilhados aceitos com o e-mail do usuário (Collaborator)
       if (userEmail) {
         const cleanEmail = userEmail.trim().toLowerCase();
-        const { data: collabRows, error: collabError } = await supabase
+        
+        let collabRows: any[] = [];
+        const { data: directCollab, error: collabError } = await supabase
           .from("book_collaborators")
-          .select("id_book, role, status")
-          .eq("user_email", cleanEmail);
+          .select("id_book, role, status, user_email, email")
+          .or(`user_email.ilike.${cleanEmail},email.ilike.${cleanEmail},user_email.eq.${cleanEmail},email.eq.${cleanEmail}`);
 
-        if (!collabError && collabRows && collabRows.length > 0) {
+        if (!collabError && directCollab) {
+          collabRows = directCollab;
+        } else {
+          // Fallback se .or ilike falhar
+          const { data: simpleCollab } = await supabase
+            .from("book_collaborators")
+            .select("id_book, role, status, user_email, email");
+          if (simpleCollab) {
+            collabRows = simpleCollab.filter(
+              (c: any) =>
+                (c.user_email && c.user_email.trim().toLowerCase() === cleanEmail) ||
+                (c.email && c.email.trim().toLowerCase() === cleanEmail)
+            );
+          }
+        }
+
+        if (collabRows.length > 0) {
           // Filtrar apenas convites aceitos (ou legados sem status)
           const acceptedCollabRows = collabRows.filter(
             (c: any) => !c.status || c.status === "accepted"
@@ -58,17 +76,17 @@ export const bookService = {
             .filter((id: string) => !booksMap.has(id));
 
           if (collabBookIds.length > 0) {
+            const roleMap = new Map<string, any>();
+            acceptedCollabRows.forEach((c: any) => {
+              roleMap.set(ensureValidUuid(c.id_book), c.role || "editor");
+            });
+
             const { data: sharedData, error: sharedError } = await supabase
               .from("books")
               .select("*")
               .in("id", collabBookIds);
 
             if (!sharedError && sharedData && sharedData.length > 0) {
-              const roleMap = new Map<string, any>();
-              collabRows.forEach((c: any) => {
-                roleMap.set(ensureValidUuid(c.id_book), c.role || "editor");
-              });
-
               sharedData.forEach((b: any) => {
                 const id = ensureValidUuid(b.id);
                 booksMap.set(id, {
@@ -85,6 +103,34 @@ export const bookService = {
                 });
               });
             }
+
+            // Fallback resiliente: Se o RLS do Supabase bloqueou a leitura da tabela 'books' para este usuário
+            collabBookIds.forEach((bookId) => {
+              if (!booksMap.has(bookId)) {
+                let localName = "Obra Compartilhada";
+                try {
+                  const savedLocal = localStorage.getItem("writr_local_books");
+                  if (savedLocal) {
+                    const parsed = JSON.parse(savedLocal);
+                    const found = parsed.find((b: any) => ensureValidUuid(b.id) === bookId);
+                    if (found) localName = found.book_name;
+                  }
+                } catch (e) {}
+
+                booksMap.set(bookId, {
+                  id: bookId,
+                  book_name: localName,
+                  synopsis: "Você tem acesso a esta obra como colaborador.",
+                  resume: "Você tem acesso a esta obra como colaborador.",
+                  cover_url: "",
+                  image_ref: "",
+                  status: "rascunho",
+                  is_shared: true,
+                  user_role: roleMap.get(bookId) || "editor",
+                  created_at: new Date().toISOString(),
+                });
+              }
+            });
           }
         }
 
