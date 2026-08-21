@@ -32,8 +32,8 @@ export const collaboratorService = {
         const remoteList = data.map((c: any) => ({
           id: ensureValidUuid(c.id),
           id_book: safeBookId,
-          user_email: c.user_email,
-          user_name: c.user_name || c.user_email?.split("@")[0] || "Co-Autor",
+          user_email: c.user_email || c.email || "",
+          user_name: c.user_name || c.user_email?.split("@")[0] || c.email?.split("@")[0] || "Co-Autor",
           role: (c.role || "editor") as CollaboratorRole,
           status: (c.status || "accepted") as InvitationStatus,
           created_at: c.created_at,
@@ -53,7 +53,7 @@ export const collaboratorService = {
     }
   },
 
-  // Adicionar/Convidar um novo colaborador por e-mail (status 'pending')
+  // Adicionar/Convidar um novo colaborador por e-mail (com resiliência total para e-mail e status no Supabase)
   async addCollaborator(
     bookId: string,
     userEmail: string,
@@ -78,7 +78,7 @@ export const collaboratorService = {
       created_at: new Date().toISOString(),
     };
 
-    // 1. Atualizar cache local síncrono
+    // 1. Atualizar cache local síncrono imediatamente
     try {
       const current = await this.getCollaborators(safeBookId);
       const filtered = current.filter((c) => c.user_email !== cleanEmail);
@@ -86,9 +86,9 @@ export const collaboratorService = {
       localStorage.setItem(localKey, JSON.stringify(updated));
     } catch (e) {}
 
-    // 2. Persistir no Supabase
+    // 2. Persistir no Supabase com resiliência de colunas (tentativa 1: user_email + status, tentativa 2: sem status, tentativa 3: email)
     try {
-      const payload: any = {
+      const payloadPrimary: any = {
         id: generatedId,
         id_book: safeBookId,
         user_email: cleanEmail,
@@ -98,17 +98,61 @@ export const collaboratorService = {
         created_at: new Date().toISOString(),
       };
 
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from("book_collaborators")
-        .insert([payload])
+        .insert([payloadPrimary])
         .select()
         .single();
 
+      // Se falhar (ex: a coluna 'status' não existe ainda no Supabase do projeto)
+      if (error) {
+        console.warn("⚠️ [Supabase] Tentativa 1 de salvamento de colaborador falhou:", error.message);
+        
+        const payloadFallback1: any = {
+          id: generatedId,
+          id_book: safeBookId,
+          user_email: cleanEmail,
+          user_name: displayName,
+          role: role,
+          created_at: new Date().toISOString(),
+        };
+
+        const res2 = await supabase
+          .from("book_collaborators")
+          .insert([payloadFallback1])
+          .select()
+          .single();
+
+        data = res2.data;
+        error = res2.error;
+
+        if (error) {
+          console.warn("⚠️ [Supabase] Tentativa 2 de salvamento falhou:", error.message);
+
+          const payloadFallback2: any = {
+            id: generatedId,
+            id_book: safeBookId,
+            email: cleanEmail,
+            user_name: displayName,
+            role: role,
+          };
+
+          const res3 = await supabase
+            .from("book_collaborators")
+            .insert([payloadFallback2])
+            .select()
+            .single();
+
+          data = res3.data;
+          error = res3.error;
+        }
+      }
+
       if (!error && data) {
-        console.log("✅ [Supabase] Convite de colaborador criado com sucesso:", data.id);
+        console.log("✅ [Supabase] Colaborador e e-mail salvos no banco remoto com sucesso:", data.id);
         newCollaborator.id = ensureValidUuid(data.id);
       } else if (error) {
-        console.warn("⚠️ [Supabase] Erro ao salvar colaborador remoto (mantido no cache local):", error.message);
+        console.error("❌ [Supabase] Erro ao salvar colaborador no banco remoto:", error.message);
       }
     } catch (err) {
       console.error("Exceção ao salvar colaborador:", err);
@@ -124,14 +168,26 @@ export const collaboratorService = {
     const invitationsMap = new Map<string, BookCollaborator>();
 
     try {
-      // 1. Buscar no Supabase onde user_email = cleanEmail e status = 'pending'
-      const { data, error } = await supabase
+      // 1. Buscar no Supabase por user_email ou email
+      let { data, error } = await supabase
         .from("book_collaborators")
         .select("*")
         .eq("user_email", cleanEmail)
         .eq("status", "pending");
 
-      if (!error && data && data.length > 0) {
+      if (error || !data || data.length === 0) {
+        const resAlt = await supabase
+          .from("book_collaborators")
+          .select("*")
+          .or(`user_email.eq.${cleanEmail},email.eq.${cleanEmail}`);
+
+        if (!resAlt.error && resAlt.data) {
+          // Se a coluna status não existir no banco, considera registros como pendentes para validação
+          data = resAlt.data.filter((c: any) => c.status === "pending" || !c.status);
+        }
+      }
+
+      if (data && data.length > 0) {
         const bookIds = data.map((c: any) => ensureValidUuid(c.id_book));
         
         // Buscar títulos das obras correspondentes
@@ -150,11 +206,13 @@ export const collaboratorService = {
         data.forEach((c: any) => {
           const safeId = ensureValidUuid(c.id);
           const safeBookId = ensureValidUuid(c.id_book);
+          const emailVal = c.user_email || c.email || cleanEmail;
+
           invitationsMap.set(safeId, {
             id: safeId,
             id_book: safeBookId,
-            user_email: cleanEmail,
-            user_name: c.user_name || cleanEmail.split("@")[0],
+            user_email: emailVal,
+            user_name: c.user_name || emailVal.split("@")[0],
             role: (c.role || "editor") as CollaboratorRole,
             status: "pending",
             book_name: bookTitleMap.get(safeBookId) || "Obra sem título",
@@ -173,7 +231,7 @@ export const collaboratorService = {
             try {
               const list: BookCollaborator[] = JSON.parse(raw);
               const match = list.find(
-                (c) => c.user_email?.toLowerCase() === cleanEmail && c.status === "pending"
+                (c) => (c.user_email?.toLowerCase() === cleanEmail) && c.status === "pending"
               );
               if (match && !invitationsMap.has(match.id)) {
                 invitationsMap.set(match.id, {
