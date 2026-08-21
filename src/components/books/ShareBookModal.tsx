@@ -67,7 +67,9 @@ export const ShareBookModal: React.FC<ShareBookModalProps> = ({
       const newMember = await collaboratorService.addCollaborator(
         activeBook.id,
         targetEmail,
-        selectedRole
+        selectedRole,
+        undefined,
+        activeBook.book_name
       );
 
       setCollaborators((prev) => {
