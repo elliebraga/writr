@@ -33,7 +33,6 @@ interface CharacterDrawerProps {
     character_motivations?: string;
     appearance?: string;
     secrets?: string;
-    header_url?: string;
     character_images?: string[];
     character_details?: string;
     summary?: string;
@@ -52,7 +51,7 @@ const ROLE_OPTIONS: CharacterRoleType[] = [
 ];
 
 function parseDetails(rawDetails?: string | null) {
-  if (!rawDetails) return { appearance: "", secrets: "", notes: "", reference_images: [], header_url: "" };
+  if (!rawDetails) return { appearance: "", secrets: "", notes: "", reference_images: [] };
   try {
     const parsed = JSON.parse(rawDetails);
     if (typeof parsed === "object" && parsed !== null) {
@@ -61,13 +60,12 @@ function parseDetails(rawDetails?: string | null) {
         secrets: parsed.secrets || "",
         notes: parsed.notes || "",
         reference_images: Array.isArray(parsed.reference_images) ? parsed.reference_images : [],
-        header_url: parsed.header_url || "",
       };
     }
   } catch (e) {
     // Se for texto simples
   }
-  return { appearance: "", secrets: "", notes: rawDetails, reference_images: [], header_url: "" };
+  return { appearance: "", secrets: "", notes: rawDetails, reference_images: [] };
 }
 
 export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
@@ -81,12 +79,10 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
   const { showConfirm } = useDialog();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const refFileInputRef = useRef<HTMLInputElement | null>(null);
-  const headerFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [characterName, setCharacterName] = useState("");
   const [roleType, setRoleType] = useState<CharacterRoleType>("Protagonista");
   const [imageUrl, setImageUrl] = useState("");
-  const [headerUrl, setHeaderUrl] = useState("");
   const [referenceImages, setReferenceImages] = useState<string[]>([]);
   const [characterSign, setCharacterSign] = useState("");
   const [personality, setPersonality] = useState("");
@@ -113,9 +109,8 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
           : characterToEdit.image_url || "";
       setImageUrl(firstImg);
 
+      // Carrega imagens de referência adicionais (até 8)
       const detailsObj = parseDetails(characterToEdit.character_details);
-      setHeaderUrl(characterToEdit.header_url || detailsObj.header_url || "");
-
       let refs: string[] = [];
       if (detailsObj.reference_images && detailsObj.reference_images.length > 0) {
         refs = detailsObj.reference_images;
@@ -138,7 +133,6 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
       setCharacterName("");
       setRoleType("Protagonista");
       setImageUrl("");
-      setHeaderUrl("");
       setReferenceImages([]);
       setCharacterSign("");
       setPersonality("");
@@ -169,27 +163,6 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
       const base64String = event.target?.result as string;
       if (base64String) {
         setImageUrl(base64String);
-        setError(null);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Processa a imagem de cabeçalho (Heading / Banner)
-  const handleHeaderFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      setError("A imagem de cabeçalho é muito grande. Escolha um arquivo de até 5MB.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64String = event.target?.result as string;
-      if (base64String) {
-        setHeaderUrl(base64String);
         setError(null);
       }
     };
@@ -268,7 +241,6 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
         notes: summary.trim(),
         role_type: roleType,
         reference_images: referenceImages,
-        header_url: headerUrl.trim(),
       });
 
       const imagesArray = [
@@ -285,7 +257,6 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
         character_motivations: motivations.trim() || undefined,
         appearance: appearance.trim() || undefined,
         secrets: secrets.trim() || undefined,
-        header_url: headerUrl.trim() || undefined,
         character_images: imagesArray,
         character_details: serializedDetails,
         summary: summary.trim() || undefined,
@@ -426,81 +397,6 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
                     />
                     <ImageIcon className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" />
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* SEÇÃO: Capa / Cabeçalho do Card (Heading) */}
-            <div className="pt-2 border-t border-slate-100">
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-bold text-slate-800 font-funnel flex items-center gap-1.5">
-                  <ImageIcon className="w-4 h-4 text-indigo-500" />
-                  <span>Capa / Cabeçalho do Card (Heading)</span>
-                </label>
-                {headerUrl && (
-                  <button
-                    type="button"
-                    onClick={() => setHeaderUrl("")}
-                    className="text-[11px] font-semibold text-red-600 hover:text-red-700 cursor-pointer"
-                  >
-                    Remover Capa
-                  </button>
-                )}
-              </div>
-
-              <div className="relative w-full h-24 rounded-xl bg-slate-100 border-2 border-dashed border-slate-300 overflow-hidden flex items-center justify-center group transition-all">
-                {headerUrl ? (
-                  <>
-                    <img
-                      src={headerUrl}
-                      alt="Cabeçalho do Card"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                      <button
-                        type="button"
-                        onClick={() => headerFileInputRef.current?.click()}
-                        className="px-3.5 py-1.5 bg-white text-slate-900 rounded-full text-xs font-semibold hover:bg-slate-100 transition-transform hover:scale-105 cursor-pointer shadow-xs"
-                      >
-                        Alterar Capa
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center gap-1 text-slate-400">
-                    <Camera className="w-5 h-5" />
-                    <span className="text-[11px] font-medium">Nenhuma imagem de cabeçalho definida</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2 mt-2">
-                <input
-                  ref={headerFileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleHeaderFileChange}
-                  className="hidden"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => headerFileInputRef.current?.click()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer shrink-0"
-                >
-                  <Upload className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Upload da Capa</span>
-                </button>
-
-                <div className="relative flex-1">
-                  <input
-                    type="url"
-                    placeholder="Ou cole a URL da imagem de cabeçalho..."
-                    value={headerUrl.startsWith("data:") ? "" : headerUrl}
-                    onChange={(e) => setHeaderUrl(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white"
-                  />
-                  <ImageIcon className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" />
                 </div>
               </div>
             </div>

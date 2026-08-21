@@ -17,10 +17,10 @@ export interface Character {
   character_motivations?: string | null; // Campo oficial de Motivações
   character_details?: string | null; // Detalhes gerais e serialização
 
+  // Campos separados de Ficha (UI)
   appearance?: string | null; // Aparência Física
   secrets?: string | null; // Segredos
   summary?: string | null; // Resumo / Apresentação
-  header_url?: string | null; // Imagem de cabeçalho / banner do card
 
   // Aliases de compatibilidade
   book_id?: string;

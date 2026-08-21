@@ -24,7 +24,6 @@ export const characterService = {
           let secretsStr = c.secrets || null;
           let summaryStr = c.summary || null;
           let roleTypeStr = c.role_type || null;
-          let headerUrlStr = c.header_url || null;
 
           if (c.character_details) {
             try {
@@ -36,7 +35,6 @@ export const characterService = {
                 secretsStr = secretsStr || parsed.secrets || null;
                 summaryStr = summaryStr || parsed.notes || null;
                 roleTypeStr = roleTypeStr || parsed.role_type || null;
-                headerUrlStr = headerUrlStr || parsed.header_url || null;
               }
             } catch (e) {
               summaryStr = summaryStr || c.character_details;
@@ -61,7 +59,6 @@ export const characterService = {
             appearance: appearanceStr,
             secrets: secretsStr,
             summary: summaryStr,
-            header_url: headerUrlStr || undefined,
             image_url: typeof imgUrl === "string" ? imgUrl : undefined,
           } as Character;
         });
@@ -86,7 +83,6 @@ export const characterService = {
       character_motivations?: string;
       appearance?: string;
       secrets?: string;
-      header_url?: string;
       character_images?: string[];
       character_details?: string;
       summary?: string;
@@ -125,7 +121,6 @@ export const characterService = {
       secrets: characterData.secrets || "",
       notes: characterData.summary || "",
       role_type: characterData.role_type || "Protagonista",
-      header_url: characterData.header_url || "",
     });
 
     const payloadPrimary: any = {
@@ -153,7 +148,6 @@ export const characterService = {
       appearance: characterData.appearance,
       secrets: characterData.secrets,
       summary: characterData.summary,
-      header_url: characterData.header_url,
       character_details: serializedDetails,
       image_url: characterData.character_images && characterData.character_images.length > 0 ? characterData.character_images[0] : undefined,
       created_at: new Date().toISOString(),
