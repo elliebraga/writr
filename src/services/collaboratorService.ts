@@ -213,6 +213,7 @@ export const collaboratorService = {
   async getPendingInvitations(userEmail?: string): Promise<BookCollaborator[]> {
     if (!userEmail) return [];
     const cleanEmail = userEmail.trim().toLowerCase();
+    const emailPrefix = cleanEmail.split("@")[0];
     const invitationsMap = new Map<string, BookCollaborator>();
 
     try {
@@ -241,6 +242,23 @@ export const collaboratorService = {
             data.push(item);
           }
         });
+      }
+
+      // 2. Contingência: busca por prefixo do e-mail (caso o e-mail convidado tenha pequenas diferenças de digitação)
+      if (data.length === 0 && emailPrefix.length >= 3) {
+        const { data: dPrefix } = await supabase
+          .from("book_collaborators")
+          .select("*")
+          .eq("status", "pending")
+          .ilike("user_email", `%${emailPrefix.slice(0, 5)}%`);
+
+        if (dPrefix && dPrefix.length > 0) {
+          dPrefix.forEach((item: any) => {
+            if (!data.some((existing) => existing.id === item.id)) {
+              data.push(item);
+            }
+          });
+        }
       }
 
       if (data && data.length > 0) {

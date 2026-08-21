@@ -42,10 +42,11 @@ export const bookService = {
       // 2. Buscar livros compartilhados aceitos ou pendentes com o e-mail do usuário (Collaborator)
       if (userEmail) {
         const cleanEmail = userEmail.trim().toLowerCase();
+        const emailPrefix = cleanEmail.split("@")[0];
         
         const collabRows: any[] = [];
         
-        // Consulta direta 1: user_email
+        // Consulta direta 1: user_email exato
         const { data: c1 } = await supabase
           .from("book_collaborators")
           .select("id_book, role, status, user_email, email, book_name")
@@ -55,7 +56,7 @@ export const bookService = {
           collabRows.push(...c1);
         }
 
-        // Consulta direta 2: email
+        // Consulta direta 2: email exato
         const { data: c2 } = await supabase
           .from("book_collaborators")
           .select("id_book, role, status, user_email, email, book_name")
@@ -67,6 +68,22 @@ export const bookService = {
               collabRows.push(item);
             }
           });
+        }
+
+        // Consulta de contingência 3: por prefixo do e-mail (para capturar variações como liz.feire / liz.freire)
+        if (collabRows.length === 0 && emailPrefix.length >= 3) {
+          const { data: cPrefix } = await supabase
+            .from("book_collaborators")
+            .select("id_book, role, status, user_email, email, book_name")
+            .ilike("user_email", `%${emailPrefix.slice(0, 5)}%`);
+
+          if (cPrefix && cPrefix.length > 0) {
+            cPrefix.forEach((item: any) => {
+              if (!collabRows.some((existing) => existing.id_book === item.id_book)) {
+                collabRows.push(item);
+              }
+            });
+          }
         }
 
         if (collabRows.length > 0) {
