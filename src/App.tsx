@@ -96,7 +96,7 @@ export default function App() {
       const name = await authService.getUserProfile(session.user.id);
       setUserName(name || session.user.email?.split("@")[0] || "Escritor");
 
-      fetchBooks(session.user.id);
+      fetchBooks(session.user.id, session.user.email);
       setScreen("dashboard");
     } else {
       setSessionUser(null);
@@ -106,15 +106,15 @@ export default function App() {
     }
   };
 
-  const fetchBooks = async (userId?: string) => {
+  const fetchBooks = async (userId?: string, userEmail?: string) => {
     setIsLoadingBooks(true);
     try {
-      const remoteBooks = await bookService.getBooks(userId);
+      const remoteBooks = await bookService.getBooks(userId, userEmail);
       setBooks((prev) => {
         const map = new Map<string, Book>();
         if (userId) {
-          // Preserva apenas livros locais associados a este usuário e combina com os do Supabase
-          prev.filter((b) => b.id_user === userId).forEach((b) => map.set(b.id, b));
+          // Preserva livros locais associados a este usuário ou onde é colaborador e combina com os do Supabase
+          prev.filter((b) => b.id_user === userId || b.is_shared).forEach((b) => map.set(b.id, b));
           remoteBooks.forEach((b) => map.set(b.id, b));
         } else {
           // Para visitantes, mantém apenas livros locais não associados a nenhum usuário
@@ -388,6 +388,8 @@ export default function App() {
                   coverImage={book.cover_url || book.image_ref || undefined}
                   status={book.status}
                   pages={book.expected_pages || undefined}
+                  isShared={book.is_shared}
+                  userRole={book.user_role}
                   updatedAt={new Date(book.created_at).toLocaleDateString("pt-BR")}
                   onClick={() => {
                     setSelectedBook(book);

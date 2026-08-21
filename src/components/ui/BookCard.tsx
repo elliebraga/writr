@@ -13,6 +13,8 @@ export interface BookCardProps extends React.HTMLAttributes<HTMLDivElement> {
   pages?: number | string;
   updatedAt?: string;
   active?: boolean;
+  isShared?: boolean;
+  userRole?: string;
 }
 
 const BookCard = React.forwardRef<HTMLDivElement, BookCardProps>(
@@ -27,6 +29,8 @@ const BookCard = React.forwardRef<HTMLDivElement, BookCardProps>(
       pages,
       updatedAt,
       active = false,
+      isShared = false,
+      userRole,
       onClick,
       ...props
     },
@@ -88,11 +92,20 @@ const BookCard = React.forwardRef<HTMLDivElement, BookCardProps>(
 
         {/* Informações centrais */}
         <div className="flex flex-col gap-1.5 flex-grow">
-          {status && (
-            <Badge variant={getBadgeVariant(status)}>
-              {status}
-            </Badge>
-          )}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {status && (
+              <Badge variant={getBadgeVariant(status)}>
+                {status}
+              </Badge>
+            )}
+
+            {isShared && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 border border-indigo-200 text-indigo-700 uppercase tracking-wide">
+                <span>👥 Compartilhado</span>
+                {userRole && <span>• {userRole === "editor" ? "Editor" : "Leitor"}</span>}
+              </span>
+            )}
+          </div>
           
           <h3 className="font-semibold text-base text-neutral-900 leading-tight tracking-tight mt-1 line-clamp-1">
             {title || "Sem título"}

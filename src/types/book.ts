@@ -1,3 +1,5 @@
+import type { CollaboratorRole } from "./collaborator";
+
 export type BookStatus = "Idea" | "Draft" | "Writing" | "rascunho" | "privado" | "publicado";
 
 export interface Book {
@@ -10,6 +12,8 @@ export interface Book {
   cover_url?: string | null;
   image_ref?: string | null;
   status: BookStatus;
+  is_shared?: boolean;
+  user_role?: CollaboratorRole;
   created_at: string;
   updated_at?: string;
 }
