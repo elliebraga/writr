@@ -324,6 +324,16 @@ export const ShareBookModal: React.FC<ShareBookModalProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
+                      {member.status === "pending" ? (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-amber-50 text-amber-700 border border-amber-200 uppercase">
+                          Pendente
+                        </span>
+                      ) : (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                          Aceito
+                        </span>
+                      )}
+
                       <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-slate-100 text-slate-700 border border-slate-200 uppercase">
                         {member.role === "editor" ? "Editor" : "Leitor"}
                       </span>

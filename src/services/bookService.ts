@@ -39,16 +39,21 @@ export const bookService = {
         });
       }
 
-      // 2. Buscar livros compartilhados com o e-mail do usuário (Collaborator)
+      // 2. Buscar livros compartilhados aceitos com o e-mail do usuário (Collaborator)
       if (userEmail) {
         const cleanEmail = userEmail.trim().toLowerCase();
         const { data: collabRows, error: collabError } = await supabase
           .from("book_collaborators")
-          .select("id_book, role")
+          .select("id_book, role, status")
           .eq("user_email", cleanEmail);
 
         if (!collabError && collabRows && collabRows.length > 0) {
-          const collabBookIds = collabRows
+          // Filtrar apenas convites aceitos (ou legados sem status)
+          const acceptedCollabRows = collabRows.filter(
+            (c: any) => !c.status || c.status === "accepted"
+          );
+
+          const collabBookIds = acceptedCollabRows
             .map((c: any) => ensureValidUuid(c.id_book))
             .filter((id: string) => !booksMap.has(id));
 

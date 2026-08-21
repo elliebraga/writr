@@ -10,7 +10,7 @@ import { NewBookDrawer } from "./components/books/NewBookDrawer";
 import BookCard from "./components/ui/BookCard";
 import Button from "./components/ui/Button";
 import { BookOpen, Plus, Menu } from "lucide-react";
-import { authService, bookService } from "./services";
+import { authService, bookService, collaboratorService } from "./services";
 import { ensureValidUuid } from "./utils/uuidUtils";
 import { useDialog } from "./components/ui/DialogProvider";
 import { TimelineFlow } from "./features/timeline/TimelineFlow";
@@ -18,8 +18,10 @@ import { BookOverview } from "./components/books/BookOverview";
 import { ScenarioFlow } from "./features/scenarios/ScenarioFlow";
 import { characterService } from "./services";
 import type { Character } from "./types/character";
+import type { BookCollaborator } from "./types/collaborator";
 import { ShareBookModal } from "./components/books/ShareBookModal";
 import { WhiteboardFlow } from "./features/whiteboard/WhiteboardFlow";
+import { InvitationBanner } from "./components/collaborators/InvitationBanner";
 
 export default function App() {
   const { showAlert } = useDialog();
@@ -42,6 +44,7 @@ export default function App() {
   });
 
   const [isLoadingBooks, setIsLoadingBooks] = useState(false);
+  const [pendingInvitations, setPendingInvitations] = useState<BookCollaborator[]>([]);
   
   // Estado do Livro Ativo e Abas do Workspace
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -123,10 +126,30 @@ export default function App() {
         }
         return Array.from(map.values());
       });
+
+      // Buscar convites pendentes se houver e-mail de usuário
+      if (userEmail) {
+        const pending = await collaboratorService.getPendingInvitations(userEmail);
+        setPendingInvitations(pending);
+      } else {
+        setPendingInvitations([]);
+      }
     } catch (err) {
       console.error("Erro na consulta de livros:", err);
     } finally {
       setIsLoadingBooks(false);
+    }
+  };
+
+  const handleRespondInvitation = async (invitationId: string, bookId: string, accept: boolean) => {
+    await collaboratorService.respondToInvitation(invitationId, bookId, accept);
+    if (sessionUser?.email) {
+      const remaining = await collaboratorService.getPendingInvitations(sessionUser.email);
+      setPendingInvitations(remaining);
+      fetchBooks(sessionUser.id, sessionUser.email);
+      if (accept) {
+        await showAlert("Convite aceito! A obra agora está disponível no seu painel de escrita.", "Convite Aceito");
+      }
     }
   };
 
@@ -331,6 +354,12 @@ export default function App() {
         </header>
 
         <main className="flex-1 max-w-5xl w-full mx-auto mt-12 flex flex-col justify-start">
+          {/* Convites In-App Pendentes */}
+          <InvitationBanner
+            invitations={pendingInvitations}
+            onRespond={handleRespondInvitation}
+          />
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <h2 className="text-3xl font-bold font-funnel text-slate-900 tracking-tight capitalize">
