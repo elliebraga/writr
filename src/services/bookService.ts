@@ -182,7 +182,7 @@ export const bookService = {
     }
   },
 
-  // Criar uma nova obra
+  // Criar uma nova obra (com registro automático N:N do criador em book_collaborators)
   async createBook(bookData: {
     book_name: string;
     expected_pages?: number;
@@ -190,6 +190,8 @@ export const bookService = {
     cover_url?: string;
     status: BookStatus;
     userId?: string;
+    userEmail?: string;
+    userName?: string;
   }): Promise<Book> {
     const generatedId = ensureValidUuid();
     const userId = bookData.userId || null;
@@ -204,6 +206,8 @@ export const bookService = {
       cover_url: bookData.cover_url,
       image_ref: bookData.cover_url,
       status: bookData.status || "rascunho",
+      is_shared: false,
+      user_role: "owner",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -228,6 +232,29 @@ export const bookService = {
         newBook.id = ensureValidUuid(data.id);
       } else if (error) {
         console.error("Erro no Supabase ao criar livro:", error.message);
+      }
+
+      // Registrar o criador na relação N:N (book_collaborators) com role 'owner' e status 'accepted'
+      if (bookData.userEmail) {
+        try {
+          const collabId = ensureValidUuid();
+          const cleanEmail = bookData.userEmail.trim().toLowerCase();
+          const ownerName = bookData.userName || cleanEmail.split("@")[0];
+
+          await supabase.from("book_collaborators").insert([
+            {
+              id: collabId,
+              id_book: newBook.id,
+              user_email: cleanEmail,
+              user_name: ownerName,
+              role: "owner",
+              status: "accepted",
+              created_at: new Date().toISOString(),
+            },
+          ]);
+        } catch (collabErr) {
+          console.warn("Aviso ao vincular criador na relação N:N:", collabErr);
+        }
       }
     } catch (err) {
       console.error("Exceção ao criar livro:", err);

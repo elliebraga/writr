@@ -196,9 +196,12 @@ export default function App() {
     status: BookStatus;
   }) => {
     const userId = sessionUser?.id;
+    const userEmail = sessionUser?.email;
     const createdBook = await bookService.createBook({
       ...bookData,
       userId,
+      userEmail,
+      userName,
     });
 
     setBooks((prev) => {
