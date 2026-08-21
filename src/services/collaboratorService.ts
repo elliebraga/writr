@@ -169,38 +169,30 @@ export const collaboratorService = {
 
     try {
       // 1. Buscar no Supabase por user_email ou email
-      let data: any[] = [];
-      const { data: d1, error: e1 } = await supabase
+      const data: any[] = [];
+
+      const { data: d1 } = await supabase
         .from("book_collaborators")
         .select("*")
         .eq("user_email", cleanEmail)
         .eq("status", "pending");
 
-      if (!e1 && d1 && d1.length > 0) {
-        data = d1;
-      } else {
-        const { data: d2 } = await supabase
-          .from("book_collaborators")
-          .select("*")
-          .eq("email", cleanEmail)
-          .eq("status", "pending");
+      if (d1 && d1.length > 0) {
+        data.push(...d1);
+      }
 
-        if (d2 && d2.length > 0) {
-          data = d2;
-        } else {
-          const { data: dAll } = await supabase
-            .from("book_collaborators")
-            .select("*");
+      const { data: d2 } = await supabase
+        .from("book_collaborators")
+        .select("*")
+        .eq("email", cleanEmail)
+        .eq("status", "pending");
 
-          if (dAll) {
-            data = dAll.filter(
-              (c: any) =>
-                ((c.user_email && c.user_email.trim().toLowerCase() === cleanEmail) ||
-                 (c.email && c.email.trim().toLowerCase() === cleanEmail)) &&
-                (c.status === "pending" || !c.status)
-            );
+      if (d2 && d2.length > 0) {
+        d2.forEach((item: any) => {
+          if (!data.some((existing) => existing.id === item.id)) {
+            data.push(item);
           }
-        }
+        });
       }
 
       if (data && data.length > 0) {

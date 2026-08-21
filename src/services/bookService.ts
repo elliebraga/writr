@@ -43,26 +43,30 @@ export const bookService = {
       if (userEmail) {
         const cleanEmail = userEmail.trim().toLowerCase();
         
-        let collabRows: any[] = [];
-        const { data: directCollab, error: collabError } = await supabase
+        const collabRows: any[] = [];
+        
+        // Consulta direta 1: user_email
+        const { data: c1 } = await supabase
           .from("book_collaborators")
           .select("id_book, role, status, user_email, email")
-          .or(`user_email.ilike.${cleanEmail},email.ilike.${cleanEmail},user_email.eq.${cleanEmail},email.eq.${cleanEmail}`);
+          .eq("user_email", cleanEmail);
 
-        if (!collabError && directCollab) {
-          collabRows = directCollab;
-        } else {
-          // Fallback se .or ilike falhar
-          const { data: simpleCollab } = await supabase
-            .from("book_collaborators")
-            .select("id_book, role, status, user_email, email");
-          if (simpleCollab) {
-            collabRows = simpleCollab.filter(
-              (c: any) =>
-                (c.user_email && c.user_email.trim().toLowerCase() === cleanEmail) ||
-                (c.email && c.email.trim().toLowerCase() === cleanEmail)
-            );
-          }
+        if (c1 && c1.length > 0) {
+          collabRows.push(...c1);
+        }
+
+        // Consulta direta 2: email
+        const { data: c2 } = await supabase
+          .from("book_collaborators")
+          .select("id_book, role, status, user_email, email")
+          .eq("email", cleanEmail);
+
+        if (c2 && c2.length > 0) {
+          c2.forEach((item: any) => {
+            if (!collabRows.some((existing) => existing.id_book === item.id_book)) {
+              collabRows.push(item);
+            }
+          });
         }
 
         if (collabRows.length > 0) {
