@@ -22,6 +22,7 @@
     "@tiptap/starter-kit": "^3.28.0",
     "autoprefixer": "^10.5.4",
     "clsx": "^2.1.1",
+    "letters-ds": "github:elliebraga/lettersDS",
     "lucide-react": "^1.25.0",
     "postcss": "^8.5.19",
     "react": "^19.2.7",

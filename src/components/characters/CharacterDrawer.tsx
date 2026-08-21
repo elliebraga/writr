@@ -371,7 +371,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
             {/* Avatar Principal */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-2">
-                Foto Principal / Avatar
+                Foto Principal / Cabeçalho do Card (Heading)
               </label>
               <div className="flex items-center gap-4">
                 <div

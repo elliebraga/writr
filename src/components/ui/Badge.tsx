@@ -1,31 +1,27 @@
 import * as React from "react";
-import { cn } from "../../utils/cn";
+import { Badge as LettersBadge, type BadgeProps as LettersBadgeProps, type BadgeVariant as LettersBadgeVariant } from "letters-ds";
 
-export type BadgeVariant = "success" | "warning" | "brand" | "default";
+export type BadgeVariant = "success" | "warning" | "brand" | "default" | "primary" | "danger" | "info" | "neutral";
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+export interface BadgeProps extends Omit<LettersBadgeProps, "variant"> {
   variant?: BadgeVariant;
 }
 
 const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ className, variant = "default", children, ...props }, ref) => {
-    const baseStyles =
-      "inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-semibold tracking-wide w-fit capitalize font-sans select-none";
-
-    const variantStyles: Record<BadgeVariant, string> = {
-      success: "bg-feedback-success-bg text-feedback-success-text",
-      warning: "bg-feedback-warning-bg text-feedback-warning-text",
-      brand: "bg-brand-50 text-brand-600",
-      default: "bg-neutral-100 text-neutral-600",
-    };
+  ({ variant = "default", appearance = "soft", className, children, ...props }, ref) => {
+    let mappedVariant: LettersBadgeVariant = "neutral";
+    if (variant === "success") mappedVariant = "success";
+    else if (variant === "warning") mappedVariant = "warning";
+    else if (variant === "brand" || variant === "primary") mappedVariant = "primary";
+    else if (variant === "danger") mappedVariant = "danger";
+    else if (variant === "info") mappedVariant = "info";
+    else mappedVariant = "neutral";
 
     return (
-      <span
-        ref={ref}
-        className={cn(baseStyles, variantStyles[variant], className)}
-        {...props}
-      >
-        {children}
+      <span ref={ref}>
+        <LettersBadge variant={mappedVariant} appearance={appearance} className={className} {...props}>
+          {children}
+        </LettersBadge>
       </span>
     );
   }
@@ -34,3 +30,4 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
 Badge.displayName = "Badge";
 
 export default Badge;
+export { Badge };

@@ -37,9 +37,8 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
   const characterName = character.character_name || character.name || "Personagem sem nome";
   const roleType = character.role_type || "Protagonista";
 
-  // Busca a imagem de cabeçalho/heading
-  const headerUrl = (() => {
-    if (character.header_url) return character.header_url;
+  // A foto principal (avatar) é a imagem de cabeçalho do card
+  const headingImage = character.image_url || character.header_url || (() => {
     if (character.character_details) {
       try {
         const parsed = JSON.parse(character.character_details);
@@ -67,26 +66,49 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
   return (
     <div
       onClick={() => onSelect(character)}
-      className="group relative bg-white border border-slate-200 hover:border-slate-400 rounded-2xl transition-all duration-200 cursor-pointer flex flex-col justify-between overflow-hidden min-h-[250px] select-none hover:shadow-xs"
+      className="group relative bg-white border border-slate-200 hover:border-slate-400 rounded-2xl transition-all duration-200 cursor-pointer flex flex-col justify-between overflow-hidden min-h-[260px] select-none hover:shadow-xs"
     >
-      {/* Banner de Cabeçalho (Heading Image) */}
-      <div className="relative w-full h-24 bg-slate-100 shrink-0 overflow-hidden">
-        {headerUrl ? (
+      {/* Imagem de Cabeçalho (Foto Principal do Avatar) */}
+      <div className="relative w-full h-32 bg-slate-100 shrink-0 overflow-hidden flex items-center justify-center">
+        {headingImage ? (
           <img
-            src={headerUrl}
-            alt={`Cabeçalho ${characterName}`}
+            src={headingImage}
+            alt={characterName}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
               (e.target as HTMLElement).style.display = "none";
             }}
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-r from-slate-100 via-slate-50 to-slate-200" />
+          <div className="w-full h-full bg-gradient-to-r from-slate-100 via-slate-50 to-slate-200 flex items-center justify-center">
+            <User className="w-8 h-8 text-slate-400" />
+          </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
 
-        {/* Ações Flutuantes no Canto Superior Direito da Capa */}
+        {/* Badges Flutuantes no Canto Inferior Esquerdo do Cabeçalho */}
+        <div className="absolute bottom-2.5 left-3 flex items-center gap-1.5 z-10 flex-wrap">
+          <span
+            className={`inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full border shadow-2xs ${getBadgeStyles(
+              roleType
+            )}`}
+          >
+            {roleType}
+          </span>
+
+          {refImagesCount > 0 && (
+            <span
+              className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-xs text-slate-800 border border-white/50 shadow-2xs"
+              title={`${refImagesCount} imagens de referência`}
+            >
+              <ImageIcon className="w-3 h-3 text-slate-600" />
+              <span>{refImagesCount} ref</span>
+            </span>
+          )}
+        </div>
+
+        {/* Ações Flutuantes no Canto Superior Direito */}
         <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
           {onNavigateToTimeline && (
             <button
@@ -124,47 +146,9 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
         </div>
       </div>
 
-      {/* Conteúdo Principal com Avatar Sobreposto */}
-      <div className="px-5 pb-4 flex-1 flex flex-col justify-between">
+      {/* Conteúdo Principal do Card */}
+      <div className="p-4 pt-3 flex-1 flex flex-col justify-between">
         <div>
-          {/* Avatar Sobreposto à Capa */}
-          <div className="relative z-10 -mt-7 mb-2 flex items-end justify-between">
-            <div className="w-13 h-13 rounded-full bg-white border-2 border-white shadow-md overflow-hidden shrink-0 flex items-center justify-center bg-slate-100">
-              {character.image_url ? (
-                <img
-                  src={character.image_url}
-                  alt={characterName}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = "none";
-                  }}
-                />
-              ) : (
-                <User className="w-6 h-6 text-slate-400" />
-              )}
-            </div>
-
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span
-                className={`inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${getBadgeStyles(
-                  roleType
-                )}`}
-              >
-                {roleType}
-              </span>
-
-              {refImagesCount > 0 && (
-                <span
-                  className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 shadow-2xs"
-                  title={`${refImagesCount} imagens de referência`}
-                >
-                  <ImageIcon className="w-3 h-3 text-slate-500" />
-                  <span>{refImagesCount} ref</span>
-                </span>
-              )}
-            </div>
-          </div>
-
           <h3 className="text-base font-bold font-funnel text-slate-900 leading-tight group-hover:translate-x-0.5 transition-transform truncate">
             {characterName}
           </h3>
