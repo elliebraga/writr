@@ -98,13 +98,13 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
               </div>
               <div>
                 <h3 className="text-base font-bold font-funnel text-slate-900">Formatador de Página</h3>
-                <p className="text-xs text-slate-500 font-sans">Ajuste o layout, margens e PDF do editor.</p>
+                <p className="text-xs text-slate-600 font-sans">Ajuste o layout, margens e PDF do editor.</p>
               </div>
             </div>
 
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+              className="text-slate-600 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -115,7 +115,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
             
             {/* Visualização Prévia Miniaturizada */}
             <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden">
-              <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold mb-3 self-start">
+              <span className="text-[9px] uppercase tracking-wider text-slate-600 font-bold mb-3 self-start">
                 Visualização Prévia da Página
               </span>
 
@@ -163,7 +163,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                       lineHeight: options.lineHeight,
                     }}
                   >
-                    <p className="text-slate-500 text-justify text-[4px] leading-relaxed">
+                    <p className="text-slate-600 text-justify text-[4px] leading-relaxed">
                       Este é um modelo de pré-visualização ao vivo do seu documento. Ajuste as margens, fontes e formato da folha para visualizar o resultado imediato.
                     </p>
                   </div>
@@ -171,13 +171,13 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
 
                 {/* Rodapé (Página) */}
                 {options.showPageNumbers && (
-                  <div className="absolute bottom-1 left-0 right-0 text-center font-sans text-slate-400 text-[5px]">
+                  <div className="absolute bottom-1 left-0 right-0 text-center font-sans text-slate-600 text-[5px]">
                     1
                   </div>
                 )}
               </div>
 
-              <span className="text-[10px] text-slate-500 font-semibold mt-2">
+              <span className="text-[10px] text-slate-600 font-semibold mt-2">
                 Dimensões: <strong className="text-slate-800">{pageW} × {pageH} mm</strong>
               </span>
             </div>
@@ -185,7 +185,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
             {/* 1. Formato da Folha */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-slate-400" />
+                <FileText className="w-3.5 h-3.5 text-slate-600" />
                 <span>Tamanho da Folha</span>
               </label>
               <div className="grid grid-cols-4 gap-2">
@@ -206,7 +206,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                     }`}
                   >
                     <span className="text-xs font-bold leading-tight">{fmt.label}</span>
-                    <span className={`text-[9px] mt-0.5 ${options.pageSize === fmt.id ? "text-slate-300" : "text-slate-400"}`}>
+                    <span className={`text-[9px] mt-0.5 ${options.pageSize === fmt.id ? "text-slate-300" : "text-slate-600"}`}>
                       {fmt.desc}
                     </span>
                   </button>
@@ -217,7 +217,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
             {/* 2. Orientação */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1.5">
-                <Layout className="w-3.5 h-3.5 text-slate-400" />
+                <Layout className="w-3.5 h-3.5 text-slate-600" />
                 <span>Orientação</span>
               </label>
               <div className="grid grid-cols-2 gap-3">
@@ -250,7 +250,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                  <Sliders className="w-3.5 h-3.5 text-slate-400" />
+                  <Sliders className="w-3.5 h-3.5 text-slate-600" />
                   <span>Margens da Página (mm)</span>
                 </label>
                 <div className="flex items-center gap-1 text-[10px]">
@@ -259,7 +259,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                       key={p}
                       type="button"
                       onClick={() => handleMarginPresetChange(p)}
-                      className="px-2 py-0.5 rounded-full capitalize font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+                      className="px-2 py-0.5 rounded-full capitalize font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
                     >
                       {p === "normal" ? "Padrão" : p === "narrow" ? "Estreita" : "Larga"}
                     </button>
@@ -269,7 +269,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
 
               <div className="grid grid-cols-4 gap-2">
                 <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Superior</span>
+                  <span className="text-[9px] text-slate-600 font-bold uppercase block mb-1">Superior</span>
                   <input
                     type="number"
                     min="0"
@@ -280,7 +280,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                   />
                 </div>
                 <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Direita</span>
+                  <span className="text-[9px] text-slate-600 font-bold uppercase block mb-1">Direita</span>
                   <input
                     type="number"
                     min="0"
@@ -291,7 +291,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                   />
                 </div>
                 <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Inferior</span>
+                  <span className="text-[9px] text-slate-600 font-bold uppercase block mb-1">Inferior</span>
                   <input
                     type="number"
                     min="0"
@@ -302,7 +302,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                   />
                 </div>
                 <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Esquerda</span>
+                  <span className="text-[9px] text-slate-600 font-bold uppercase block mb-1">Esquerda</span>
                   <input
                     type="number"
                     min="0"
@@ -319,7 +319,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-                  <Type className="w-3.5 h-3.5 text-slate-400" />
+                  <Type className="w-3.5 h-3.5 text-slate-600" />
                   <span>Família Tipográfica da Página</span>
                 </label>
                 <select
@@ -397,7 +397,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                   <label htmlFor="drawerShowHeader" className="text-xs font-semibold text-slate-800 cursor-pointer block">
                     Exibir cabeçalho do capítulo
                   </label>
-                  <span className="text-[10px] text-slate-500">Imprime o título no topo da folha PDF</span>
+                  <span className="text-[10px] text-slate-600">Imprime o título no topo da folha PDF</span>
                 </div>
                 <input
                   id="drawerShowHeader"
@@ -413,7 +413,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                   <label htmlFor="drawerShowPageNumbers" className="text-xs font-semibold text-slate-800 cursor-pointer block">
                     Exibir número de páginas no rodapé
                   </label>
-                  <span className="text-[10px] text-slate-500">Insere a numeração centralizada no PDF</span>
+                  <span className="text-[10px] text-slate-600">Insere a numeração centralizada no PDF</span>
                 </div>
                 <input
                   id="drawerShowPageNumbers"

@@ -133,7 +133,7 @@ export const TimelineFlow: React.FC<TimelineFlowProps> = ({
             <Calendar className="w-5 h-5 text-slate-900" />
             <span>Linha do Tempo</span>
           </h2>
-          <p className="text-xs text-slate-500 font-sans mt-0.5">
+          <p className="text-xs text-slate-600 font-sans mt-0.5">
             Visualize e ordene os marcos históricos e acontecimentos da sua narrativa.
           </p>
         </div>
@@ -141,7 +141,7 @@ export const TimelineFlow: React.FC<TimelineFlowProps> = ({
         <div className="flex items-center gap-3">
           {/* Seletor de Filtro de Personagem */}
           <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full">
-            <Filter className="w-3.5 h-3.5 text-slate-400" />
+            <Filter className="w-3.5 h-3.5 text-slate-600" />
             <select
               value={selectedCharacterId}
               onChange={(e) => {
@@ -181,18 +181,18 @@ export const TimelineFlow: React.FC<TimelineFlowProps> = ({
       {/* Main Whiteboard Canvas */}
       <div className="flex-1 overflow-y-auto bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] relative p-8 md:p-12">
         {isLoading ? (
-          <div className="text-xs text-slate-400 py-16 text-center h-full flex items-center justify-center">
+          <div className="text-xs text-slate-600 py-16 text-center h-full flex items-center justify-center">
             Carregando linha do tempo...
           </div>
         ) : filteredEvents.length === 0 ? (
           <div className="py-16 text-center max-w-sm mx-auto flex flex-col items-center justify-center bg-white border border-slate-200 rounded-3xl p-8 shadow-xs mt-8">
-            <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center mb-4 text-slate-400">
+            <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center mb-4 text-slate-600">
               <Calendar className="w-6 h-6" />
             </div>
             <h3 className="text-sm font-bold font-funnel text-slate-900 tracking-tight mb-1">
               Nenhum evento registrado
             </h3>
-            <p className="text-xs text-slate-500 font-sans leading-relaxed mb-5">
+            <p className="text-xs text-slate-600 font-sans leading-relaxed mb-5">
               {selectedCharacterId === "all"
                 ? "Comece a traçar os acontecimentos cronológicos da sua história criando o primeiro evento."
                 : "Não há eventos registrados para este filtro. Crie um evento associado a este perfil."}
@@ -238,7 +238,7 @@ export const TimelineFlow: React.FC<TimelineFlowProps> = ({
                             setEditingEvent(event);
                             setIsModalOpen(true);
                           }}
-                          className="text-slate-400 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+                          className="text-slate-600 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
                           title="Editar evento"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -246,7 +246,7 @@ export const TimelineFlow: React.FC<TimelineFlowProps> = ({
                         <button
                           type="button"
                           onClick={() => handleDeleteEvent(event.id)}
-                          className="text-slate-400 hover:text-red-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+                          className="text-slate-600 hover:text-red-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
                           title="Excluir evento"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -261,8 +261,8 @@ export const TimelineFlow: React.FC<TimelineFlowProps> = ({
                         </span>
 
                         {/* Localização */}
-                        <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-slate-400" />
+                        <span className="text-[10px] text-slate-600 font-medium flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-slate-600" />
                           <span>{event.location}</span>
                         </span>
                       </div>

@@ -95,12 +95,12 @@ const BookCard = React.forwardRef<HTMLDivElement, BookCardProps>(
             {title || "Sem título"}
           </h3>
 
-          <p className="text-sm text-neutral-500 font-normal line-clamp-2 mt-0.5">
+          <p className="text-sm text-neutral-600 font-normal line-clamp-2 mt-0.5">
             {synopsis || "Sem sinopse"}
           </p>
         </div>
 
-        <div className="mt-auto pt-4 flex items-end justify-between text-xs text-neutral-500 font-medium border-t border-neutral-100">
+        <div className="mt-auto pt-4 flex items-end justify-between text-xs text-neutral-600 font-medium border-t border-neutral-100">
           <div>
             {pages !== undefined && (
               <span>
@@ -110,7 +110,7 @@ const BookCard = React.forwardRef<HTMLDivElement, BookCardProps>(
           </div>
 
           <div className="flex flex-col items-end text-right">
-            <span className="text-[10px] text-neutral-400 font-normal uppercase tracking-wider">
+            <span className="text-[10px] text-neutral-600 font-normal uppercase tracking-wider">
               atualizado em:
             </span>
             {updatedAt !== undefined && (

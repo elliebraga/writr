@@ -37,7 +37,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
         <div className="relative flex items-center">
           {activeLeftIcon && (
-            <div className="absolute left-4 text-neutral-400 pointer-events-none flex items-center justify-center">
+            <div className="absolute left-4 text-neutral-600 pointer-events-none flex items-center justify-center">
               {activeLeftIcon}
             </div>
           )}
@@ -51,11 +51,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             aria-describedby={activeError ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined}
             className={cn(
               "w-full h-11 px-4 text-sm bg-white border font-normal transition-all duration-200 outline-none",
-              "placeholder:text-neutral-400 text-neutral-800",
+              "placeholder:text-neutral-600 text-neutral-800",
               "rounded-xl",
               "border-neutral-200",
               "focus:border-brand-600 focus:ring-1 focus:ring-brand-600",
-              "disabled:bg-neutral-50 disabled:border-neutral-200 disabled:text-neutral-400 disabled:cursor-not-allowed",
+              "disabled:bg-neutral-50 disabled:border-neutral-200 disabled:text-neutral-600 disabled:cursor-not-allowed",
               activeError && [
                 "border-feedback-danger-text text-feedback-danger-text placeholder:text-feedback-danger-text/50",
                 "focus:border-feedback-danger-text focus:ring-feedback-danger-text"
@@ -68,7 +68,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
 
           {activeRightIcon && (
-            <div className="absolute right-4 text-neutral-400 flex items-center justify-center">
+            <div className="absolute right-4 text-neutral-600 flex items-center justify-center">
               {activeRightIcon}
             </div>
           )}
@@ -80,7 +80,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           </span>
         ) : (
           helperText && (
-            <span id={`${inputId}-helper`} className="text-xs text-neutral-500">
+            <span id={`${inputId}-helper`} className="text-xs text-neutral-600">
               {helperText}
             </span>
           )

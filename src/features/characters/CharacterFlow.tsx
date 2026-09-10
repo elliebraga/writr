@@ -153,8 +153,8 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
 
       {/* Condicional de Estado: Carregando vs Vazio vs Lista de Cards */}
       {isLoading ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-slate-400 text-sm gap-2 py-20">
-          <Sparkles className="w-5 h-5 animate-pulse text-slate-400" />
+        <div className="flex-1 flex flex-col items-center justify-center text-slate-600 text-sm gap-2 py-20">
+          <Sparkles className="w-5 h-5 animate-pulse text-slate-600" />
           <span>Carregando elenco da história...</span>
         </div>
       ) : characters.length === 0 ? (
@@ -162,14 +162,14 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
         // 🔴 ROTA NÃO: Sem personagens criados ainda
         <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto py-20 p-6">
           <div className="w-16 h-16 bg-slate-100 border border-slate-200 rounded-2xl flex items-center justify-center mb-6">
-            <Users className="w-8 h-8 text-slate-400" />
+            <Users className="w-8 h-8 text-slate-600" />
           </div>
 
           <h2 className="text-2xl font-bold font-funnel text-slate-900 tracking-tight mb-2">
             Nenhum personagem cadastrado
           </h2>
 
-          <p className="text-base text-slate-500 font-sans leading-relaxed mb-8">
+          <p className="text-base text-slate-600 font-sans leading-relaxed mb-8">
             Dê vida ao elenco de <strong className="text-slate-800">{activeBook.book_name}</strong> criando seus protagonistas e antagonistas.
           </p>
 
@@ -198,7 +198,7 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
                   {characters.length} {characters.length === 1 ? "membro" : "membros"}
                 </span>
               </div>
-              <p className="text-sm text-slate-500 font-sans mt-1">
+              <p className="text-sm text-slate-600 font-sans mt-1">
                 Fichas detalhadas de personalidade, papel dramático e arquétipos.
               </p>
             </div>

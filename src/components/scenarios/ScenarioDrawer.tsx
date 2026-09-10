@@ -127,7 +127,7 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
                 <h3 className="text-base font-bold font-funnel text-slate-900">
                   {scenario ? "Editar Cenário" : "Novo Cenário / Local"}
                 </h3>
-                <p className="text-xs text-slate-500 font-sans">
+                <p className="text-xs text-slate-600 font-sans">
                   Mapeie locais, referências visuais e personagens vinculados.
                 </p>
               </div>
@@ -135,7 +135,7 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
 
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+              className="text-slate-600 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -227,7 +227,7 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
             {/* 5. Galeria de Imagens de Referência */}
             <div className="space-y-3 pt-2 border-t border-slate-100">
               <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                <ImageIcon className="w-4 h-4 text-slate-400" />
+                <ImageIcon className="w-4 h-4 text-slate-600" />
                 <span>Imagens de Referência (URLs)</span>
               </label>
 
@@ -284,16 +284,16 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
             <div className="space-y-3 pt-2 border-t border-slate-100">
               <label className="block text-xs font-semibold text-slate-700 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
-                  <Users className="w-4 h-4 text-slate-400" />
+                  <Users className="w-4 h-4 text-slate-600" />
                   <span>Personagens Frequentes / Nativos deste Local</span>
                 </span>
-                <span className="text-[10px] text-slate-400 font-normal">
+                <span className="text-[10px] text-slate-600 font-normal">
                   {associatedCharacterIds.length} selecionado(s)
                 </span>
               </label>
 
               {characters.length === 0 ? (
-                <p className="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <p className="text-xs text-slate-600 italic bg-slate-50 p-3 rounded-xl border border-slate-100">
                   Nenhum personagem cadastrado nesta obra ainda. Crie personagens na aba "Personagens" para vinculá-los aqui.
                 </p>
               ) : (

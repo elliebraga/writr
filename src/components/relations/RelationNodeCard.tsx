@@ -78,7 +78,7 @@ export const RelationNodeCard: React.FC<RelationNodeCardProps> = ({
                 }}
               />
             ) : (
-              <User className="w-4 h-4 text-slate-400" />
+              <User className="w-4 h-4 text-slate-600" />
             )}
           </div>
 
@@ -103,7 +103,7 @@ export const RelationNodeCard: React.FC<RelationNodeCardProps> = ({
               e.stopPropagation();
               onRemoveFromCanvas(character.id);
             }}
-            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100 transition-all"
+            className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100 transition-all"
             title="Remover do canvas"
           >
             <X className="w-3.5 h-3.5" />
@@ -113,7 +113,7 @@ export const RelationNodeCard: React.FC<RelationNodeCardProps> = ({
 
       {/* Card Action Footer */}
       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
-        <span className="text-slate-400 font-medium">Nó de Conexão</span>
+        <span className="text-slate-600 font-medium">Nó de Conexão</span>
         {onStartConnect && (
           <button
             type="button"

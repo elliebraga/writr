@@ -104,7 +104,7 @@ export const BookOverview: React.FC<BookOverviewProps> = ({ activeBook, onTabCha
           <h2 className="text-2xl font-bold font-funnel text-slate-900 tracking-tight">
             Visão Geral da Obra
           </h2>
-          <p className="text-sm text-slate-500 font-sans mt-0.5">
+          <p className="text-sm text-slate-600 font-sans mt-0.5">
             Acompanhe suas estatísticas de escrita, metas de progresso e ritmo de trabalho.
           </p>
         </div>
@@ -126,7 +126,7 @@ export const BookOverview: React.FC<BookOverviewProps> = ({ activeBook, onTabCha
         <div className="md:col-span-2 bg-white border border-slate-200 rounded-3xl p-6 flex flex-col justify-between">
           <div className="space-y-4">
             <div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Título da Obra</span>
+              <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">Título da Obra</span>
               <h3 className="text-lg font-bold font-funnel text-slate-900 mt-0.5 leading-snug">
                 {activeBook.book_name}
               </h3>
@@ -134,33 +134,33 @@ export const BookOverview: React.FC<BookOverviewProps> = ({ activeBook, onTabCha
 
             {activeBook.synopsis ? (
               <div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Sinopse da Obra</span>
-                <p className="text-xs text-slate-500 font-sans mt-1 leading-relaxed line-clamp-3">
+                <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">Sinopse da Obra</span>
+                <p className="text-xs text-slate-600 font-sans mt-1 leading-relaxed line-clamp-3">
                   {activeBook.synopsis}
                 </p>
               </div>
             ) : (
               <div className="py-2">
-                <p className="text-xs text-slate-400 font-sans italic">Sem sinopse cadastrada para este livro.</p>
+                <p className="text-xs text-slate-600 font-sans italic">Sem sinopse cadastrada para este livro.</p>
               </div>
             )}
           </div>
 
           <div className="grid grid-cols-3 gap-4 pt-5 mt-5 border-t border-slate-100 text-xs">
             <div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Status</span>
+              <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider block">Status</span>
               <span className="inline-block mt-1 font-bold text-slate-800 capitalize bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full text-[10px]">
                 {activeBook.status || "Rascunho"}
               </span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Páginas Previstas</span>
+              <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider block">Páginas Previstas</span>
               <span className="font-semibold text-slate-900 mt-1 block">
                 {activeBook.expected_pages ? `${activeBook.expected_pages} págs` : "Não informado"}
               </span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Último Update</span>
+              <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider block">Último Update</span>
               <span className="font-semibold text-slate-900 mt-1 block">
                 {new Date(activeBook.updated_at || activeBook.created_at).toLocaleDateString("pt-BR", {
                   day: "2-digit",
@@ -210,7 +210,7 @@ export const BookOverview: React.FC<BookOverviewProps> = ({ activeBook, onTabCha
             <FileText className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total de Palavras</span>
+            <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider block">Total de Palavras</span>
             <strong className="text-lg font-extrabold text-slate-900 font-funnel tracking-tight mt-0.5 block">
               {isLoading ? "..." : totalWords.toLocaleString("pt-BR")}
             </strong>
@@ -222,7 +222,7 @@ export const BookOverview: React.FC<BookOverviewProps> = ({ activeBook, onTabCha
             <BookOpen className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Páginas Escritas</span>
+            <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider block">Páginas Escritas</span>
             <strong className="text-lg font-extrabold text-slate-900 font-funnel tracking-tight mt-0.5 block">
               {isLoading ? "..." : estimatedPages.toLocaleString("pt-BR")}
             </strong>
@@ -234,9 +234,9 @@ export const BookOverview: React.FC<BookOverviewProps> = ({ activeBook, onTabCha
             <Award className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Escrito Hoje</span>
+            <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider block">Escrito Hoje</span>
             <strong className="text-lg font-extrabold text-slate-900 font-funnel tracking-tight mt-0.5 block">
-              {wordsToday.toLocaleString("pt-BR")} <span className="text-[11px] font-normal text-slate-400">palavras</span>
+              {wordsToday.toLocaleString("pt-BR")} <span className="text-[11px] font-normal text-slate-600">palavras</span>
             </strong>
           </div>
         </div>
@@ -246,7 +246,7 @@ export const BookOverview: React.FC<BookOverviewProps> = ({ activeBook, onTabCha
             <Calendar className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Capítulos Criados</span>
+            <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider block">Capítulos Criados</span>
             <strong className="text-lg font-extrabold text-slate-900 font-funnel tracking-tight mt-0.5 block">
               {isLoading ? "..." : totalChapters}
             </strong>
@@ -264,14 +264,14 @@ export const BookOverview: React.FC<BookOverviewProps> = ({ activeBook, onTabCha
             </div>
             <div>
               <h4 className="text-sm font-bold font-funnel text-slate-900">Histórico de Escrita</h4>
-              <p className="text-[10px] text-slate-400">Palavras escritas nos últimos 7 dias</p>
+              <p className="text-[10px] text-slate-600">Palavras escritas nos últimos 7 dias</p>
             </div>
           </div>
 
           <div className="text-right">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Média Diária</span>
+            <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider block">Média Diária</span>
             <strong className="text-sm font-extrabold text-slate-800 font-funnel tracking-tight block">
-              {averageLast7Days.toLocaleString("pt-BR")} <span className="text-[10px] font-normal text-slate-400">palavras/dia</span>
+              {averageLast7Days.toLocaleString("pt-BR")} <span className="text-[10px] font-normal text-slate-600">palavras/dia</span>
             </strong>
           </div>
         </div>
@@ -309,7 +309,7 @@ export const BookOverview: React.FC<BookOverviewProps> = ({ activeBook, onTabCha
           {chartData.map((d) => (
             <div key={d.dateStr} className="flex-1 flex flex-col items-center">
               <span className="text-[10px] font-bold text-slate-800">{d.label}</span>
-              <span className="text-[9px] text-slate-400 font-semibold mt-0.5">{d.subLabel}</span>
+              <span className="text-[9px] text-slate-600 font-semibold mt-0.5">{d.subLabel}</span>
             </div>
           ))}
         </div>

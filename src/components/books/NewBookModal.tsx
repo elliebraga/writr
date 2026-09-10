@@ -71,11 +71,11 @@ export const NewBookModal: React.FC<NewBookModalProps> = ({
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <div>
             <h3 className="text-base font-semibold text-slate-900">Novo Livro</h3>
-            <p className="text-xs text-slate-500">Cadastre uma nova obra para organizar seus capítulos.</p>
+            <p className="text-xs text-slate-600">Cadastre uma nova obra para organizar seus capítulos.</p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+            className="text-slate-600 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -100,7 +100,7 @@ export const NewBookModal: React.FC<NewBookModalProps> = ({
               placeholder="Ex: O Segredo das Estrelas"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-600 bg-white"
             />
           </div>
 
@@ -116,7 +116,7 @@ export const NewBookModal: React.FC<NewBookModalProps> = ({
                 placeholder="Ex: 250"
                 value={expectedPages}
                 onChange={(e) => setExpectedPages(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-600 bg-white"
               />
             </div>
 
@@ -148,9 +148,9 @@ export const NewBookModal: React.FC<NewBookModalProps> = ({
                 placeholder="https://exemplo.com/capa.jpg"
                 value={coverUrl}
                 onChange={(e) => setCoverUrl(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-600 bg-white"
               />
-              <ImageIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              <ImageIcon className="w-4 h-4 text-slate-600 absolute left-3 top-2.5" />
             </div>
           </div>
 
@@ -164,7 +164,7 @@ export const NewBookModal: React.FC<NewBookModalProps> = ({
               placeholder="Escreva uma breve apresentação da sua história..."
               value={synopsis}
               onChange={(e) => setSynopsis(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white resize-none"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-600 bg-white resize-none"
             />
           </div>
 

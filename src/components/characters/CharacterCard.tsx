@@ -85,7 +85,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-r from-slate-100 via-slate-50 to-slate-200 flex items-center justify-center">
-            <User className="w-8 h-8 text-slate-400" />
+            <User className="w-8 h-8 text-slate-600" />
           </div>
         )}
 
@@ -146,8 +146,8 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
           </h3>
 
           {(character.character_age || character.age) && (
-            <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500 font-medium truncate">
-              <Cake className="w-3 h-3 text-slate-400 shrink-0" />
+            <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-600 font-medium truncate">
+              <Cake className="w-3 h-3 text-slate-600 shrink-0" />
               <span className="truncate">
                 {typeof (character.character_age || character.age) === "number" ||
                 /^\d+$/.test(String(character.character_age || character.age).trim())
@@ -157,14 +157,14 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
             </div>
           )}
 
-          <p className="text-xs text-slate-500 font-sans line-clamp-2 leading-relaxed mt-1.5">
+          <p className="text-xs text-slate-600 font-sans line-clamp-2 leading-relaxed mt-1.5">
             {character.summary && character.summary.trim()
               ? character.summary
               : "Nenhum resumo cadastrado para este personagem."}
           </p>
         </div>
 
-        <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
+        <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600 font-medium">
           <span>Ficha de Personagem</span>
           <span className="group-hover:text-slate-900 transition-colors font-semibold">
             Editar Ficha &rarr;

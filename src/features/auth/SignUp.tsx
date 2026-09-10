@@ -112,7 +112,7 @@ export default function SignUp({ onSignUpSubmit, onNavigateToSignIn }: SignUpPro
               text="writr"
               className="text-6xl text-black font-normal tracking-tight"
             />
-            <p className="text-sm font-light tracking-wide text-neutral-500 mt-1">
+            <p className="text-sm font-light tracking-wide text-neutral-600 mt-1">
               where stories begin
             </p>
           </div>
@@ -251,7 +251,7 @@ export default function SignUp({ onSignUpSubmit, onNavigateToSignIn }: SignUpPro
 
           {/* Rodapé - Link de Navegação */}
           <div className="mt-8 text-center text-sm font-light">
-            <span className="text-neutral-500">Já possui uma conta? </span>
+            <span className="text-neutral-600">Já possui uma conta? </span>
             <button
               onClick={onNavigateToSignIn}
               disabled={isLoading}

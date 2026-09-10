@@ -95,7 +95,7 @@ export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             <button
               type="button"
               onClick={options.type === "confirm" ? handleCancel : handleConfirm}
-              className="absolute right-4 top-4 text-slate-400 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+              className="absolute right-4 top-4 text-slate-600 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -117,7 +117,7 @@ export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 <h3 className="text-base font-bold font-funnel text-slate-900 mb-1.5 leading-snug">
                   {options.title}
                 </h3>
-                <p className="text-xs text-slate-500 font-sans leading-relaxed break-words">
+                <p className="text-xs text-slate-600 font-sans leading-relaxed break-words">
                   {options.message}
                 </p>
               </div>

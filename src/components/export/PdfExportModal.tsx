@@ -103,13 +103,13 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
               <h3 className="text-base font-bold font-funnel text-slate-900">
                 Exportar em PDF ({isBookExport ? "Obra Completa" : "Capítulo"})
               </h3>
-              <p className="text-xs text-slate-500 font-sans truncate max-w-xs">{title}</p>
+              <p className="text-xs text-slate-600 font-sans truncate max-w-xs">{title}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+            className="text-slate-600 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -123,7 +123,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
             {/* Seção 1: Medidas da Folha (Tamanho da Página) */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-slate-400" />
+                <FileText className="w-3.5 h-3.5 text-slate-600" />
                 <span>Tamanho / Formato da Folha</span>
               </label>
               <div className="grid grid-cols-4 gap-2">
@@ -144,7 +144,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                     }`}
                   >
                     <span className="text-xs font-bold leading-tight">{fmt.label}</span>
-                    <span className={`text-[9px] mt-0.5 ${options.pageSize === fmt.id ? "text-slate-300" : "text-slate-400"}`}>
+                    <span className={`text-[9px] mt-0.5 ${options.pageSize === fmt.id ? "text-slate-300" : "text-slate-600"}`}>
                       {fmt.desc} mm
                     </span>
                   </button>
@@ -187,7 +187,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                  <Sliders className="w-3.5 h-3.5 text-slate-400" />
+                  <Sliders className="w-3.5 h-3.5 text-slate-600" />
                   <span>Medidas das Margens (mm)</span>
                 </label>
                 <div className="flex items-center gap-1 text-[10px]">
@@ -199,7 +199,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                       className={`px-2 py-0.5 rounded-full capitalize font-semibold transition-colors ${
                         marginPreset === p
                           ? "bg-slate-900 text-white"
-                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                       }`}
                     >
                       {p === "normal" ? "Padrão" : p === "narrow" ? "Estreita" : p === "wide" ? "Larga" : "Custom"}
@@ -210,7 +210,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
 
               <div className="grid grid-cols-4 gap-2">
                 <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Superior</span>
+                  <span className="text-[9px] text-slate-600 font-bold uppercase block mb-1">Superior</span>
                   <input
                     type="number"
                     min="0"
@@ -225,7 +225,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                 </div>
 
                 <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Direita</span>
+                  <span className="text-[9px] text-slate-600 font-bold uppercase block mb-1">Direita</span>
                   <input
                     type="number"
                     min="0"
@@ -240,7 +240,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                 </div>
 
                 <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Inferior</span>
+                  <span className="text-[9px] text-slate-600 font-bold uppercase block mb-1">Inferior</span>
                   <input
                     type="number"
                     min="0"
@@ -255,7 +255,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                 </div>
 
                 <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Esquerda</span>
+                  <span className="text-[9px] text-slate-600 font-bold uppercase block mb-1">Esquerda</span>
                   <input
                     type="number"
                     min="0"
@@ -338,7 +338,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
 
           {/* Col 2: Live Page Preview Panel */}
           <div className="bg-slate-50/50 border border-slate-200 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 select-none min-h-[360px] relative overflow-hidden">
-            <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold absolute top-3.5 left-4">
+            <span className="text-[9px] uppercase tracking-wider text-slate-600 font-bold absolute top-3.5 left-4">
               Visualização Prévia da Página
             </span>
 
@@ -385,10 +385,10 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                     lineHeight: options.lineHeight,
                   }}
                 >
-                  <p className="font-sans text-slate-400 text-justify text-[4.5px] leading-relaxed tracking-tight">
+                  <p className="font-sans text-slate-600 text-justify text-[4.5px] leading-relaxed tracking-tight">
                     Era uma vez, em um reino distante, um escritor que buscava a formatação perfeita para o seu original. Ele sabia que o segredo de uma boa leitura dependia do balanço ideal entre o tamanho da folha, a tipografia e as margens da página.
                   </p>
-                  <p className="font-sans text-slate-400 text-justify text-[4.5px] leading-relaxed tracking-tight">
+                  <p className="font-sans text-slate-600 text-justify text-[4.5px] leading-relaxed tracking-tight">
                     Com este painel de visualização dinâmica, agora ele consegue antever a distribuição do texto impresso em tempo real. Qualquer mudança nas margens ou na fonte atualiza esta folha miniaturizada instantaneamente.
                   </p>
                 </div>
@@ -397,7 +397,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
               {/* Rodapé (Número da Página) */}
               {options.showPageNumbers && (
                 <div 
-                  className="absolute bottom-1.5 left-0 right-0 text-center font-sans text-slate-400 select-none text-[5px]"
+                  className="absolute bottom-1.5 left-0 right-0 text-center font-sans text-slate-600 select-none text-[5px]"
                 >
                   1
                 </div>
@@ -405,7 +405,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
             </div>
 
             {/* Informações de Dimensão */}
-            <span className="text-[10px] text-slate-500 font-semibold font-sans text-center">
+            <span className="text-[10px] text-slate-600 font-semibold font-sans text-center">
               Página estimada: <strong className="text-slate-800">{pageW} × {pageH} mm</strong>
             </span>
           </div>

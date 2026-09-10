@@ -56,7 +56,7 @@ export const PostItNote: React.FC<PostItNoteProps> = ({
               e.stopPropagation();
               onDelete(item.id);
             }}
-            className="text-slate-400 hover:text-red-600 transition-colors p-1 rounded-full hover:bg-slate-100 opacity-0 group-hover:opacity-100"
+            className="text-slate-600 hover:text-red-600 transition-colors p-1 rounded-full hover:bg-slate-100 opacity-0 group-hover:opacity-100"
             title="Excluir Seção"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -155,7 +155,7 @@ export const PostItNote: React.FC<PostItNoteProps> = ({
               e.stopPropagation();
               onDelete(item.id);
             }}
-            className="p-1 text-slate-400 hover:text-red-600 rounded-full hover:bg-white/50 transition-colors"
+            className="p-1 text-slate-600 hover:text-red-600 rounded-full hover:bg-white/50 transition-colors"
             title="Excluir Post-it"
           >
             <Trash2 className="w-3.5 h-3.5" />

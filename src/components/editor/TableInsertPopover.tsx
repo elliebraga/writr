@@ -63,13 +63,13 @@ export const TableInsertPopover: React.FC<TableInsertPopoverProps> = ({ editor }
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+              className="text-slate-600 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="text-center text-[11px] font-semibold text-slate-500 mb-2">
+          <div className="text-center text-[11px] font-semibold text-slate-600 mb-2">
             {hoveredRows > 0 && hoveredCols > 0
               ? `${hoveredRows} × ${hoveredCols}`
               : "Selecione o tamanho"}
@@ -114,7 +114,7 @@ export const TableInsertPopover: React.FC<TableInsertPopoverProps> = ({ editor }
           {/* Controles de tabela se já estiver dentro de uma tabela */}
           {isInsideTable && (
             <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
                 Ações da Tabela Ativa
               </span>
               <div className="grid grid-cols-2 gap-1 text-[11px]">

@@ -97,7 +97,7 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({
               <h3 className="text-base font-bold font-funnel text-slate-900">
                 {eventToEdit ? "Editar Evento" : "Criar Novo Evento"}
               </h3>
-              <p className="text-xs text-slate-500 font-sans">
+              <p className="text-xs text-slate-600 font-sans">
                 Adicione um marco temporal na história do seu livro.
               </p>
             </div>
@@ -106,7 +106,7 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+            className="text-slate-600 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -122,7 +122,7 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({
           {/* Data / Época */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+              <Calendar className="w-3.5 h-3.5 text-slate-600" />
               <span>Data / Período Histórico</span>
             </label>
             <input
@@ -130,14 +130,14 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({
               placeholder="Ex: Ano 243 d.C., Inverno de 1890, Infância"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-full focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white"
+              className="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-full focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-600 bg-white"
             />
           </div>
 
           {/* Localização */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+              <MapPin className="w-3.5 h-3.5 text-slate-600" />
               <span>Local do Acontecimento</span>
             </label>
             <input
@@ -145,14 +145,14 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({
               placeholder="Ex: Reino de Valíria, Floresta Negra, Casa dos Tios"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-full focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white"
+              className="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-full focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-600 bg-white"
             />
           </div>
 
           {/* Acontecimento */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-slate-400" />
+              <FileText className="w-3.5 h-3.5 text-slate-600" />
               <span>Acontecimento / Descrição</span>
             </label>
             <textarea
@@ -160,7 +160,7 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({
               placeholder="Descreva detalhadamente o que ocorreu nesta data e local..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-2xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white leading-relaxed resize-none"
+              className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-2xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-600 bg-white leading-relaxed resize-none"
             />
           </div>
 
@@ -183,8 +183,8 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({
             </select>
           </div>
 
-          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-2 text-[11px] text-slate-500">
-            <Sparkles className="w-4 h-4 text-slate-400 shrink-0" />
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-2 text-[11px] text-slate-600">
+            <Sparkles className="w-4 h-4 text-slate-600 shrink-0" />
             <span>Eventos vinculados ajudam a construir a jornada individual de cada personagem.</span>
           </div>
 

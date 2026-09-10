@@ -101,7 +101,7 @@ export const ScenarioFlow: React.FC<ScenarioFlowProps> = ({ activeBook, characte
               Cenários & Locais da Obra
             </h1>
           </div>
-          <p className="text-sm text-slate-500 font-sans max-w-xl">
+          <p className="text-sm text-slate-600 font-sans max-w-xl">
             Mapeie reinos, edifícios, cidades e todos os locais marcantes da sua narrativa com referências visuais e personagens associados.
           </p>
         </div>
@@ -120,7 +120,7 @@ export const ScenarioFlow: React.FC<ScenarioFlowProps> = ({ activeBook, characte
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
         {/* Busca */}
         <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
@@ -150,12 +150,12 @@ export const ScenarioFlow: React.FC<ScenarioFlowProps> = ({ activeBook, characte
 
       {/* Conteúdo Principal / Grid de Cenários */}
       {isLoading ? (
-        <div className="flex-1 flex items-center justify-center py-16 text-slate-400 text-sm">
+        <div className="flex-1 flex items-center justify-center py-16 text-slate-600 text-sm">
           Carregando cenários...
         </div>
       ) : filteredScenarios.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center py-16 text-center max-w-md mx-auto">
-          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 mb-3">
             <Compass className="w-6 h-6" />
           </div>
           <h3 className="text-base font-bold font-funnel text-slate-900 mb-1">
@@ -163,7 +163,7 @@ export const ScenarioFlow: React.FC<ScenarioFlowProps> = ({ activeBook, characte
               ? "Nenhum cenário encontrado"
               : "Nenhum cenário cadastrado ainda"}
           </h3>
-          <p className="text-xs text-slate-500 mb-4">
+          <p className="text-xs text-slate-600 mb-4">
             {searchTerm || selectedTypeFilter !== "Todos"
               ? "Tente mudar os termos da busca ou os filtros acima."
               : "Crie o primeiro cenário para mapear a geografia e atmosfera da sua história."}
@@ -231,7 +231,7 @@ export const ScenarioFlow: React.FC<ScenarioFlowProps> = ({ activeBook, characte
                         {scenario.description}
                       </p>
                     ) : (
-                      <p className="text-xs text-slate-400 italic">
+                      <p className="text-xs text-slate-600 italic">
                         Sem descrição cadastrada.
                       </p>
                     )}
@@ -276,7 +276,7 @@ export const ScenarioFlow: React.FC<ScenarioFlowProps> = ({ activeBook, characte
                           )}
                         </div>
                       ) : (
-                        <span className="text-[11px] text-slate-400">
+                        <span className="text-[11px] text-slate-600">
                           Nenhum personagem vinculado
                         </span>
                       )}
@@ -286,7 +286,7 @@ export const ScenarioFlow: React.FC<ScenarioFlowProps> = ({ activeBook, characte
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => handleEdit(scenario)}
-                        className="p-1.5 text-slate-400 hover:text-slate-900 rounded-full hover:bg-slate-100 transition-colors"
+                        className="p-1.5 text-slate-600 hover:text-slate-900 rounded-full hover:bg-slate-100 transition-colors"
                         title="Editar Cenário"
                       >
                         <Edit3 className="w-4 h-4" />
@@ -294,7 +294,7 @@ export const ScenarioFlow: React.FC<ScenarioFlowProps> = ({ activeBook, characte
 
                       <button
                         onClick={() => handleDelete(scenario.id, scenario.name)}
-                        className="p-1.5 text-slate-400 hover:text-red-600 rounded-full hover:bg-slate-100 transition-colors"
+                        className="p-1.5 text-slate-600 hover:text-red-600 rounded-full hover:bg-slate-100 transition-colors"
                         title="Excluir Cenário"
                       >
                         <Trash2 className="w-4 h-4" />

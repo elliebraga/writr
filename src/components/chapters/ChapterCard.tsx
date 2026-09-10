@@ -38,7 +38,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
       <div>
         {/* Header com Número do Capítulo e Ações */}
         <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-slate-900 transition-colors">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 group-hover:text-slate-900 transition-colors">
             Capítulo {index + 1}
           </span>
 
@@ -56,7 +56,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
                   onDelete(chapter.id);
                 }
               }}
-              className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 transition-all p-1 rounded-full hover:bg-slate-100"
+              className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-600 transition-all p-1 rounded-full hover:bg-slate-100"
               title="Excluir capítulo"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -70,22 +70,22 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
         </h3>
 
         {/* Resumo / Sinopse */}
-        <p className="text-sm text-slate-500 font-normal line-clamp-2 leading-relaxed">
+        <p className="text-sm text-slate-600 font-normal line-clamp-2 leading-relaxed">
           {cleanExcerpt}
         </p>
       </div>
 
       {/* Rodapé com Indicadores de Palavras e Páginas */}
-      <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
+      <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 font-medium">
         <div className="flex items-center gap-1.5 text-slate-600">
-          <FileText className="w-3.5 h-3.5 text-slate-400" />
+          <FileText className="w-3.5 h-3.5 text-slate-600" />
           <span>
             <strong className="text-slate-900 font-semibold">{chapter.word_count || 0}</strong> palavras
-            <span className="text-slate-400 font-normal ml-1">({estimatedPages} {estimatedPages === 1 ? "pág" : "págs"})</span>
+            <span className="text-slate-600 font-normal ml-1">({estimatedPages} {estimatedPages === 1 ? "pág" : "págs"})</span>
           </span>
         </div>
 
-        <div className="flex items-center gap-1 text-[11px] text-slate-400">
+        <div className="flex items-center gap-1 text-[11px] text-slate-600">
           <Clock className="w-3 h-3" />
           <span>
             {chapter.updated_at

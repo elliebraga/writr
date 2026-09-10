@@ -84,13 +84,13 @@ export const NewBookDrawer: React.FC<NewBookDrawerProps> = ({
               </div>
               <div>
                 <h3 className="text-base font-bold font-funnel text-slate-900">Nova Obra</h3>
-                <p className="text-base text-slate-500 font-sans">Cadastre um projeto para organizar capítulos.</p>
+                <p className="text-base text-slate-600 font-sans">Cadastre um projeto para organizar capítulos.</p>
               </div>
             </div>
 
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+              className="text-slate-600 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -116,7 +116,7 @@ export const NewBookDrawer: React.FC<NewBookDrawerProps> = ({
                 placeholder="Ex: O Segredo das Estrelas"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white"
+                className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-600 bg-white"
               />
             </div>
 
@@ -132,7 +132,7 @@ export const NewBookDrawer: React.FC<NewBookDrawerProps> = ({
                   placeholder="Ex: 250"
                   value={expectedPages}
                   onChange={(e) => setExpectedPages(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white"
+                  className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-600 bg-white"
                 />
               </div>
 
@@ -163,9 +163,9 @@ export const NewBookDrawer: React.FC<NewBookDrawerProps> = ({
                   placeholder="https://exemplo.com/capa.jpg"
                   value={coverUrl}
                   onChange={(e) => setCoverUrl(e.target.value)}
-                  className="w-full pl-9 pr-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white"
+                  className="w-full pl-9 pr-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-600 bg-white"
                 />
-                <ImageIcon className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                <ImageIcon className="w-4 h-4 text-slate-600 absolute left-3 top-3" />
               </div>
             </div>
 
@@ -193,12 +193,12 @@ export const NewBookDrawer: React.FC<NewBookDrawerProps> = ({
                 placeholder="Escreva uma breve apresentação da sua história..."
                 value={synopsis}
                 onChange={(e) => setSynopsis(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white resize-none"
+                className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-600 bg-white resize-none"
               />
             </div>
 
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-2 text-[11px] text-slate-500">
-              <Sparkles className="w-4 h-4 text-slate-400 shrink-0" />
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-2 text-[11px] text-slate-600">
+              <Sparkles className="w-4 h-4 text-slate-600 shrink-0" />
               <span>Após criar a obra, você será redirecionado para a gestão de capítulos.</span>
             </div>
           </form>

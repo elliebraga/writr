@@ -38,7 +38,7 @@ export const NewChapterModal: React.FC<NewChapterModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+            className="text-slate-600 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -57,9 +57,9 @@ export const NewChapterModal: React.FC<NewChapterModalProps> = ({
               placeholder="Ex: Capítulo 1 - O Despertar"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white"
+              className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-600 bg-white"
             />
-            <p className="text-base text-slate-500 font-sans mt-1.5">
+            <p className="text-base text-slate-600 font-sans mt-1.5">
               Você será redirecionado diretamente para o editor de texto em tela cheia.
             </p>
           </div>

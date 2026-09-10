@@ -49,7 +49,7 @@ export const DocsRuler: React.FC<DocsRulerProps> = ({
         <div className="w-full flex justify-between px-1 pointer-events-none relative z-10">
           {Array.from({ length: totalCm + 1 }).map((_, i) => (
             <div key={i} className="flex flex-col items-center">
-              <span className="text-[7px] font-mono text-slate-500 leading-none">
+              <span className="text-[7px] font-mono text-slate-600 leading-none">
                 {i > 0 && i < totalCm && i % 2 === 0 ? i : ""}
               </span>
               <div

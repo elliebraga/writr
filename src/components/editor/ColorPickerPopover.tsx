@@ -127,7 +127,7 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+              className="text-slate-600 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -180,7 +180,7 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
 
           {/* Cor Personalizada (HEX) */}
           <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
-            <span className="text-[11px] text-slate-500 font-medium">Custom:</span>
+            <span className="text-[11px] text-slate-600 font-medium">Custom:</span>
             <input
               type="color"
               value={customHex}

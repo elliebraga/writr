@@ -275,7 +275,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
                 <Check className="w-4 h-4" />
               </span>
             ) : (
-              <span title="Sincronizado na nuvem" className="text-slate-400">
+              <span title="Sincronizado na nuvem" className="text-slate-600">
                 <CloudCheck className="w-4 h-4" />
               </span>
             )}
@@ -334,7 +334,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors shrink-0 cursor-pointer"
+            className="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors shrink-0 cursor-pointer"
             title="Sair para a lista de capítulos"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -361,7 +361,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
               />
 
               {/* Status de Nuvem do Google Docs */}
-              <div className="hidden sm:flex items-center gap-1 text-[11px] text-slate-400">
+              <div className="hidden sm:flex items-center gap-1 text-[11px] text-slate-600">
                 {isSaving ? (
                   <span className="flex items-center gap-1 text-blue-600 font-medium animate-pulse">
                     <Cloud className="w-3.5 h-3.5" />
@@ -373,8 +373,8 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
                     Salvo no Supabase
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1 text-slate-400" title="Todas as alterações são sincronizadas na nuvem">
-                    <CloudCheck className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="flex items-center gap-1 text-slate-600" title="Todas as alterações são sincronizadas na nuvem">
+                    <CloudCheck className="w-3.5 h-3.5 text-slate-600" />
                     Salvo na nuvem
                   </span>
                 )}
@@ -509,11 +509,11 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
               <div className="min-w-0">
                 <h3 className="text-sm font-bold font-funnel text-slate-900 truncate">Opções do Documento</h3>
-                <p className="text-[11px] text-slate-500 truncate">{chapterTitle || "Documento sem título"}</p>
+                <p className="text-[11px] text-slate-600 truncate">{chapterTitle || "Documento sem título"}</p>
               </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 cursor-pointer"
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-600 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -527,7 +527,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
                 </div>
                 <div>
                   <div className="text-xs font-semibold text-slate-900">Modo Celular Fluido</div>
-                  <div className="text-[10px] text-slate-500">Texto ajustado à tela sem precisar de zoom</div>
+                  <div className="text-[10px] text-slate-600">Texto ajustado à tela sem precisar de zoom</div>
                 </div>
               </div>
               <button
@@ -554,7 +554,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
                 }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 text-slate-700 font-medium text-left cursor-pointer"
               >
-                <Save className="w-4 h-4 text-slate-500" />
+                <Save className="w-4 h-4 text-slate-600" />
                 <span>Salvar Capítulo</span>
               </button>
 
@@ -608,7 +608,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             {/* Co-autores se houver */}
             {activeUsers.length > 0 && (
               <div className="mt-4 pt-3 border-t border-slate-100">
-                <div className="text-[11px] font-semibold text-slate-500 mb-2">
+                <div className="text-[11px] font-semibold text-slate-600 mb-2">
                   Co-autores online ({activeUsers.length})
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -719,7 +719,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       </main>
 
       {/* Rodapé de Métricas e Status */}
-      <footer className="bg-white border-t border-slate-200 px-6 py-2 flex items-center justify-between text-xs text-slate-500 z-40 select-none">
+      <footer className="bg-white border-t border-slate-200 px-6 py-2 flex items-center justify-between text-xs text-slate-600 z-40 select-none">
         <div className="flex items-center gap-4">
           <button
             type="button"
@@ -727,20 +727,20 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             className="flex items-center gap-1.5 hover:text-slate-900 transition-colors cursor-pointer"
             title="Clique para ver estatísticas detalhadas"
           >
-            <span className="text-slate-400">Palavras:</span>
+            <span className="text-slate-600">Palavras:</span>
             <strong className="text-slate-900 font-semibold">{currentChapterWords}</strong>
           </button>
 
           <div className="h-3 w-px bg-slate-200" />
 
           <div className="flex items-center gap-1.5">
-            <span className="text-slate-400">Total no Livro:</span>
+            <span className="text-slate-600">Total no Livro:</span>
             <strong className="text-slate-900 font-semibold">{calculatedTotalBookWords}</strong>
           </div>
 
           <div className="h-3 w-px bg-slate-200 hidden sm:block" />
 
-          <div className="hidden sm:flex items-center gap-1.5 text-slate-400">
+          <div className="hidden sm:flex items-center gap-1.5 text-slate-600">
             <span>Página:</span>
             <strong className="text-slate-700 font-medium">
               {pageFormatOptions.pageSize} ({pageFormatOptions.orientation === "landscape" ? "Paisagem" : "Retrato"})
@@ -757,8 +757,8 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             Zoom: {Math.round(zoom * 100)}%
           </button>
 
-          <div className="flex items-center gap-1 text-[11px] text-slate-400">
-            <Sparkles className="w-3.5 h-3.5 text-slate-400" />
+          <div className="flex items-center gap-1 text-[11px] text-slate-600">
+            <Sparkles className="w-3.5 h-3.5 text-slate-600" />
             <span>Writr Docs</span>
           </div>
         </div>

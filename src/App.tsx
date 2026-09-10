@@ -273,7 +273,7 @@ export default function App() {
             {activeTab === "settings" && (
               <div className="p-8 max-w-4xl mx-auto w-full">
                 <h2 className="text-2xl font-bold font-funnel text-slate-900 mb-2">Configurações da Obra</h2>
-                <p className="text-base text-slate-500 font-sans">Gerencie o título e parâmetros gerais do projeto.</p>
+                <p className="text-base text-slate-600 font-sans">Gerencie o título e parâmetros gerais do projeto.</p>
               </div>
             )}
           </main>
@@ -305,7 +305,7 @@ export default function App() {
             </span>
             <button
               onClick={handleSignOut}
-              className="hover:text-slate-900 transition-colors p-1.5 rounded-full hover:bg-slate-100 text-slate-500 cursor-pointer"
+              className="hover:text-slate-900 transition-colors p-1.5 rounded-full hover:bg-slate-100 text-slate-600 cursor-pointer"
               title="Sair"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -321,7 +321,7 @@ export default function App() {
               <h2 className="text-3xl font-bold font-funnel text-slate-900 tracking-tight capitalize">
                 Minhas Obras
               </h2>
-              <p className="text-base text-slate-500 font-sans mt-1">
+              <p className="text-base text-slate-600 font-sans mt-1">
                 Selecione uma obra para acessar seus capítulos e editor.
               </p>
             </div>
@@ -337,20 +337,20 @@ export default function App() {
           </div>
 
           {isLoadingBooks ? (
-            <div className="text-xs text-slate-400 py-16 text-center">
+            <div className="text-xs text-slate-600 py-16 text-center">
               Carregando suas obras...
             </div>
           ) : books.length === 0 ? (
             <div className="py-16 text-center max-w-md mx-auto flex flex-col items-center justify-center">
               <div className="w-16 h-16 bg-slate-100 border border-slate-200 rounded-2xl flex items-center justify-center mb-6">
-                <BookOpen className="w-8 h-8 text-slate-400" />
+                <BookOpen className="w-8 h-8 text-slate-600" />
               </div>
 
               <h2 className="text-xl font-bold font-funnel text-slate-900 tracking-tight mb-2">
                 Você ainda não possui obras criadas
               </h2>
 
-              <p className="text-base text-slate-500 font-sans leading-relaxed mb-8">
+              <p className="text-base text-slate-600 font-sans leading-relaxed mb-8">
                 Comece seu projeto literário agora mesmo criando a sua primeira obra.
               </p>
 
@@ -387,7 +387,7 @@ export default function App() {
           )}
         </main>
 
-        <footer className="mt-16 pt-6 border-t border-slate-200 flex items-center justify-between text-xs text-slate-400 max-w-5xl w-full mx-auto font-sans">
+        <footer className="mt-16 pt-6 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600 max-w-5xl w-full mx-auto font-sans">
           <span>&copy; {new Date().getFullYear()} writr. Todos os direitos reservados.</span>
           <span>Sua suíte de escrita inteligente.</span>
         </footer>

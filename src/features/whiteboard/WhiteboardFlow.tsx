@@ -202,7 +202,7 @@ export const WhiteboardFlow: React.FC<WhiteboardFlowProps> = ({ activeBook }) =>
                 {items.length} {items.length === 1 ? "nota" : "notas"}
               </span>
             </div>
-            <p className="text-xs text-slate-500 font-sans">
+            <p className="text-xs text-slate-600 font-sans">
               Organização livre de post-its, ganchos dramáticos e pontos de virada para <strong className="text-slate-800">{activeBook.book_name}</strong>.
             </p>
           </div>
@@ -263,7 +263,7 @@ export const WhiteboardFlow: React.FC<WhiteboardFlowProps> = ({ activeBook }) =>
               Seu Quadro de Ideias está em branco
             </h3>
 
-            <p className="text-sm text-slate-500 max-w-sm mb-6 leading-relaxed">
+            <p className="text-sm text-slate-600 max-w-sm mb-6 leading-relaxed">
               Crie Post-its coloridos para estruturar os pontos de virada, mistérios e ideias do seu livro.
             </p>
 

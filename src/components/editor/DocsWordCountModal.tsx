@@ -46,7 +46,7 @@ export const DocsWordCountModal: React.FC<DocsWordCountModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100"
+              className="text-slate-600 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100"
             >
               <X className="w-4 h-4" />
             </button>
@@ -54,28 +54,28 @@ export const DocsWordCountModal: React.FC<DocsWordCountModalProps> = ({
 
           <div className="py-4 space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Páginas estimadas:</span>
+              <span className="text-slate-600">Páginas estimadas:</span>
               <strong className="text-slate-900 font-semibold">{estimatedPages}</strong>
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Palavras:</span>
+              <span className="text-slate-600">Palavras:</span>
               <strong className="text-slate-900 font-semibold">{words}</strong>
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Caracteres (com espaços):</span>
+              <span className="text-slate-600">Caracteres (com espaços):</span>
               <strong className="text-slate-900 font-semibold">{charactersWithSpaces}</strong>
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Caracteres (sem espaços):</span>
+              <span className="text-slate-600">Caracteres (sem espaços):</span>
               <strong className="text-slate-900 font-semibold">{charactersWithoutSpaces}</strong>
             </div>
 
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-slate-500 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-600 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-slate-600" />
                 Tempo de leitura:
               </span>
               <strong className="text-slate-900 font-semibold">~{readTimeMinutes} min</strong>

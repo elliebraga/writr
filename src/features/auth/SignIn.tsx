@@ -157,7 +157,7 @@ export default function SignIn({ onSignInSubmit, onNavigateToSignUp }: SignInPro
               text="writr"
               className="text-6xl text-black font-normal tracking-tight"
             />
-            <p className="text-sm font-light tracking-wide text-neutral-500 mt-1">
+            <p className="text-sm font-light tracking-wide text-neutral-600 mt-1">
               where stories begin
             </p>
           </div>
@@ -240,7 +240,7 @@ export default function SignIn({ onSignInSubmit, onNavigateToSignUp }: SignInPro
               type="submit"
               isLoading={isLoading}
               disabled={isLoading || secondsRemaining > 0}
-              className="w-full mt-4 bg-black text-white hover:bg-neutral-900 active:bg-neutral-950 rounded-full h-[46px] border-none font-medium disabled:bg-neutral-300 disabled:text-neutral-500 disabled:cursor-not-allowed"
+              className="w-full mt-4 bg-black text-white hover:bg-neutral-900 active:bg-neutral-950 rounded-full h-[46px] border-none font-medium disabled:bg-neutral-300 disabled:text-neutral-600 disabled:cursor-not-allowed"
             >
               {secondsRemaining > 0 ? `Bloqueado (${secondsRemaining}s)` : "Continuar"}
             </Button>

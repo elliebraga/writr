@@ -103,10 +103,10 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
             >
               <div className="flex items-center gap-2">
-                <Save className="w-3.5 h-3.5 text-slate-500" />
+                <Save className="w-3.5 h-3.5 text-slate-600" />
                 <span>{isSaving ? "Salvando..." : isSavedNotice ? "Salvo!" : "Salvar Capítulo"}</span>
               </div>
-              <span className="text-[10px] text-slate-400">Ctrl+S</span>
+              <span className="text-[10px] text-slate-600">Ctrl+S</span>
             </button>
 
             <div className="h-px bg-slate-100 my-1" />
@@ -140,10 +140,10 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
             >
               <div className="flex items-center gap-2">
-                <Printer className="w-3.5 h-3.5 text-slate-500" />
+                <Printer className="w-3.5 h-3.5 text-slate-600" />
                 <span>Imprimir</span>
               </div>
-              <span className="text-[10px] text-slate-400">Ctrl+P</span>
+              <span className="text-[10px] text-slate-600">Ctrl+P</span>
             </button>
 
             <div className="h-px bg-slate-100 my-1" />
@@ -188,7 +188,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
                 <Undo className="w-3.5 h-3.5" />
                 <span>Desfazer</span>
               </div>
-              <span className="text-[10px] text-slate-400">Ctrl+Z</span>
+              <span className="text-[10px] text-slate-600">Ctrl+Z</span>
             </button>
 
             <button
@@ -203,7 +203,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
                 <Redo className="w-3.5 h-3.5" />
                 <span>Refazer</span>
               </div>
-              <span className="text-[10px] text-slate-400">Ctrl+Y</span>
+              <span className="text-[10px] text-slate-600">Ctrl+Y</span>
             </button>
 
             <div className="h-px bg-slate-100 my-1" />
@@ -216,7 +216,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
             >
               <span>Selecionar Tudo</span>
-              <span className="text-[10px] text-slate-400">Ctrl+A</span>
+              <span className="text-[10px] text-slate-600">Ctrl+A</span>
             </button>
 
             <button
@@ -227,7 +227,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
             >
               <span>Limpar Formatação</span>
-              <span className="text-[10px] text-slate-400">Ctrl+\</span>
+              <span className="text-[10px] text-slate-600">Ctrl+\</span>
             </button>
           </div>
         )}
@@ -276,7 +276,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
 
             <div className="h-px bg-slate-100 my-1" />
 
-            <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+            <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-600 block">
               Zoom da Folha
             </span>
 
@@ -324,7 +324,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center gap-2 text-slate-700 cursor-pointer"
             >
-              <ImageIcon className="w-3.5 h-3.5 text-slate-500" />
+              <ImageIcon className="w-3.5 h-3.5 text-slate-600" />
               <span>Imagem...</span>
             </button>
 
@@ -348,7 +348,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center gap-2 text-slate-700 cursor-pointer"
             >
-              <CheckSquare className="w-3.5 h-3.5 text-slate-500" />
+              <CheckSquare className="w-3.5 h-3.5 text-slate-600" />
               <span>Lista de Tarefas / Checklist</span>
             </button>
 
@@ -359,7 +359,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center gap-2 text-slate-700 cursor-pointer"
             >
-              <Quote className="w-3.5 h-3.5 text-slate-500" />
+              <Quote className="w-3.5 h-3.5 text-slate-600" />
               <span>Bloco de Citação</span>
             </button>
 
@@ -372,7 +372,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center gap-2 text-slate-700 cursor-pointer"
             >
-              <Minus className="w-3.5 h-3.5 text-slate-500" />
+              <Minus className="w-3.5 h-3.5 text-slate-600" />
               <span>Linha Divisória Horizontal</span>
             </button>
           </div>
@@ -401,7 +401,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
             >
               <span className="font-bold">Negrito</span>
-              <span className="text-[10px] text-slate-400">Ctrl+B</span>
+              <span className="text-[10px] text-slate-600">Ctrl+B</span>
             </button>
 
             <button
@@ -412,7 +412,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
             >
               <span className="italic">Itálico</span>
-              <span className="text-[10px] text-slate-400">Ctrl+I</span>
+              <span className="text-[10px] text-slate-600">Ctrl+I</span>
             </button>
 
             <button
@@ -423,7 +423,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
             >
               <span className="underline">Sublinhado</span>
-              <span className="text-[10px] text-slate-400">Ctrl+U</span>
+              <span className="text-[10px] text-slate-600">Ctrl+U</span>
             </button>
 
             <button
@@ -434,7 +434,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
             >
               <span className="line-through">Tachado</span>
-              <span className="text-[10px] text-slate-400">Alt+Shift+5</span>
+              <span className="text-[10px] text-slate-600">Alt+Shift+5</span>
             </button>
 
             <div className="h-px bg-slate-100 my-1" />
@@ -447,7 +447,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
             >
               <span>Sobrescrito (X²)</span>
-              <span className="text-[10px] text-slate-400">Ctrl+.</span>
+              <span className="text-[10px] text-slate-600">Ctrl+.</span>
             </button>
 
             <button
@@ -458,7 +458,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
             >
               <span>Subscrito (X₂)</span>
-              <span className="text-[10px] text-slate-400">Ctrl+,</span>
+              <span className="text-[10px] text-slate-600">Ctrl+,</span>
             </button>
 
             <div className="h-px bg-slate-100 my-1" />
@@ -499,10 +499,10 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
             >
               <div className="flex items-center gap-2">
-                <FileText className="w-3.5 h-3.5 text-slate-500" />
+                <FileText className="w-3.5 h-3.5 text-slate-600" />
                 <span>Contagem de Palavras...</span>
               </div>
-              <span className="text-[10px] text-slate-400">Ctrl+Shift+C</span>
+              <span className="text-[10px] text-slate-600">Ctrl+Shift+C</span>
             </button>
           </div>
         )}

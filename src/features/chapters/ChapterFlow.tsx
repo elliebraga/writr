@@ -182,21 +182,21 @@ export const ChapterFlow: React.FC<ChapterFlowProps> = ({ activeBook }) => {
       />
 
       {isLoading ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-slate-400 text-sm gap-2">
+        <div className="flex-1 flex flex-col items-center justify-center text-slate-600 text-sm gap-2">
           <span>Carregando capítulos...</span>
         </div>
       ) : chapters.length === 0 ? (
         
         <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto py-16">
           <div className="w-16 h-16 bg-slate-100 border border-slate-200 rounded-2xl flex items-center justify-center mb-6">
-            <Layers className="w-8 h-8 text-slate-400" />
+            <Layers className="w-8 h-8 text-slate-600" />
           </div>
 
           <h2 className="text-xl font-bold font-funnel text-slate-900 tracking-tight mb-2">
             Sua obra ainda não possui capítulos
           </h2>
 
-          <p className="text-base text-slate-500 font-sans leading-relaxed mb-8">
+          <p className="text-base text-slate-600 font-sans leading-relaxed mb-8">
             Comece a dar vida a <strong className="text-slate-800">{activeBook.book_name}</strong> criando o seu primeiro capítulo. O editor em tela cheia estará pronto para a sua escrita.
           </p>
 
@@ -223,7 +223,7 @@ export const ChapterFlow: React.FC<ChapterFlowProps> = ({ activeBook }) => {
                   {chapters.length} {chapters.length === 1 ? "capítulo" : "capítulos"}
                 </span>
               </div>
-              <p className="text-base text-slate-500 font-sans mt-1">
+              <p className="text-base text-slate-600 font-sans mt-1">
                 Total acumulado: <strong className="text-slate-900 font-semibold">{totalBookWordCount} palavras</strong>
               </p>
             </div>

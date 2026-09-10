@@ -259,8 +259,8 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
 
       {/* Condicional: Carregando vs Sem Personagens vs Whiteboard */}
       {isLoading ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-slate-400 text-sm gap-2">
-          <Sparkles className="w-5 h-5 animate-pulse text-slate-400" />
+        <div className="flex-1 flex flex-col items-center justify-center text-slate-600 text-sm gap-2">
+          <Sparkles className="w-5 h-5 animate-pulse text-slate-600" />
           <span>Carregando árvore de relações...</span>
         </div>
       ) : characters.length === 0 ? (
@@ -268,14 +268,14 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
         // 🔴 ROTA NÃO (Sem personagens criados ainda)
         <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto py-16 p-6">
           <div className="w-16 h-16 bg-slate-100 border border-slate-200 rounded-2xl flex items-center justify-center mb-6">
-            <Share2 className="w-8 h-8 text-slate-400" />
+            <Share2 className="w-8 h-8 text-slate-600" />
           </div>
 
           <h2 className="text-xl font-bold font-funnel text-slate-900 tracking-tight mb-2">
             Crie personagens para montar o mapa de relações
           </h2>
 
-          <p className="text-base text-slate-500 font-sans leading-relaxed mb-8">
+          <p className="text-base text-slate-600 font-sans leading-relaxed mb-8">
             Para ligar o elenco com setas e construir a árvore da história de <strong className="text-slate-800">{activeBook.book_name}</strong>, adicione primeiro os seus personagens.
           </p>
 
@@ -306,7 +306,7 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
                   {relationsData.links.length} {relationsData.links.length === 1 ? "conexão" : "conexões"}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-sans mt-0.5">
+              <p className="text-xs text-slate-600 font-sans mt-0.5">
                 Arraste o elenco do menu horizontal para o whiteboard e conecte com setas.
               </p>
             </div>
@@ -380,8 +380,8 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
 
           {/* MENU HORIZONTAL DO ELENCO PARA DRAG & DROP NO WHITEBOARD */}
           <div className="px-6 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center gap-3 overflow-x-auto shrink-0 z-20 scrollbar-none">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 shrink-0 flex items-center gap-1.5">
-              <GripHorizontal className="w-3.5 h-3.5 text-slate-400" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 shrink-0 flex items-center gap-1.5">
+              <GripHorizontal className="w-3.5 h-3.5 text-slate-600" />
               <span>Elenco (Arraste para soltar no whiteboard):</span>
             </span>
 
@@ -411,7 +411,7 @@ export const RelationsFlow: React.FC<RelationsFlowProps> = ({
                       {avatarUrl ? (
                         <img src={avatarUrl} alt={charName} className="w-full h-full object-cover" />
                       ) : (
-                        <User className="w-3 h-3 text-slate-500" />
+                        <User className="w-3 h-3 text-slate-600" />
                       )}
                     </div>
 
