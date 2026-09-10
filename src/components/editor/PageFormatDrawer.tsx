@@ -327,11 +327,29 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                   onChange={(e) => onChangeOptions({ ...options, fontFamily: e.target.value })}
                   className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 cursor-pointer font-sans"
                 >
-                  <option value="Figtree, sans-serif">Figtree (Padrão Writr)</option>
-                  <option value="Georgia, serif">Georgia (Editorial Serif)</option>
-                  <option value="'Times New Roman', serif">Times New Roman (Clássico)</option>
-                  <option value="Inter, sans-serif">Inter (Moderno Sans)</option>
-                  <option value="'Courier New', monospace">Courier New (Rascunho Mono)</option>
+                  <optgroup label="Sem Serifa (Modernas / Sans)">
+                    <option value="Figtree, sans-serif">Figtree (Padrão Writr)</option>
+                    <option value="'DM Sans', sans-serif">DM Sans (Minimalista)</option>
+                    <option value="Inter, sans-serif">Inter (Moderno Sans)</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="system-ui, sans-serif">Sistema Sans</option>
+                  </optgroup>
+
+                  <optgroup label="Serifadas (Literárias & Livros)">
+                    <option value="Fraunces, serif">Fraunces (Editorial)</option>
+                    <option value="Lora, serif">Lora (Clássico Romance)</option>
+                    <option value="Merriweather, serif">Merriweather (Leitura Longa)</option>
+                    <option value="'Playfair Display', serif">Playfair Display (Elegante)</option>
+                    <option value="'EB Garamond', Georgia, serif">EB Garamond (Livro)</option>
+                    <option value="Georgia, serif">Georgia (Editorial Serif)</option>
+                    <option value="'Times New Roman', serif">Times New Roman (Clássico)</option>
+                    <option value="Cinzel, serif">Cinzel (Épico / Fantasia)</option>
+                  </optgroup>
+
+                  <optgroup label="Monospaçadas (Máquina de Escrever)">
+                    <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+                    <option value="'Courier New', monospace">Courier New (Rascunho Mono)</option>
+                  </optgroup>
                 </select>
               </div>
 

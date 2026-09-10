@@ -35,6 +35,8 @@ export function exportChapterToPdf(
     <head>
       <meta charset="UTF-8">
       <title>${title}</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Figtree:ital,wght@0,300..900;1,300..900&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
       <style>
         @page {
           size: ${pageDimensions};
@@ -55,7 +57,7 @@ export function exportChapterToPdf(
         }
 
         body {
-          font-family: "Figtree", system-ui, -apple-system, sans-serif;
+          font-family: ${options.fontFamily || '"Figtree", system-ui, -apple-system, sans-serif'};
           font-size: ${options.fontSizePt}pt;
           line-height: ${options.lineHeight};
           color: #111;
