@@ -33,6 +33,8 @@ export const bookService = {
             cover_url: b.image_ref || b.cover_url || "",
             image_ref: b.image_ref || b.cover_url || "",
             status: b.status || "rascunho",
+            expected_pages: b.expected_pages ?? null,
+            word_goal: b.word_goal ?? null,
           });
         });
       }
@@ -110,6 +112,90 @@ export const bookService = {
     }
 
     return newBook;
+  },
+
+  // Atualizar configurações da obra
+  async updateBook(bookId: string, updates: Partial<Book>): Promise<Book> {
+    const safeBookId = ensureValidUuid(bookId);
+
+    // Preparar payload para o Supabase
+    const payload: any = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (updates.book_name !== undefined) payload.book_name = updates.book_name;
+    if (updates.synopsis !== undefined || updates.resume !== undefined) {
+      payload.resume = updates.synopsis ?? updates.resume;
+    }
+    if (updates.cover_url !== undefined || updates.image_ref !== undefined) {
+      payload.image_ref = updates.cover_url ?? updates.image_ref;
+    }
+    if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.expected_pages !== undefined) payload.expected_pages = updates.expected_pages;
+    if (updates.word_goal !== undefined) payload.word_goal = updates.word_goal;
+
+    // Atualizar no localStorage imediatamente (resiliência / offline)
+    try {
+      const saved = localStorage.getItem("writr_local_books");
+      if (saved) {
+        const books: Book[] = JSON.parse(saved);
+        const updated = books.map((b) =>
+          b.id === safeBookId ? { ...b, ...updates, id: safeBookId, updated_at: payload.updated_at } : b
+        );
+        localStorage.setItem("writr_local_books", JSON.stringify(updated));
+      }
+    } catch (e) {}
+
+    // Atualizar no Supabase
+    try {
+      const { data, error } = await supabase
+        .from("books")
+        .update(payload)
+        .eq("id", safeBookId)
+        .select()
+        .single();
+
+      if (error) {
+        // Se alguma coluna ainda não existir no banco (ex: expected_pages ou word_goal), tenta sem elas
+        if (error.code === "42703") {
+          delete payload.expected_pages;
+          delete payload.word_goal;
+          await supabase.from("books").update(payload).eq("id", safeBookId);
+        } else {
+          console.error("Erro ao atualizar livro no Supabase:", error.message);
+        }
+      }
+
+      return {
+        id: safeBookId,
+        book_name: updates.book_name || "Sem título",
+        synopsis: updates.synopsis || updates.resume || "",
+        resume: updates.resume || updates.synopsis || "",
+        cover_url: updates.cover_url || updates.image_ref || "",
+        image_ref: updates.image_ref || updates.cover_url || "",
+        status: updates.status || "rascunho",
+        expected_pages: updates.expected_pages ?? 100,
+        word_goal: updates.word_goal ?? 25000,
+        created_at: updates.created_at || new Date().toISOString(),
+        updated_at: payload.updated_at,
+        ...data,
+      };
+    } catch (err) {
+      console.error("Exceção ao atualizar livro:", err);
+      return {
+        id: safeBookId,
+        book_name: updates.book_name || "Sem título",
+        synopsis: updates.synopsis || "",
+        resume: updates.resume || "",
+        cover_url: updates.cover_url || "",
+        image_ref: updates.image_ref || "",
+        status: updates.status || "rascunho",
+        expected_pages: updates.expected_pages ?? 100,
+        word_goal: updates.word_goal ?? 25000,
+        created_at: updates.created_at || new Date().toISOString(),
+        updated_at: payload.updated_at,
+      };
+    }
   },
 
   // Excluir uma obra

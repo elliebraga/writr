@@ -19,17 +19,29 @@ export const chapterService = {
       }
 
       if (data && data.length > 0) {
-        return data.map((c: any, index: number) => ({
-          ...c,
-          id: ensureValidUuid(c.id),
-          id_book: safeBookId,
-          book_id: safeBookId,
-          title: c.title || `Capítulo ${index + 1}`,
-          content: c.text || c.content || "",
-          text: c.text || c.content || "",
-          word_count: c.word_count || 0,
-          order_index: c.order_index ?? index,
-        })) as Chapter[];
+        const calculateWords = (str?: string | null) => {
+          if (!str) return 0;
+          const clean = str.replace(/<[^>]*>/g, " ").trim();
+          if (!clean) return 0;
+          return clean.split(/\s+/).filter(Boolean).length;
+        };
+
+        return data.map((c: any, index: number) => {
+          const textContent = c.text || c.content || "";
+          const calculatedWordCount = c.word_count && c.word_count > 0 ? c.word_count : calculateWords(textContent);
+
+          return {
+            ...c,
+            id: ensureValidUuid(c.id),
+            id_book: safeBookId,
+            book_id: safeBookId,
+            title: c.title || `Capítulo ${index + 1}`,
+            content: textContent,
+            text: textContent,
+            word_count: calculatedWordCount,
+            order_index: c.order_index ?? index,
+          };
+        }) as Chapter[];
       }
 
       return [];

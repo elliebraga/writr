@@ -19,6 +19,7 @@ import { ScenarioFlow } from "./features/scenarios/ScenarioFlow";
 import { characterService } from "./services";
 import type { Character } from "./types/character";
 import { WhiteboardFlow } from "./features/whiteboard/WhiteboardFlow";
+import { BookSettingsFlow } from "./features/books/BookSettingsFlow";
 
 export default function App() {
   const { showAlert } = useDialog();
@@ -271,10 +272,19 @@ export default function App() {
             )}
 
             {activeTab === "settings" && (
-              <div className="p-8 max-w-4xl mx-auto w-full">
-                <h2 className="text-2xl font-bold font-funnel text-slate-900 mb-2">Configurações da Obra</h2>
-                <p className="text-base text-slate-600 font-sans">Gerencie o título e parâmetros gerais do projeto.</p>
-              </div>
+              <BookSettingsFlow
+                activeBook={safeBook}
+                onUpdateBook={(updatedBook) => {
+                  setSelectedBook(updatedBook);
+                  setBooks((prev) =>
+                    prev.map((b) => (b.id === updatedBook.id ? updatedBook : b))
+                  );
+                }}
+                onDeleteBook={(bookId) => {
+                  setSelectedBook(null);
+                  setBooks((prev) => prev.filter((b) => b.id !== bookId));
+                }}
+              />
             )}
           </main>
         </div>

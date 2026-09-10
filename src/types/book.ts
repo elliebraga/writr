@@ -1,12 +1,13 @@
 import type { CollaboratorRole } from "./collaborator";
 
-export type BookStatus = "Idea" | "Draft" | "Writing" | "rascunho" | "privado" | "publicado";
+export type BookStatus = "Idea" | "Draft" | "Writing" | "rascunho" | "privado" | "publicado" | "finalizado";
 
 export interface Book {
   id: string;
   id_user?: string | null;
   book_name: string;
   expected_pages?: number | null;
+  word_goal?: number | null;
   synopsis?: string | null;
   resume?: string | null;
   cover_url?: string | null;
