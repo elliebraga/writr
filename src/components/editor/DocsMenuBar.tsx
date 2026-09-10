@@ -29,6 +29,8 @@ interface DocsMenuBarProps {
   onToggleRuler: () => void;
   zoom: number;
   onChangeZoom: (zoom: number) => void;
+  isMobileView?: boolean;
+  onToggleMobileView?: () => void;
 }
 
 export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
@@ -45,6 +47,8 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
   onToggleRuler,
   zoom,
   onChangeZoom,
+  isMobileView,
+  onToggleMobileView,
 }) => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuBarRef = useRef<HTMLDivElement | null>(null);
@@ -243,6 +247,22 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
 
         {activeMenu === "ver" && (
           <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+            {onToggleMobileView && (
+              <>
+                <button
+                  onClick={() => {
+                    onToggleMobileView();
+                    setActiveMenu(null);
+                  }}
+                  className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
+                >
+                  <span>Layout de Impressão (A4)</span>
+                  {!isMobileView && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                </button>
+                <div className="h-px bg-slate-100 my-1" />
+              </>
+            )}
+
             <button
               onClick={() => {
                 onToggleRuler();

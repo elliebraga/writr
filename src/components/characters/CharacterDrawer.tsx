@@ -368,7 +368,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
       />
 
       {/* Painel Lateral (Drawer Slide-Over) */}
-      <aside className="fixed inset-y-0 right-0 max-w-full flex pl-10 z-50">
+      <aside className="fixed inset-y-0 right-0 max-w-full flex pl-0 md:pl-10 z-50">
         <div className="w-screen md:w-[40vw] max-w-full md:max-w-none md:min-w-[420px] bg-white border-l border-slate-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300 ease-out">
           {/* Header */}
           <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-white">

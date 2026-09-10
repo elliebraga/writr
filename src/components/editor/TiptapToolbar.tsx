@@ -193,15 +193,15 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
               type="button"
               onClick={() => (onPrint ? onPrint() : window.print())}
               title="Imprimir (Ctrl+P)"
-              className="p-1.5 rounded hover:bg-slate-200/80 text-slate-700 transition-colors cursor-pointer"
+              className="hidden md:flex p-1.5 rounded hover:bg-slate-200/80 text-slate-700 transition-colors cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {/* Seletor de Zoom */}
+          {/* Seletor de Zoom (Apenas Desktop) */}
           {onChangeZoom && (
-            <div className="relative flex items-center">
+            <div className="hidden md:flex relative items-center">
               <select
                 value={zoom}
                 onChange={(e) => onChangeZoom(parseFloat(e.target.value))}
@@ -217,7 +217,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
             </div>
           )}
 
-          <div className="w-px h-4 bg-slate-300 mx-0.5" />
+          <div className="hidden md:block w-px h-4 bg-slate-300 mx-0.5" />
 
           {/* Hierarquia / Estilo de Parágrafo */}
           <div className="relative flex items-center">

@@ -57,7 +57,7 @@ export const TableInsertPopover: React.FC<TableInsertPopoverProps> = ({ editor }
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1.5 p-3.5 bg-white border border-slate-200 rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150 select-none">
+        <div className="fixed sm:absolute top-16 sm:top-full left-3 sm:left-0 max-w-[calc(100vw-24px)] mt-1.5 p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 select-none">
           <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
             <span className="text-xs font-semibold text-slate-700">Inserir Tabela</span>
             <button
