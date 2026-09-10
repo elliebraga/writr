@@ -220,3 +220,41 @@ FOR UPDATE TO public USING (true) WITH CHECK (true);
 DROP POLICY IF EXISTS "Permitir delete profiles" ON public.profiles;
 CREATE POLICY "Permitir delete profiles" ON public.profiles
 FOR DELETE TO public USING (true);
+
+
+-- ==========================================
+-- 10. TABELA: character_types (Tipos/Papéis de Personagens)
+-- ==========================================
+ALTER TABLE IF EXISTS public.character_types ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Permitir select character_types" ON public.character_types;
+CREATE POLICY "Permitir select character_types" ON public.character_types
+FOR SELECT TO public USING (true);
+
+DROP POLICY IF EXISTS "Permitir insert character_types" ON public.character_types;
+CREATE POLICY "Permitir insert character_types" ON public.character_types
+FOR INSERT TO public WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Permitir update character_types" ON public.character_types;
+CREATE POLICY "Permitir update character_types" ON public.character_types
+FOR UPDATE TO public USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Permitir delete character_types" ON public.character_types;
+CREATE POLICY "Permitir delete character_types" ON public.character_types
+FOR DELETE TO public USING (true);
+
+-- Inserir os tipos padrão de personagens se ainda não existirem
+INSERT INTO public.character_types (tipo)
+SELECT t.tipo
+FROM (VALUES
+  ('Protagonista'),
+  ('Antagonista'),
+  ('Secundário'),
+  ('Coadjuvante'),
+  ('Mentor'),
+  ('Outro')
+) AS t(tipo)
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.character_types ct WHERE ct.tipo = t.tipo
+);
+

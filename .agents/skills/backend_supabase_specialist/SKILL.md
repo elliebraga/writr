@@ -38,12 +38,19 @@ Você é um Engenheiro de Software Backend Sênior e Especialista em Bancos de D
 | :--- | :--- | :--- | :--- |
 | `id` | `id` | `uuid` (PK) | Gerar com `ensureValidUuid()` |
 | `activeBook.id` | `id_book` | `uuid` (FK) | Vincular à obra via `id_book` |
+| `id_character_type` | `id_character_type` | `uuid` (FK) | FK para `character_types(id)` (ex: Protagonista, Antagonista...) |
 | `name` / `character_name`| `character_name` | `text` | Nome do personagem (NÃO usar `name`) |
 | `character_age` / `age` | `character_age` | `text` | Idade do personagem |
 | `character_personality` | `character_personality` | `text` | Personalidade e traços psicológicos |
 | `character_motivations` | `character_motivations` | `text` | Objetivos e motivações |
 | `image_url` / `images` | `character_images` | `text[]` | Array de URLs das imagens |
 | `appearance`, `secrets` | `character_details` | `text` | String de dados JSON com aparência, segredos e notas |
+
+### 3.1. Tabela `public.character_types` (Tipos e Papéis)
+| Coluna Frontend | Coluna PostgreSQL (Supabase) | Tipo de Dado | Observações |
+| :--- | :--- | :--- | :--- |
+| `id` | `id` | `uuid` (PK) | UUID do tipo de personagem |
+| `tipo` / `role_type` | `tipo` | `text` | "Protagonista", "Antagonista", "Secundário", "Coadjuvante", "Mentor", "Outro" |
 
 ### 4. Tabela `public.relationships` (Whiteboard de Relações)
 | Coluna Frontend | Coluna PostgreSQL (Supabase) | Tipo de Dado | Observações |

@@ -16,7 +16,8 @@ import {
   Maximize2,
   Link as LinkIcon,
 } from "lucide-react";
-import type { Character, CharacterRoleType } from "../../types/character";
+import type { Character, CharacterRoleType, CharacterType } from "../../types/character";
+import { characterService } from "../../services/characterService";
 import Button from "../ui/Button";
 import { useDialog } from "../ui/DialogProvider";
 
@@ -26,6 +27,7 @@ interface CharacterDrawerProps {
   onClose: () => void;
   onSaveCharacter: (characterData: {
     id?: string;
+    id_character_type?: string | null;
     character_name: string;
     role_type: CharacterRoleType;
     character_age?: string | number;
@@ -83,6 +85,8 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
 
   const [characterName, setCharacterName] = useState("");
   const [roleType, setRoleType] = useState<CharacterRoleType>("Protagonista");
+  const [idCharacterType, setIdCharacterType] = useState<string | null>(null);
+  const [availableTypes, setAvailableTypes] = useState<CharacterType[]>([]);
   const [imageUrl, setImageUrl] = useState("");
   const [referenceImages, setReferenceImages] = useState<string[]>([]);
   const [age, setAge] = useState("");
@@ -99,10 +103,22 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Carregar catálogo de tipos de personagem ao abrir
+  useEffect(() => {
+    if (isOpen) {
+      characterService.getCharacterTypes().then((types) => {
+        if (types && types.length > 0) {
+          setAvailableTypes(types);
+        }
+      });
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (characterToEdit) {
       setCharacterName(characterToEdit.character_name || characterToEdit.name || "");
       setRoleType((characterToEdit.role_type as CharacterRoleType) || "Protagonista");
+      setIdCharacterType(characterToEdit.id_character_type || null);
 
       const firstImg =
         characterToEdit.character_images && characterToEdit.character_images.length > 0
@@ -140,6 +156,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
     } else {
       setCharacterName("");
       setRoleType("Protagonista");
+      setIdCharacterType(null);
       setImageUrl("");
       setReferenceImages([]);
       setAge("");
@@ -288,8 +305,16 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
         ...referenceImages,
       ];
 
+      const finalTypeId =
+        idCharacterType ||
+        availableTypes.find(
+          (t) => t.tipo.toLowerCase() === roleType.toLowerCase()
+        )?.id ||
+        null;
+
       await onSaveCharacter({
         id: characterToEdit?.id,
+        id_character_type: finalTypeId,
         character_name: characterName.trim(),
         role_type: roleType,
         character_age: age.trim() || undefined,
@@ -615,11 +640,22 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
                 Tipo de Personagem na História
               </label>
               <div className="flex flex-wrap gap-2">
-                {ROLE_OPTIONS.map((r) => (
+                {(availableTypes.length > 0
+                  ? Array.from(new Set([...ROLE_OPTIONS, ...availableTypes.map((t) => t.tipo as CharacterRoleType)]))
+                  : ROLE_OPTIONS
+                ).map((r) => (
                   <button
                     key={r}
                     type="button"
-                    onClick={() => setRoleType(r)}
+                    onClick={() => {
+                      setRoleType(r);
+                      const matched = availableTypes.find(
+                        (t) => t.tipo.toLowerCase() === r.toLowerCase()
+                      );
+                      if (matched) {
+                        setIdCharacterType(matched.id);
+                      }
+                    }}
                     className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
                       roleType === r
                         ? "bg-slate-900 text-white border-slate-900 shadow-xs"

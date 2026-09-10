@@ -83,6 +83,7 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
 
   const handleSaveCharacter = async (characterData: {
     id?: string;
+    id_character_type?: string | null;
     character_name: string;
     role_type: CharacterRoleType;
     character_age?: string | number;

@@ -6,6 +6,13 @@ export type CharacterRoleType =
   | "Mentor"
   | "Outro";
 
+export interface CharacterType {
+  id: string;
+  tipo: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Character {
   id: string;
   id_book: string; // Tabela public.characters
