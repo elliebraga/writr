@@ -123,11 +123,14 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
       return updated;
     });
 
-    await characterService.deleteCharacter(safeCharId);
-
     if (selectedCharacterToEdit && (selectedCharacterToEdit.id === characterId || selectedCharacterToEdit.id === safeCharId)) {
       setIsDrawerOpen(false);
       setSelectedCharacterToEdit(null);
+    }
+
+    const success = await characterService.deleteCharacter(safeCharId, safeBookId);
+    if (!success) {
+      console.warn("⚠️ Não foi possível confirmar a exclusão remota no Supabase. O personagem foi removido do cache local.");
     }
   };
 

@@ -6,7 +6,7 @@ import { useDialog } from "../ui/DialogProvider";
 interface CharacterCardProps {
   character: Character;
   onSelect: (character: Character) => void;
-  onDelete?: (characterId: string) => void;
+  onDelete?: (characterId: string) => Promise<void> | void;
 }
 
 const getBadgeStyles = (role?: string | null) => {
@@ -126,7 +126,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
                   "Cancelar"
                 );
                 if (confirmed) {
-                  onDelete(character.id);
+                  await onDelete(character.id);
                 }
               }}
               className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur-xs text-slate-700 hover:text-red-600 transition-all p-1.5 rounded-full hover:bg-white shadow-2xs cursor-pointer"

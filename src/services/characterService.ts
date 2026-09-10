@@ -197,18 +197,61 @@ export const characterService = {
     return savedRecord;
   },
 
-  // Excluir personagem
-  async deleteCharacter(characterId: string): Promise<boolean> {
+  // Excluir personagem com tratamento resiliente e limpeza de vínculos (FKs)
+  async deleteCharacter(characterId: string, bookId?: string): Promise<boolean> {
     const safeCharId = ensureValidUuid(characterId);
+    console.log("🗑️ [characterService] Iniciando exclusão de personagem no banco de dados:", safeCharId);
+
     try {
-      const { error } = await supabase.from("characters").delete().eq("id", safeCharId);
+      // 1. Limpar relacionamentos que referenciam este personagem para evitar violação de FK
+      try {
+        await supabase
+          .from("relationships")
+          .delete()
+          .or(`from_character_id.eq.${safeCharId},to_character_id.eq.${safeCharId}`);
+      } catch (relErr) {
+        console.warn("⚠️ [Supabase] Aviso ao remover relacionamentos do personagem:", relErr);
+      }
+
+      // 2. Desvincular eventos de timeline que apontam para este personagem
+      try {
+        await supabase
+          .from("timeline_events")
+          .update({ id_character: null })
+          .eq("id_character", safeCharId);
+      } catch (tErr) {
+        console.warn("⚠️ [Supabase] Aviso ao desvincular da timeline:", tErr);
+      }
+
+      // 3. Excluir o registro do personagem na tabela characters
+      const { error } = await supabase
+        .from("characters")
+        .delete()
+        .eq("id", safeCharId);
+
       if (error) {
-        console.error("Erro ao excluir personagem no Supabase:", error.message);
+        console.error("❌ [Supabase] Erro ao excluir personagem:", error.message, error.details);
+
+        // Fallback: tentar exclusão combinada com id_book se disponível
+        if (bookId) {
+          const safeBookId = ensureValidUuid(bookId);
+          const { error: fbErr } = await supabase
+            .from("characters")
+            .delete()
+            .match({ id: safeCharId, id_book: safeBookId });
+
+          if (!fbErr) {
+            console.log("✅ [Supabase] Personagem excluído via fallback com id_book:", safeCharId);
+            return true;
+          }
+        }
         return false;
       }
+
+      console.log("✅ [Supabase] Personagem excluído com sucesso:", safeCharId);
       return true;
     } catch (err) {
-      console.error("Exceção ao excluir personagem:", err);
+      console.error("❌ [characterService] Exceção ao excluir personagem:", err);
       return false;
     }
   },
