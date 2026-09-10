@@ -7,17 +7,18 @@ export const DEFAULT_USER_ID = "a3d665b8-36b8-4e40-9799-b18e71950cfa";
 export const bookService = {
   // Buscar todas as obras do usuário logado
   async getBooks(userId?: string): Promise<Book[]> {
+    if (!userId) {
+      return [];
+    }
+
     const booksMap = new Map<string, Book>();
 
     try {
-      let query = supabase.from("books").select("*");
-      if (userId) {
-        query = query.eq("id_user", userId);
-      } else {
-        query = query.is("id_user", null);
-      }
-      
-      const { data: ownedData, error: ownedError } = await query.order("created_at", { ascending: false });
+      const { data: ownedData, error: ownedError } = await supabase
+        .from("books")
+        .select("*")
+        .eq("id_user", userId)
+        .order("created_at", { ascending: false });
 
       if (ownedError) {
         console.error("Erro ao buscar livros do Supabase:", ownedError.message);
@@ -39,15 +40,17 @@ export const bookService = {
         });
       }
 
-      // Fallback para cache local se a busca no Supabase não retornar dados
+      // Fallback para cache local se a busca no Supabase não retornar dados (ex: offline)
       if (booksMap.size === 0) {
         try {
           const savedLocal = localStorage.getItem("writr_local_books");
           if (savedLocal) {
             const parsed: Book[] = JSON.parse(savedLocal);
             parsed.forEach((b) => {
-              const id = ensureValidUuid(b.id);
-              booksMap.set(id, { ...b, id });
+              if (b.id_user === userId) {
+                const id = ensureValidUuid(b.id);
+                booksMap.set(id, { ...b, id });
+              }
             });
           }
         } catch (e) {}

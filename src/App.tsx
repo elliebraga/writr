@@ -24,22 +24,11 @@ import { BookSettingsFlow } from "./features/books/BookSettingsFlow";
 export default function App() {
   const { showAlert } = useDialog();
   const [screen, setScreen] = useState<"signin" | "signup" | "dashboard">("signin");
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [userName, setUserName] = useState("Escritor");
   const [sessionUser, setSessionUser] = useState<any>(null);
   
   const [books, setBooks] = useState<Book[]>([]);
-
-  // Carregar obras locais do localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("writr_local_books");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setBooks(parsed.map((b: Book) => ({ ...b, id: ensureValidUuid(b.id) })));
-      }
-    } catch (e) {}
-  }, []);
-
   const [isLoadingBooks, setIsLoadingBooks] = useState(false);
   
   // Estado do Livro Ativo e Abas do Workspace
@@ -61,15 +50,6 @@ export default function App() {
       setBookCharacters([]);
     }
   }, [selectedBook?.id]);
-
-  // Efeito para salvar obras no localStorage sempre que o estado mudar
-  useEffect(() => {
-    try {
-      localStorage.setItem("writr_local_books", JSON.stringify(books));
-    } catch (e) {
-      console.error("Erro ao salvar livros no localStorage", e);
-    }
-  }, [books]);
 
   // Sync sessão do Supabase ao montar
   useEffect(() => {
@@ -93,31 +73,30 @@ export default function App() {
       const name = await authService.getUserProfile(session.user.id);
       setUserName(name || session.user.email?.split("@")[0] || "Escritor");
 
-      fetchBooks(session.user.id);
+      await fetchBooks(session.user.id);
       setScreen("dashboard");
     } else {
       setSessionUser(null);
       setUserName("Escritor");
-      fetchBooks();
-      setScreen("dashboard");
+      setBooks([]);
+      setSelectedBook(null);
+      setScreen("signin");
     }
+    setIsCheckingAuth(false);
   };
 
   const fetchBooks = async (userId?: string) => {
+    if (!userId) {
+      setBooks([]);
+      return;
+    }
     setIsLoadingBooks(true);
     try {
       const remoteBooks = await bookService.getBooks(userId);
-      setBooks((prev) => {
-        const map = new Map<string, Book>();
-        if (userId) {
-          prev.filter((b) => b.id_user === userId).forEach((b) => map.set(b.id, b));
-          remoteBooks.forEach((b) => map.set(b.id, b));
-        } else {
-          prev.filter((b) => !b.id_user).forEach((b) => map.set(b.id, b));
-          remoteBooks.forEach((b) => map.set(b.id, b));
-        }
-        return Array.from(map.values());
-      });
+      setBooks(remoteBooks);
+      try {
+        localStorage.setItem("writr_local_books", JSON.stringify(remoteBooks));
+      } catch (e) {}
     } catch (err) {
       console.error("Erro na consulta de livros:", err);
     } finally {
@@ -126,13 +105,19 @@ export default function App() {
   };
 
   const handleSignInSubmit = async (formData: any) => {
-    await authService.signIn(formData);
+    const data = await authService.signIn(formData);
+    if (data?.session) {
+      handleSession(data.session);
+    }
   };
 
   const handleSignUpSubmit = async (formData: any) => {
     const data = await authService.signUp(formData);
-    if (data.user && !data.session) {
+    if (data?.session) {
+      handleSession(data.session);
+    } else if (data?.user && !data?.session) {
       await showAlert("Cadastro realizado! Verifique seu e-mail para ativar a conta.", "Cadastro Realizado");
+      setScreen("signin");
     }
   };
 
@@ -142,6 +127,7 @@ export default function App() {
     } catch (err: any) {
       await showAlert("Erro ao deslogar: " + err.message, "Erro");
     }
+    setSessionUser(null);
     setBooks([]);
     setSelectedBook(null);
     localStorage.removeItem("writr_local_books");
@@ -173,6 +159,16 @@ export default function App() {
     setSelectedBook(createdBook);
     setActiveTab("chapters");
   };
+
+  // Se ainda estiver verificando a sessão com o Supabase, exibe tela de carregamento suave
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs font-semibold text-slate-400 tracking-wider uppercase font-sans">Carregando...</span>
+      </div>
+    );
+  }
 
   // Renderiza Dashboard com Workspace de Livro Selecionado
   if (screen === "dashboard") {
