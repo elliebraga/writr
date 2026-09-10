@@ -315,6 +315,10 @@ export const ScenarioFlow: React.FC<ScenarioFlowProps> = ({ activeBook, characte
         characters={characters}
         onClose={() => setIsDrawerOpen(false)}
         onSave={handleSaveScenario}
+        onDelete={async (id) => {
+          await handleDelete(id, editingScenario?.name || "");
+          setIsDrawerOpen(false);
+        }}
       />
     </div>
   );

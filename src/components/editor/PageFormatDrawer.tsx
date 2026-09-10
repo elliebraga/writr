@@ -438,6 +438,23 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                   className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
                 />
               </div>
+              {onExportPdf && (
+                <div className="pt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    onClick={() => {
+                      onExportPdf();
+                      onClose();
+                    }}
+                    leftIcon={<Printer className="w-4 h-4" />}
+                    className="w-full justify-center"
+                  >
+                    Gerar PDF do Capítulo
+                  </Button>
+                </div>
+              )}
             </div>
 
             <div className="p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl flex items-center gap-2 text-[11px] text-indigo-700">
@@ -447,33 +464,17 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="p-4 sm:px-6 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-200 bg-white flex items-center justify-between gap-2.5 sm:gap-3 shrink-0">
+          <div className="p-4 sm:px-6 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-200 bg-white flex items-center justify-end gap-2.5 sm:gap-3 shrink-0">
             <Button
               type="button"
-              variant="outline"
+              variant="primary"
               size="md"
               onClick={onClose}
               leftIcon={<Check className="w-4 h-4" />}
-              className="flex-1 sm:flex-initial"
+              className="w-full sm:w-auto min-w-[140px]"
             >
-              Aplicar ao Editor
+              Salvar Configurações
             </Button>
-
-            {onExportPdf && (
-              <Button
-                type="button"
-                variant="primary"
-                size="md"
-                onClick={() => {
-                  onExportPdf();
-                  onClose();
-                }}
-                leftIcon={<Printer className="w-4 h-4" />}
-                className="flex-1 sm:flex-initial"
-              >
-                Gerar PDF
-              </Button>
-            )}
           </div>
         </div>
       </aside>
