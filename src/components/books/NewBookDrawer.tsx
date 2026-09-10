@@ -205,14 +205,14 @@ export const NewBookDrawer: React.FC<NewBookDrawerProps> = ({
           </form>
 
           {/* Drawer Footer Fixo no Rodapé */}
-          <div className="p-4 sm:p-5 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-200 bg-white flex items-center justify-end gap-3 shrink-0">
+          <div className="p-4 sm:p-5 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-200 bg-white flex items-center gap-3 shrink-0">
             <Button
               type="submit"
               variant="primary"
               size="md"
               isLoading={isSubmitting}
               onClick={handleSubmit}
-              className="w-full sm:w-auto min-w-[140px]"
+              className="w-full flex-1"
             >
               Criar Obra
             </Button>

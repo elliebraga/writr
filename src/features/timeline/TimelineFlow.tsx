@@ -127,10 +127,10 @@ export const TimelineFlow: React.FC<TimelineFlowProps> = ({
   return (
     <div className="flex-1 bg-white min-h-screen flex flex-col font-sans select-none overflow-hidden">
       {/* Top Header & Actions */}
-      <div className="px-8 py-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white z-20 shrink-0">
+      <div className="px-4 py-3 sm:px-8 sm:py-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 bg-white z-20 shrink-0">
         <div>
-          <h2 className="text-xl font-bold font-funnel text-slate-900 tracking-tight flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-slate-900" />
+          <h2 className="text-lg sm:text-xl font-bold font-funnel text-slate-900 tracking-tight flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-slate-900 shrink-0" />
             <span>Linha do Tempo</span>
           </h2>
           <p className="text-xs text-slate-600 font-sans mt-0.5">
@@ -138,10 +138,10 @@ export const TimelineFlow: React.FC<TimelineFlowProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {/* Seletor de Filtro de Personagem */}
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full">
-            <Filter className="w-3.5 h-3.5 text-slate-600" />
+          <div className="flex-1 sm:flex-initial flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full min-w-0">
+            <Filter className="w-3.5 h-3.5 text-slate-600 shrink-0" />
             <select
               value={selectedCharacterId}
               onChange={(e) => {
@@ -150,7 +150,7 @@ export const TimelineFlow: React.FC<TimelineFlowProps> = ({
                   onClearInitialFilter();
                 }
               }}
-              className="text-xs font-semibold text-slate-700 bg-transparent focus:outline-none cursor-pointer"
+              className="text-xs font-semibold text-slate-700 bg-transparent focus:outline-none cursor-pointer truncate w-full"
             >
               <option value="all">Todos os Eventos</option>
               <option value="general">História Geral</option>
@@ -172,6 +172,7 @@ export const TimelineFlow: React.FC<TimelineFlowProps> = ({
               setIsModalOpen(true);
             }}
             leftIcon={<Plus className="w-3.5 h-3.5" />}
+            className="shrink-0"
           >
             Novo Evento
           </Button>
@@ -179,7 +180,7 @@ export const TimelineFlow: React.FC<TimelineFlowProps> = ({
       </div>
 
       {/* Main Whiteboard Canvas */}
-      <div className="flex-1 overflow-y-auto bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] relative p-8 md:p-12">
+      <div className="flex-1 overflow-y-auto bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] relative p-4 sm:p-8 md:p-12">
         {isLoading ? (
           <div className="text-xs text-slate-600 py-16 text-center h-full flex items-center justify-center">
             Carregando linha do tempo...

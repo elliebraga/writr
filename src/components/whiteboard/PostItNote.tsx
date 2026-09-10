@@ -8,6 +8,7 @@ interface PostItNoteProps {
   onUpdate: (updated: Partial<WhiteboardItem> & { id: string }) => void;
   onDelete: (id: string) => void;
   onDragStart: (id: string, e: React.MouseEvent) => void;
+  onTouchStart?: (id: string, e: React.TouchEvent) => void;
 }
 
 const CATEGORY_LABELS: Record<WhiteboardCategory, { label: string; icon: string }> = {
@@ -26,6 +27,7 @@ export const PostItNote: React.FC<PostItNoteProps> = ({
   onUpdate,
   onDelete,
   onDragStart,
+  onTouchStart,
 }) => {
   const [isEditingCategory, setIsEditingCategory] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
@@ -40,23 +42,24 @@ export const PostItNote: React.FC<PostItNoteProps> = ({
         style={{
           transform: `translate(${item.x}px, ${item.y}px)`,
         }}
-        className="absolute z-10 cursor-move select-none group"
+        className="absolute z-10 cursor-move select-none group touch-none"
         onMouseDown={(e) => onDragStart(item.id, e)}
+        onTouchStart={(e) => onTouchStart?.(item.id, e)}
       >
-        <div className="flex items-center gap-3 bg-white/90 backdrop-blur-xs border-2 border-slate-900 rounded-full px-5 py-2 shadow-md">
+        <div className="flex items-center gap-3 bg-white/90 backdrop-blur-xs border-2 border-slate-900 rounded-full px-4 sm:px-5 py-1.5 sm:py-2 shadow-md">
           <input
             type="text"
             value={item.title || item.content}
             onChange={(e) => onUpdate({ id: item.id, title: e.target.value, content: e.target.value })}
             placeholder="Título da Seção / Ato..."
-            className="text-sm font-bold font-funnel text-slate-900 bg-transparent focus:outline-none w-48"
+            className="text-xs sm:text-sm font-bold font-funnel text-slate-900 bg-transparent focus:outline-none w-36 sm:w-48"
           />
           <button
             onClick={(e) => {
               e.stopPropagation();
               onDelete(item.id);
             }}
-            className="text-slate-600 hover:text-red-600 transition-colors p-1 rounded-full hover:bg-slate-100 opacity-0 group-hover:opacity-100"
+            className="text-slate-600 hover:text-red-600 transition-colors p-1 rounded-full hover:bg-slate-100 sm:opacity-0 sm:group-hover:opacity-100"
             title="Excluir Seção"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -71,12 +74,13 @@ export const PostItNote: React.FC<PostItNoteProps> = ({
       style={{
         transform: `translate(${item.x}px, ${item.y}px)`,
       }}
-      className={`absolute z-10 w-64 ${colors.bg} border ${colors.border} rounded-2xl shadow-md hover:shadow-lg transition-shadow select-none group flex flex-col overflow-hidden`}
+      className={`absolute z-10 w-60 sm:w-64 ${colors.bg} border ${colors.border} rounded-2xl shadow-md hover:shadow-lg transition-shadow select-none group flex flex-col overflow-hidden`}
     >
       {/* Header do Post-it (Arraste + Categoria + Ações) */}
       <div
         onMouseDown={(e) => onDragStart(item.id, e)}
-        className={`px-3.5 py-2 ${colors.header} flex items-center justify-between cursor-grab active:cursor-grabbing border-b border-black/5`}
+        onTouchStart={(e) => onTouchStart?.(item.id, e)}
+        className={`px-3 py-1.5 sm:px-3.5 sm:py-2 ${colors.header} flex items-center justify-between cursor-grab active:cursor-grabbing border-b border-black/5 touch-none`}
       >
         {/* Badge da Categoria */}
         <div className="relative">

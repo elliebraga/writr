@@ -464,14 +464,14 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="p-4 sm:px-6 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-200 bg-white flex items-center justify-end gap-2.5 sm:gap-3 shrink-0">
+          <div className="p-4 sm:px-6 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-200 bg-white flex items-center gap-3 shrink-0">
             <Button
               type="button"
               variant="primary"
               size="md"
               onClick={onClose}
               leftIcon={<Check className="w-4 h-4" />}
-              className="w-full sm:w-auto min-w-[140px]"
+              className="w-full flex-1"
             >
               Salvar Configurações
             </Button>

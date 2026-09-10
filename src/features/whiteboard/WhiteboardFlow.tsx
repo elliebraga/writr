@@ -113,7 +113,7 @@ export const WhiteboardFlow: React.FC<WhiteboardFlowProps> = ({ activeBook }) =>
     }
   };
 
-  // Início de arrasto de um Post-it
+  // Início de arrasto de um Post-it (Mouse)
   const handleDragStart = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const item = items.find((i) => i.id === id);
@@ -128,7 +128,23 @@ export const WhiteboardFlow: React.FC<WhiteboardFlowProps> = ({ activeBook }) =>
     };
   };
 
-  // Movimento de arrasto do Post-it
+  // Início de arrasto de um Post-it (Touch / Mobile iPhone 14)
+  const handleTouchDragStart = (id: string, e: React.TouchEvent) => {
+    e.stopPropagation();
+    const item = items.find((i) => i.id === id);
+    if (!item || e.touches.length === 0) return;
+
+    const touch = e.touches[0];
+    setDraggingId(id);
+    dragStartRef.current = {
+      mouseX: touch.clientX,
+      mouseY: touch.clientY,
+      initialX: item.x,
+      initialY: item.y,
+    };
+  };
+
+  // Movimento de arrasto do Post-it (Mouse)
   const handleMouseMove = (e: React.MouseEvent) => {
     if (draggingId && dragStartRef.current) {
       const deltaX = (e.clientX - dragStartRef.current.mouseX) / zoomLevel;
@@ -154,6 +170,35 @@ export const WhiteboardFlow: React.FC<WhiteboardFlowProps> = ({ activeBook }) =>
     }
   };
 
+  // Movimento de arrasto ou pan (Touch / Mobile iPhone 14)
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+
+    if (draggingId && dragStartRef.current) {
+      const deltaX = (touch.clientX - dragStartRef.current.mouseX) / zoomLevel;
+      const deltaY = (touch.clientY - dragStartRef.current.mouseY) / zoomLevel;
+
+      const newX = dragStartRef.current.initialX + deltaX;
+      const newY = dragStartRef.current.initialY + deltaY;
+
+      setItems((prev) =>
+        prev.map((i) => (i.id === draggingId ? { ...i, x: newX, y: newY } : i))
+      );
+      return;
+    }
+
+    if (isPanningCanvas && panStartRef.current) {
+      const deltaX = touch.clientX - panStartRef.current.mouseX;
+      const deltaY = touch.clientY - panStartRef.current.mouseY;
+
+      setPanOffset({
+        x: panStartRef.current.initialPanX + deltaX,
+        y: panStartRef.current.initialPanY + deltaY,
+      });
+    }
+  };
+
   // Fim do arrasto (Salva a posição final no Supabase)
   const handleMouseUp = () => {
     if (draggingId) {
@@ -171,7 +216,7 @@ export const WhiteboardFlow: React.FC<WhiteboardFlowProps> = ({ activeBook }) =>
     }
   };
 
-  // Início do Pan do fundo do canvas
+  // Início do Pan do fundo do canvas (Mouse)
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     if (e.target === containerRef.current || (e.target as HTMLElement).id === "canvas-bg") {
       setIsPanningCanvas(true);
@@ -184,25 +229,42 @@ export const WhiteboardFlow: React.FC<WhiteboardFlowProps> = ({ activeBook }) =>
     }
   };
 
+  // Início do Pan do fundo do canvas (Touch / Mobile)
+  const handleCanvasTouchStart = (e: React.TouchEvent) => {
+    if (
+      e.touches.length === 1 &&
+      (e.target === containerRef.current || (e.target as HTMLElement).id === "canvas-bg")
+    ) {
+      const touch = e.touches[0];
+      setIsPanningCanvas(true);
+      panStartRef.current = {
+        mouseX: touch.clientX,
+        mouseY: touch.clientY,
+        initialPanX: panOffset.x,
+        initialPanY: panOffset.y,
+      };
+    }
+  };
+
   return (
-    <div className="flex-1 h-screen bg-slate-50 relative overflow-hidden select-none flex flex-col font-sans">
+    <div className="flex-1 h-full min-h-0 bg-slate-50 relative overflow-hidden select-none flex flex-col font-sans">
       
       {/* Header Superior do Quadro de Ideias */}
-      <div className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between z-30 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold">
+      <div className="bg-white border-b border-slate-200 px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between z-30 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold shrink-0">
             <StickyNote className="w-4 h-4" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold font-funnel text-slate-900">
-                Quadro de Ideias & Enredo
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h2 className="text-sm sm:text-base font-bold font-funnel text-slate-900 truncate">
+                Quadro de Ideias
               </h2>
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 border border-slate-200">
+              <span className="text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
                 {items.length} {items.length === 1 ? "nota" : "notas"}
               </span>
             </div>
-            <p className="text-xs text-slate-600 font-sans">
+            <p className="hidden sm:block text-xs text-slate-600 font-sans truncate">
               Organização livre de post-its, ganchos dramáticos e pontos de virada para <strong className="text-slate-800">{activeBook.book_name}</strong>.
             </p>
           </div>
@@ -213,8 +275,9 @@ export const WhiteboardFlow: React.FC<WhiteboardFlowProps> = ({ activeBook }) =>
           size="sm"
           onClick={() => handleAddPostIt("yellow")}
           leftIcon={<Plus className="w-3.5 h-3.5" />}
+          className="shrink-0"
         >
-          Novo Post-it
+          <span className="hidden sm:inline">Novo </span>Post-it
         </Button>
       </div>
 
@@ -225,7 +288,10 @@ export const WhiteboardFlow: React.FC<WhiteboardFlowProps> = ({ activeBook }) =>
         onMouseDown={handleCanvasMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        className={`flex-1 relative overflow-hidden ${
+        onTouchStart={handleCanvasTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleMouseUp}
+        className={`flex-1 relative overflow-hidden touch-none ${
           isPanningCanvas ? "cursor-grabbing" : "cursor-grab"
         }`}
         style={{
@@ -248,6 +314,7 @@ export const WhiteboardFlow: React.FC<WhiteboardFlowProps> = ({ activeBook }) =>
               onUpdate={handleUpdateItem}
               onDelete={handleDeleteItem}
               onDragStart={handleDragStart}
+              onTouchStart={handleTouchDragStart}
             />
           ))}
         </div>
