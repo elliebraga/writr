@@ -74,7 +74,7 @@ export const NewBookDrawer: React.FC<NewBookDrawerProps> = ({
 
       {/* Painel Lateral (Drawer Slide-Over da Direita) */}
       <aside className="fixed inset-y-0 right-0 max-w-full flex pl-10 z-50">
-        <div className="w-screen max-w-md bg-white border-l border-slate-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300 ease-out">
+        <div className="w-screen md:w-[40vw] max-w-full md:max-w-none md:min-w-[420px] bg-white border-l border-slate-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300 ease-out">
           
           {/* Drawer Header */}
           <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-white">

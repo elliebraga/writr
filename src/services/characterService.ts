@@ -25,6 +25,7 @@ export const characterService = {
           let summaryStr = c.summary || null;
           let roleTypeStr = c.role_type || null;
 
+          let ageVal = c.character_age || c.age || null;
           if (c.character_details) {
             try {
               const parsed = typeof c.character_details === "string"
@@ -35,6 +36,7 @@ export const characterService = {
                 secretsStr = secretsStr || parsed.secrets || null;
                 summaryStr = summaryStr || parsed.notes || null;
                 roleTypeStr = roleTypeStr || parsed.role_type || null;
+                ageVal = ageVal || parsed.age || parsed.character_age || null;
               }
             } catch (e) {
               summaryStr = summaryStr || c.character_details;
@@ -53,7 +55,8 @@ export const characterService = {
             character_name: c.character_name || c.name || "Personagem sem nome",
             name: c.character_name || c.name || "Personagem sem nome",
             role_type: (roleTypeStr || c.role_type || "Protagonista") as CharacterRoleType,
-            character_sign: c.character_sign || null,
+            character_age: ageVal,
+            age: ageVal,
             character_personality: c.character_personality || null,
             character_motivations: c.character_motivations || null,
             appearance: appearanceStr,
@@ -78,7 +81,8 @@ export const characterService = {
       id?: string;
       character_name: string;
       role_type: CharacterRoleType;
-      character_sign?: string;
+      character_age?: string | number;
+      age?: string | number;
       character_personality?: string;
       character_motivations?: string;
       appearance?: string;
@@ -101,9 +105,16 @@ export const characterService = {
 
       if (!bookCheck) {
         console.log("ℹ️ [Supabase] Obra pai não encontrada no banco. Criando registro pai automaticamente...");
+        let currentUserId = null;
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          currentUserId = sessionData?.session?.user?.id || null;
+        } catch (authErr) {}
+
         await supabase.from("books").upsert([
           {
             id: safeBookId,
+            id_user: currentUserId,
             book_name: "Obra",
             status: "rascunho",
             created_at: new Date().toISOString(),
@@ -115,25 +126,36 @@ export const characterService = {
       console.warn("⚠️ Aviso ao verificar obra no Supabase:", e);
     }
 
-    // 2. Montar objeto JSON serializado de detalhes
+    // 2. Montar objeto JSON serializado de detalhes (inclui idade)
+    const ageValue =
+      characterData.character_age !== undefined && characterData.character_age !== null
+        ? characterData.character_age
+        : characterData.age !== undefined && characterData.age !== null
+        ? characterData.age
+        : "";
+
     const serializedDetails = characterData.character_details || JSON.stringify({
       appearance: characterData.appearance || "",
       secrets: characterData.secrets || "",
       notes: characterData.summary || "",
       role_type: characterData.role_type || "Protagonista",
+      age: ageValue ? String(ageValue).trim() : "",
     });
 
     const payloadPrimary: any = {
       id: safeCharId,
       id_book: safeBookId,
       character_name: characterData.character_name,
-      character_sign: characterData.character_sign || null,
       character_personality: characterData.character_personality || null,
       character_motivations: characterData.character_motivations || null,
       character_images: characterData.character_images || [],
       character_details: serializedDetails,
       updated_at: new Date().toISOString(),
     };
+
+    if (ageValue) {
+      payloadPrimary.character_age = String(ageValue).trim();
+    }
 
     const savedRecord: Character = {
       id: safeCharId,
@@ -142,32 +164,46 @@ export const characterService = {
       character_name: characterData.character_name,
       name: characterData.character_name,
       role_type: characterData.role_type,
-      character_sign: characterData.character_sign,
+      character_age: ageValue || null,
+      age: ageValue || null,
       character_personality: characterData.character_personality,
       character_motivations: characterData.character_motivations,
       appearance: characterData.appearance,
       secrets: characterData.secrets,
       summary: characterData.summary,
       character_details: serializedDetails,
+      character_images: characterData.character_images,
       image_url: characterData.character_images && characterData.character_images.length > 0 ? characterData.character_images[0] : undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
-    // 3. Tentar persistência no Supabase com tratamento de fallback
+    // 3. Tentar persistência no Supabase com suporte a insert/update direto
     try {
-      const { data, error } = await supabase
-        .from("characters")
-        .upsert([payloadPrimary])
-        .select()
-        .single();
+      let existsInDb = false;
+      if (characterData.id) {
+        const { data: existingChar } = await supabase
+          .from("characters")
+          .select("id")
+          .eq("id", safeCharId)
+          .maybeSingle();
+        existsInDb = !!existingChar;
+      }
+
+      const saveOperation = existsInDb
+        ? supabase.from("characters").update(payloadPrimary).eq("id", safeCharId).select().maybeSingle()
+        : supabase.from("characters").insert([payloadPrimary]).select().maybeSingle();
+
+      const { data, error } = await saveOperation;
 
       if (!error && data) {
         console.log("✅ [Supabase] Personagem salvo com sucesso:", data.id);
         savedRecord.id = ensureValidUuid(data.id);
-      } else if (error) {
-        console.warn("⚠️ Erro na primeira tentativa de upsert no Supabase:", error.message);
-        
+      } else {
+        if (error) {
+          console.warn("⚠️ Erro na primeira tentativa de salvar no Supabase:", error.message);
+        }
+
         // Tentar payload secundário simplificado (caso colunas adicionais não existam no esquema)
         const payloadFallback: any = {
           id: safeCharId,
@@ -177,11 +213,11 @@ export const characterService = {
           updated_at: new Date().toISOString(),
         };
 
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from("characters")
-          .upsert([payloadFallback])
-          .select()
-          .single();
+        const fallbackOperation = existsInDb
+          ? supabase.from("characters").update(payloadFallback).eq("id", safeCharId).select().maybeSingle()
+          : supabase.from("characters").insert([payloadFallback]).select().maybeSingle();
+
+        const { data: fallbackData, error: fallbackError } = await fallbackOperation;
 
         if (!fallbackError && fallbackData) {
           console.log("✅ [Supabase] Personagem salvo via payload fallback:", fallbackData.id);

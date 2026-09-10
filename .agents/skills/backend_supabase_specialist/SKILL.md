@@ -39,7 +39,7 @@ Você é um Engenheiro de Software Backend Sênior e Especialista em Bancos de D
 | `id` | `id` | `uuid` (PK) | Gerar com `ensureValidUuid()` |
 | `activeBook.id` | `id_book` | `uuid` (FK) | Vincular à obra via `id_book` |
 | `name` / `character_name`| `character_name` | `text` | Nome do personagem (NÃO usar `name`) |
-| `character_sign` | `character_sign` | `text` | Signo ou arquétipo do personagem |
+| `character_age` / `age` | `character_age` | `text` | Idade do personagem |
 | `character_personality` | `character_personality` | `text` | Personalidade e traços psicológicos |
 | `character_motivations` | `character_motivations` | `text` | Objetivos e motivações |
 | `image_url` / `images` | `character_images` | `text[]` | Array de URLs das imagens |

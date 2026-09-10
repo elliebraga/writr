@@ -11,7 +11,7 @@ export interface Character {
   id_book: string; // Tabela public.characters
   id_character_type?: string | null;
   character_name: string;
-  character_sign?: string | null; // Signo / Arquétipo
+  character_age?: string | number | null; // Idade do personagem
   character_personality?: string | null; // Personalidade
   character_images?: string[] | null; // Array de imagens do personagem
   character_motivations?: string | null; // Campo oficial de Motivações
@@ -26,6 +26,7 @@ export interface Character {
   // Aliases de compatibilidade
   book_id?: string;
   name?: string;
+  age?: string | number | null;
   role_type?: CharacterRoleType | string | null;
   image_url?: string | null;
   created_at: string;

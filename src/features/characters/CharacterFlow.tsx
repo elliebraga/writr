@@ -85,7 +85,7 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
     id?: string;
     character_name: string;
     role_type: CharacterRoleType;
-    character_sign?: string;
+    character_age?: string | number;
     character_personality?: string;
     character_motivations?: string;
     appearance?: string;
@@ -97,9 +97,9 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
     const savedChar = await characterService.saveCharacter(safeBookId, characterData);
 
     setCharacters((prev) => {
-      const exists = prev.some((c) => c.id === savedChar.id);
+      const exists = prev.some((c) => c.id === savedChar.id || (characterData.id && c.id === characterData.id));
       const updated = exists
-        ? prev.map((c) => (c.id === savedChar.id ? { ...c, ...savedChar } : c))
+        ? prev.map((c) => (c.id === savedChar.id || (characterData.id && c.id === characterData.id) ? { ...c, ...savedChar } : c))
         : [...prev, savedChar];
 
       try {

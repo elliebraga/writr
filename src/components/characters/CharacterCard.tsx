@@ -1,5 +1,5 @@
 import React from "react";
-import { User, Trash2, Image as ImageIcon, Sparkles } from "lucide-react";
+import { User, Trash2, Image as ImageIcon, Cake } from "lucide-react";
 import type { Character } from "../../types/character";
 import { useDialog } from "../ui/DialogProvider";
 
@@ -145,10 +145,15 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
             {characterName}
           </h3>
 
-          {character.character_sign && (
-            <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-400 font-medium truncate">
-              <Sparkles className="w-3 h-3 text-slate-400 shrink-0" />
-              <span className="truncate">{character.character_sign}</span>
+          {(character.character_age || character.age) && (
+            <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500 font-medium truncate">
+              <Cake className="w-3 h-3 text-slate-400 shrink-0" />
+              <span className="truncate">
+                {typeof (character.character_age || character.age) === "number" ||
+                /^\d+$/.test(String(character.character_age || character.age).trim())
+                  ? `${character.character_age || character.age} anos`
+                  : character.character_age || character.age}
+              </span>
             </div>
           )}
 

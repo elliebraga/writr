@@ -8,7 +8,7 @@ import {
   EyeOff,
   Flame,
   Heart,
-  Compass,
+  Cake,
   Camera,
   Upload,
   Calendar,
@@ -28,7 +28,7 @@ interface CharacterDrawerProps {
     id?: string;
     character_name: string;
     role_type: CharacterRoleType;
-    character_sign?: string;
+    character_age?: string | number;
     character_personality?: string;
     character_motivations?: string;
     appearance?: string;
@@ -51,7 +51,7 @@ const ROLE_OPTIONS: CharacterRoleType[] = [
 ];
 
 function parseDetails(rawDetails?: string | null) {
-  if (!rawDetails) return { appearance: "", secrets: "", notes: "", reference_images: [] };
+  if (!rawDetails) return { appearance: "", secrets: "", notes: "", reference_images: [], age: "" };
   try {
     const parsed = JSON.parse(rawDetails);
     if (typeof parsed === "object" && parsed !== null) {
@@ -59,13 +59,14 @@ function parseDetails(rawDetails?: string | null) {
         appearance: parsed.appearance || "",
         secrets: parsed.secrets || "",
         notes: parsed.notes || "",
+        age: parsed.age || parsed.character_age || "",
         reference_images: Array.isArray(parsed.reference_images) ? parsed.reference_images : [],
       };
     }
   } catch (e) {
     // Se for texto simples
   }
-  return { appearance: "", secrets: "", notes: rawDetails, reference_images: [] };
+  return { appearance: "", secrets: "", notes: rawDetails, reference_images: [], age: "" };
 }
 
 export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
@@ -84,7 +85,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
   const [roleType, setRoleType] = useState<CharacterRoleType>("Protagonista");
   const [imageUrl, setImageUrl] = useState("");
   const [referenceImages, setReferenceImages] = useState<string[]>([]);
-  const [characterSign, setCharacterSign] = useState("");
+  const [age, setAge] = useState("");
   const [personality, setPersonality] = useState("");
   const [appearance, setAppearance] = useState("");
   const [motivations, setMotivations] = useState("");
@@ -122,7 +123,14 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
       }
       setReferenceImages(refs.slice(0, 8));
 
-      setCharacterSign(characterToEdit.character_sign || "");
+      const initialAge =
+        characterToEdit.character_age !== undefined && characterToEdit.character_age !== null
+          ? String(characterToEdit.character_age)
+          : characterToEdit.age !== undefined && characterToEdit.age !== null
+          ? String(characterToEdit.age)
+          : detailsObj.age || "";
+      setAge(initialAge);
+
       setPersonality(characterToEdit.character_personality || "");
       setMotivations(characterToEdit.character_motivations || "");
 
@@ -134,7 +142,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
       setRoleType("Protagonista");
       setImageUrl("");
       setReferenceImages([]);
-      setCharacterSign("");
+      setAge("");
       setPersonality("");
       setAppearance("");
       setMotivations("");
@@ -148,29 +156,67 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
 
   if (!isOpen) return null;
 
+  // Utilitário para comprimir imagens pesadas antes de armazenar
+  const compressImage = (file: File, maxWidth = 800, maxHeight = 800, quality = 0.8): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth || height > maxHeight) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(event.target?.result as string);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = () => {
+          resolve(event.target?.result as string);
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.onerror = () => {
+        resolve("");
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Processa o avatar principal
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError("A imagem é muito grande. Escolha um arquivo de até 5MB.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64String = event.target?.result as string;
-      if (base64String) {
-        setImageUrl(base64String);
+    try {
+      const compressedBase64 = await compressImage(file, 800, 800, 0.82);
+      if (compressedBase64) {
+        setImageUrl(compressedBase64);
         setError(null);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      setError("Erro ao processar imagem.");
+    }
   };
 
   // Adiciona imagens de referência por arquivo (Upload)
-  const handleAddReferenceFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAddReferenceFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
@@ -182,25 +228,18 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
     const spaceLeft = 8 - referenceImages.length;
     const filesToProcess = files.slice(0, spaceLeft);
 
-    filesToProcess.forEach((file) => {
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Uma das imagens excede 5MB e não foi carregada.");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64String = event.target?.result as string;
-        if (base64String) {
+    for (const file of filesToProcess) {
+      try {
+        const compressedBase64 = await compressImage(file, 800, 800, 0.8);
+        if (compressedBase64) {
           setReferenceImages((prev) => {
             if (prev.length >= 8) return prev;
-            return [...prev, base64String];
+            return [...prev, compressedBase64];
           });
           setError(null);
         }
-      };
-      reader.readAsDataURL(file);
-    });
+      } catch (err) {}
+    }
 
     if (refFileInputRef.current) refFileInputRef.current.value = "";
   };
@@ -240,6 +279,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
         secrets: secrets.trim(),
         notes: summary.trim(),
         role_type: roleType,
+        age: age.trim(),
         reference_images: referenceImages,
       });
 
@@ -252,7 +292,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
         id: characterToEdit?.id,
         character_name: characterName.trim(),
         role_type: roleType,
-        character_sign: characterSign.trim() || undefined,
+        character_age: age.trim() || undefined,
         character_personality: personality.trim() || undefined,
         character_motivations: motivations.trim() || undefined,
         appearance: appearance.trim() || undefined,
@@ -304,7 +344,7 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
 
       {/* Painel Lateral (Drawer Slide-Over) */}
       <aside className="fixed inset-y-0 right-0 max-w-full flex pl-10 z-50">
-        <div className="w-screen max-w-lg bg-white border-l border-slate-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300 ease-out">
+        <div className="w-screen md:w-[40vw] max-w-full md:max-w-none md:min-w-[420px] bg-white border-l border-slate-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300 ease-out">
           {/* Header */}
           <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-white">
             <div className="flex items-center gap-2.5">
@@ -556,14 +596,14 @@ export const CharacterDrawer: React.FC<CharacterDrawerProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
-                  <Compass className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Signo / Arquétipo</span>
+                  <Cake className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Idade</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: Áries / O Herói"
-                  value={characterSign}
-                  onChange={(e) => setCharacterSign(e.target.value)}
+                  placeholder="Ex: 24 anos"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 text-slate-900 placeholder:text-slate-400 bg-white"
                 />
               </div>
