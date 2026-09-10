@@ -1,6 +1,7 @@
 import type { Chapter } from "../types/book";
 import type { PdfExportOptions } from "../types/export";
 import { DEFAULT_PDF_OPTIONS } from "../types/export";
+import { getSavedCustomFonts } from "../services/fontService";
 
 /**
  * Converte tamanho de página amigável para regras de CSS @page
@@ -13,6 +14,22 @@ function getPageCssDimensions(pageSize: string, orientation: string): string {
   else if (pageSize === "Pocket") sizeVal = "125mm 180mm";
 
   return `${sizeVal} ${orientation}`;
+}
+
+function getGoogleFontsLinkTag(): string {
+  const customFonts = getSavedCustomFonts();
+  const customParams = customFonts
+    .map((f) => `family=${f.name.replace(/\s+/g, "+")}:ital,wght@0,300..800;1,300..800`)
+    .join("&");
+  const baseLink = `https://fonts.googleapis.com/css2?family=Antonio:wght@100..700&family=Cinzel:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Figtree:ital,wght@0,300..900;1,300..900&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Playfair+Display:ital,wght@0,400..900;1,400..900${
+    customParams ? "&" + customParams : ""
+  }&display=swap`;
+
+  return `
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="${baseLink}" rel="stylesheet">
+  `;
 }
 
 /**
@@ -35,8 +52,7 @@ export function exportChapterToPdf(
     <head>
       <meta charset="UTF-8">
       <title>${title}</title>
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Figtree:ital,wght@0,300..900;1,300..900&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+      ${getGoogleFontsLinkTag()}
       <style>
         @page {
           size: ${pageDimensions};
@@ -244,6 +260,7 @@ export function exportBookToPdf(
     <head>
       <meta charset="UTF-8">
       <title>${bookTitle} - Livro Completo</title>
+      ${getGoogleFontsLinkTag()}
       <style>
         @page {
           size: ${pageDimensions};

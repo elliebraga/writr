@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Editor } from "@tiptap/react";
 import {
   Undo,
@@ -29,6 +29,12 @@ import {
 import { ImageInsertModal } from "./ImageInsertModal";
 import { ColorPickerPopover } from "./ColorPickerPopover";
 import { TableInsertPopover } from "./TableInsertPopover";
+import { GoogleFontModal } from "./GoogleFontModal";
+import {
+  getSavedCustomFonts,
+  subscribeCustomFonts,
+  type CustomFont,
+} from "../../services/fontService";
 
 interface TiptapToolbarProps {
   editor: Editor | null;
@@ -44,6 +50,16 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
   onPrint,
 }) => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isGoogleFontModalOpen, setIsGoogleFontModalOpen] = useState(false);
+  const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
+
+  useEffect(() => {
+    setCustomFonts(getSavedCustomFonts());
+    const unsub = subscribeCustomFonts(() => {
+      setCustomFonts(getSavedCustomFonts());
+    });
+    return unsub;
+  }, []);
 
   if (!editor) return null;
 
@@ -86,9 +102,8 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
     return editor.getAttributes("textStyle").fontFamily || "default";
   };
 
-  // Handler para trocar família de fonte
-  const handleFontFamilyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const font = e.target.value;
+  // Handler para aplicar família de fonte
+  const handleApplyFontFamily = (font: string) => {
     if (editor.state.selection.empty) {
       const { from } = editor.state.selection;
       const $from = editor.state.doc.resolve(from);
@@ -96,9 +111,21 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
       const end = $from.end();
       if (start < end) {
         if (font === "default") {
-          editor.chain().focus().setTextSelection({ from: start, to: end }).unsetFontFamily().setTextSelection(from).run();
+          editor
+            .chain()
+            .focus()
+            .setTextSelection({ from: start, to: end })
+            .unsetFontFamily()
+            .setTextSelection(from)
+            .run();
         } else {
-          editor.chain().focus().setTextSelection({ from: start, to: end }).setFontFamily(font).setTextSelection(from).run();
+          editor
+            .chain()
+            .focus()
+            .setTextSelection({ from: start, to: end })
+            .setFontFamily(font)
+            .setTextSelection(from)
+            .run();
         }
         return;
       }
@@ -109,6 +136,16 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
     } else {
       editor.chain().focus().setFontFamily(font).run();
     }
+  };
+
+  // Handler para trocar família de fonte no dropdown
+  const handleFontFamilyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const font = e.target.value;
+    if (font === "__OPEN_FONT_MODAL__") {
+      setIsGoogleFontModalOpen(true);
+      return;
+    }
+    handleApplyFontFamily(font);
   };
 
   // Handler para trocar hierarquia (H1, H2, H3, Parágrafo)
@@ -236,16 +273,28 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
           <div className="w-px h-4 bg-slate-300 mx-0.5" />
 
           {/* Família da Fonte */}
-          <div className="relative flex items-center">
+          <div className="relative flex items-center gap-0.5">
             <select
               value={getCurrentFontFamily()}
               onChange={handleFontFamilyChange}
-              className="h-7 px-2.5 text-xs font-medium bg-transparent hover:bg-slate-200/80 border border-transparent hover:border-slate-300 rounded text-slate-800 focus:outline-none focus:bg-white cursor-pointer max-w-[145px] truncate"
+              className="h-7 px-2 text-xs font-medium bg-transparent hover:bg-slate-200/80 border border-transparent hover:border-slate-300 rounded text-slate-800 focus:outline-none focus:bg-white cursor-pointer max-w-[140px] truncate"
               title="Fonte do Texto"
             >
               <option value="default">Fonte: Padrão da Obra</option>
+              <option value="__OPEN_FONT_MODAL__">➕ Mais fontes (Google Fonts)...</option>
 
-              <optgroup label="Sem Serifa (Modernas)">
+              {customFonts.length > 0 && (
+                <optgroup label="✨ Fontes Adicionadas">
+                  {customFonts.map((cf) => (
+                    <option key={cf.name} value={cf.family}>
+                      {cf.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+
+              <optgroup label="Sem Serifa & Display">
+                <option value="'Antonio', sans-serif">Antonio</option>
                 <option value="Figtree, sans-serif">Figtree</option>
                 <option value="'DM Sans', sans-serif">DM Sans</option>
                 <option value="Inter, sans-serif">Inter</option>
@@ -272,6 +321,15 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
                 <option value="ui-monospace, monospace">Sistema Mono</option>
               </optgroup>
             </select>
+
+            <button
+              type="button"
+              onClick={() => setIsGoogleFontModalOpen(true)}
+              title="Adicionar mais fontes do Google Fonts"
+              className="h-7 w-6 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-200/80 rounded transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
           </div>
 
           {/* Tamanho da Fonte com botões - e + */}
@@ -564,6 +622,12 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
           </div>
         </div>
       </div>
+
+      <GoogleFontModal
+        isOpen={isGoogleFontModalOpen}
+        onClose={() => setIsGoogleFontModalOpen(false)}
+        onSelectFont={handleApplyFontFamily}
+      />
     </>
   );
 };

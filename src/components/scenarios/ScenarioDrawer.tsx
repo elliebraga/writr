@@ -114,20 +114,20 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
         className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
       />
 
-      {/* Drawer Slide-Over */}
-      <aside className="fixed inset-y-0 right-0 max-w-full flex pl-0 md:pl-10 z-50">
-        <div className="w-screen md:w-[40vw] max-w-full md:max-w-none md:min-w-[420px] bg-white border-l border-slate-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300 ease-out">
+      {/* Drawer Slide-Over (Fullscreen no Mobile / Drawer no Desktop) */}
+      <aside className="fixed inset-0 md:inset-y-0 md:right-0 md:left-auto max-w-full flex md:pl-10 z-50">
+        <div className="w-full md:w-[40vw] max-w-full md:max-w-none md:min-w-[420px] bg-white md:border-l border-slate-200 shadow-2xl flex flex-col h-full h-[100dvh] animate-in slide-in-from-bottom md:slide-in-from-right duration-300 ease-out">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white">
+          <div className="px-4 py-3.5 sm:px-6 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-white shrink-0 pt-[max(0.875rem,env(safe-area-inset-top))]">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white shrink-0">
                 <MapPin className="w-4 h-4" />
               </div>
-              <div>
-                <h3 className="text-base font-bold font-funnel text-slate-900">
+              <div className="min-w-0">
+                <h3 className="text-base font-bold font-funnel text-slate-900 truncate">
                   {scenario ? "Editar Cenário" : "Novo Cenário / Local"}
                 </h3>
-                <p className="text-xs text-slate-600 font-sans">
+                <p className="text-xs text-slate-600 font-sans truncate">
                   Mapeie locais, referências visuais e personagens vinculados.
                 </p>
               </div>
@@ -135,14 +135,15 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
 
             <button
               onClick={onClose}
-              className="text-slate-600 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+              className="text-slate-600 hover:text-slate-700 p-2 rounded-full hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
+              title="Fechar"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Form Content */}
-          <form id="scenario-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+          <form id="scenario-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* 1. Nome & Tipo */}
             <div className="space-y-4">
               <div>
@@ -155,7 +156,7 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ex: Castelo das Sombras, Taverna do Dragão..."
-                  className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 transition-colors font-medium"
+                  className="w-full px-3.5 py-2 text-base md:text-sm border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 transition-colors font-medium"
                 />
               </div>
 
@@ -192,43 +193,43 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Descreva a arquitetura, cores principais, tamanho e sensação geral ao entrar neste local..."
-                className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 transition-colors resize-y"
+                className="w-full px-3.5 py-2 text-base md:text-sm border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 transition-colors resize-y"
               />
             </div>
 
             {/* 3. Detalhes Sensoriais */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Detalhes Sensoriais (Sons, Cheiros, Clima, Iluminação)
+                Detalhes Sensoriais (Sons, Odores, Clima)
               </label>
               <textarea
                 rows={2}
                 value={sensoryDetails}
                 onChange={(e) => setSensoryDetails(e.target.value)}
-                placeholder="Ex: Cheiro forte de maresia e fumo de cachimbo. Som constante de ondas batendo na madeira..."
-                className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 transition-colors resize-y"
+                placeholder="Ex: Cheiro de maresia e pinho úmido, som de gaivotas distantes, vento cortante..."
+                className="w-full px-3.5 py-2 text-base md:text-sm border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 transition-colors resize-y"
               />
             </div>
 
-            {/* 4. História & Notas */}
+            {/* 4. História / Notas Importantes */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                História, Regras & Notas Especiais
+                História & Curiosidades do Local
               </label>
               <textarea
                 rows={2}
                 value={historyNotes}
                 onChange={(e) => setHistoryNotes(e.target.value)}
-                placeholder="Segredos do local, eventos históricos importantes ocorridos aqui ou regras mágicas/sociais..."
-                className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 transition-colors resize-y"
+                placeholder="Acontecimentos passados importantes, lendas populares, quem fundou ou governa..."
+                className="w-full px-3.5 py-2 text-base md:text-sm border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 transition-colors resize-y"
               />
             </div>
 
-            {/* 5. Galeria de Imagens de Referência */}
+            {/* 5. Referências Visuais (Imagens por URL) */}
             <div className="space-y-3 pt-2 border-t border-slate-100">
               <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
                 <ImageIcon className="w-4 h-4 text-slate-600" />
-                <span>Imagens de Referência (URLs)</span>
+                <span>Imagens de Referência / Moodboard</span>
               </label>
 
               <div className="flex gap-2">
@@ -236,8 +237,8 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
                   type="url"
                   value={newImageUrl}
                   onChange={(e) => setNewImageUrl(e.target.value)}
-                  placeholder="https://exemplo.com/imagem-do-cenario.jpg"
-                  className="flex-1 px-3.5 py-2 text-xs border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900"
+                  placeholder="Cole o link de uma foto (https://...)"
+                  className="flex-1 px-3.5 py-2 text-base md:text-xs border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900"
                 />
                 <Button
                   type="button"
@@ -245,6 +246,7 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
                   size="sm"
                   onClick={handleAddImage}
                   leftIcon={<Plus className="w-3.5 h-3.5" />}
+                  className="shrink-0"
                 >
                   Adicionar
                 </Button>
@@ -252,7 +254,7 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
 
               {/* Grid de Imagens Carregadas */}
               {images.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 pt-1">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
                   {images.map((imgUrl, idx) => (
                     <div
                       key={idx}
@@ -269,10 +271,10 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(idx)}
-                        className="absolute top-1 right-1 p-1 bg-red-600/90 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                        className="absolute top-1 right-1 p-1.5 bg-red-600 text-white rounded-full sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-red-700 cursor-pointer"
                         title="Remover imagem"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   ))}
@@ -333,8 +335,14 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
           </form>
 
           {/* Footer */}
-          <div className="p-4 border-t border-slate-200 bg-white flex items-center justify-end gap-3 shrink-0">
-            <Button type="button" variant="outline" size="sm" onClick={onClose}>
+          <div className="p-4 sm:px-6 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-200 bg-white flex items-center justify-end gap-2.5 sm:gap-3 shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={onClose}
+              className="flex-1 sm:flex-initial"
+            >
               Cancelar
             </Button>
 
@@ -342,9 +350,10 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
               type="submit"
               form="scenario-form"
               variant="primary"
-              size="sm"
+              size="md"
               isLoading={isSaving}
               leftIcon={<Check className="w-3.5 h-3.5" />}
+              className="flex-1 sm:flex-initial"
             >
               {scenario ? "Salvar Alterações" : "Criar Cenário"}
             </Button>

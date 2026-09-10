@@ -2,6 +2,7 @@ import React from "react";
 import { X, FileText, Sliders, Printer, Type, Layout, Check, Sparkles } from "lucide-react";
 import type { PdfExportOptions, PageSize, PageOrientation } from "../../types/export";
 import Button from "../ui/Button";
+import { getSavedCustomFonts } from "../../services/fontService";
 
 export interface PageFormatOptions extends PdfExportOptions {
   fontFamily: string;
@@ -23,6 +24,8 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
   onExportPdf,
 }) => {
   if (!isOpen) return null;
+
+  const customFonts = getSavedCustomFonts();
 
   const handleMarginPresetChange = (preset: "normal" | "narrow" | "wide") => {
     if (preset === "normal") {
@@ -86,32 +89,33 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
         className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
       />
 
-      {/* Drawer Slide-Over */}
-      <aside className="fixed inset-y-0 right-0 max-w-full flex pl-0 md:pl-10 z-50">
-        <div className="w-screen md:w-[40vw] max-w-full md:max-w-none md:min-w-[420px] bg-white border-l border-slate-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300 ease-out">
+      {/* Drawer Slide-Over (Fullscreen no Mobile / Drawer no Desktop) */}
+      <aside className="fixed inset-0 md:inset-y-0 md:right-0 md:left-auto max-w-full flex md:pl-10 z-50">
+        <div className="w-full md:w-[40vw] max-w-full md:max-w-none md:min-w-[420px] bg-white md:border-l border-slate-200 shadow-2xl flex flex-col h-full h-[100dvh] animate-in slide-in-from-bottom md:slide-in-from-right duration-300 ease-out">
           
           {/* Header */}
-          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600">
+          <div className="px-4 py-3.5 sm:px-6 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-white shrink-0 pt-[max(0.875rem,env(safe-area-inset-top))]">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 shrink-0">
                 <Sliders className="w-4 h-4" />
               </div>
-              <div>
-                <h3 className="text-base font-bold font-funnel text-slate-900">Formatador de Página</h3>
-                <p className="text-xs text-slate-600 font-sans">Ajuste o layout, margens e PDF do editor.</p>
+              <div className="min-w-0">
+                <h3 className="text-base font-bold font-funnel text-slate-900 truncate">Formatador de Página</h3>
+                <p className="text-xs text-slate-600 font-sans truncate">Ajuste layout, margens e PDF do editor.</p>
               </div>
             </div>
 
             <button
               onClick={onClose}
-              className="text-slate-600 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+              className="text-slate-600 hover:text-slate-700 p-2 rounded-full hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
+              title="Fechar"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Form Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-4 sm:space-y-6">
             
             {/* Visualização Prévia Miniaturizada */}
             <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden">
@@ -188,7 +192,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                 <FileText className="w-3.5 h-3.5 text-slate-600" />
                 <span>Tamanho da Folha</span>
               </label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
                   { id: "A5", label: "A5 (Livro)", desc: "148 × 210" },
                   { id: "A4", label: "A4", desc: "210 × 297" },
@@ -325,9 +329,20 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                 <select
                   value={options.fontFamily}
                   onChange={(e) => onChangeOptions({ ...options, fontFamily: e.target.value })}
-                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 cursor-pointer font-sans"
+                  className="w-full px-3 py-2 text-base md:text-xs border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 cursor-pointer font-sans"
                 >
-                  <optgroup label="Sem Serifa (Modernas / Sans)">
+                  {customFonts.length > 0 && (
+                    <optgroup label="✨ Suas Fontes Personalizadas">
+                      {customFonts.map((cf) => (
+                        <option key={cf.name} value={cf.family}>
+                          {cf.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+
+                  <optgroup label="Sem Serifa & Display">
+                    <option value="'Antonio', sans-serif">Antonio (Display)</option>
                     <option value="Figtree, sans-serif">Figtree (Padrão Writr)</option>
                     <option value="'DM Sans', sans-serif">DM Sans (Minimalista)</option>
                     <option value="Inter, sans-serif">Inter (Moderno Sans)</option>
@@ -361,7 +376,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                   <select
                     value={options.fontSizePt}
                     onChange={(e) => onChangeOptions({ ...options, fontSizePt: Number(e.target.value) })}
-                    className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 cursor-pointer"
+                    className="w-full px-3 py-2 text-base md:text-xs border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 cursor-pointer"
                   >
                     <option value={10}>10 pt (Compacto)</option>
                     <option value={11}>11 pt (Padrão)</option>
@@ -377,7 +392,7 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
                   <select
                     value={options.lineHeight}
                     onChange={(e) => onChangeOptions({ ...options, lineHeight: Number(e.target.value) })}
-                    className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 cursor-pointer"
+                    className="w-full px-3 py-2 text-base md:text-xs border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900 cursor-pointer"
                   >
                     <option value={1.25}>1.25x (Simples)</option>
                     <option value={1.5}>1.5x (Editorial)</option>
@@ -432,13 +447,14 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-slate-200 bg-white flex items-center justify-between gap-3 shrink-0">
+          <div className="p-4 sm:px-6 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-200 bg-white flex items-center justify-between gap-2.5 sm:gap-3 shrink-0">
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              size="md"
               onClick={onClose}
-              leftIcon={<Check className="w-3.5 h-3.5" />}
+              leftIcon={<Check className="w-4 h-4" />}
+              className="flex-1 sm:flex-initial"
             >
               Aplicar ao Editor
             </Button>
@@ -447,12 +463,13 @@ export const PageFormatDrawer: React.FC<PageFormatDrawerProps> = ({
               <Button
                 type="button"
                 variant="primary"
-                size="sm"
+                size="md"
                 onClick={() => {
                   onExportPdf();
                   onClose();
                 }}
-                leftIcon={<Printer className="w-3.5 h-3.5" />}
+                leftIcon={<Printer className="w-4 h-4" />}
+                className="flex-1 sm:flex-initial"
               >
                 Gerar PDF
               </Button>
