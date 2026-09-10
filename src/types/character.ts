@@ -16,6 +16,7 @@ export interface Character {
   character_images?: string[] | null; // Array de imagens do personagem
   character_motivations?: string | null; // Campo oficial de Motivações
   character_details?: string | null; // Detalhes gerais e serialização
+  header_url?: string | null; // Imagem de cabeçalho / heading
 
   // Campos separados de Ficha (UI)
   appearance?: string | null; // Aparência Física

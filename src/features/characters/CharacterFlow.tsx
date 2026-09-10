@@ -216,7 +216,7 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
                 key={character.id}
                 character={character}
                 onSelect={() => handleOpenEditDrawer(character)}
-                onNavigateToTimeline={onNavigateToTimeline}
+                onDelete={handleDeleteCharacter}
               />
             ))}
           </div>
