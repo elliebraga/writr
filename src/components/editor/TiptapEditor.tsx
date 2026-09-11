@@ -19,6 +19,8 @@ import Superscript from "@tiptap/extension-superscript";
 import Image from "@tiptap/extension-image";
 import { FontSize } from "./FontSizeExtension";
 
+import { PaginationPlus } from "tiptap-pagination-plus";
+
 import {
   Save,
   ArrowLeft,
@@ -54,6 +56,60 @@ interface TiptapEditorProps {
   totalBookWordCount: number;
   onSave: (updatedChapter: Partial<Chapter> & { id: string }) => Promise<void> | void;
   onClose: () => void;
+}
+
+const MM_TO_PX = 3.779527559;
+
+function getPageDimensions(options: PageFormatOptions, zoom: number, isMobile: boolean) {
+  let wMm = 210; // A4 por padrão
+  let hMm = 297;
+  if (options.pageSize === "A5") {
+    wMm = 148;
+    hMm = 210;
+  } else if (options.pageSize === "Letter") {
+    wMm = 216;
+    hMm = 279;
+  } else if (options.pageSize === "Pocket") {
+    wMm = 125;
+    hMm = 180;
+  }
+
+  if (options.orientation === "landscape") {
+    const tmp = wMm;
+    wMm = hMm;
+    hMm = tmp;
+  }
+
+  let widthPx = Math.round(wMm * MM_TO_PX * zoom);
+  let heightPx = Math.round(hMm * MM_TO_PX * zoom);
+  let marginTopPx = Math.round(options.marginTopMm * MM_TO_PX * zoom);
+  let marginBottomPx = Math.round(options.marginBottomMm * MM_TO_PX * zoom);
+  let marginLeftPx = Math.round(options.marginLeftMm * MM_TO_PX * zoom);
+  let marginRightPx = Math.round(options.marginRightMm * MM_TO_PX * zoom);
+
+  if (isMobile && typeof window !== "undefined") {
+    const availableWidth = Math.max(300, window.innerWidth - 24);
+    if (widthPx > availableWidth) {
+      const scale = availableWidth / widthPx;
+      widthPx = availableWidth;
+      heightPx = Math.round(heightPx * scale);
+      marginTopPx = Math.max(16, Math.round(marginTopPx * scale));
+      marginBottomPx = Math.max(16, Math.round(marginBottomPx * scale));
+      marginLeftPx = Math.max(16, Math.round(marginLeftPx * scale));
+      marginRightPx = Math.max(16, Math.round(marginRightPx * scale));
+    }
+  }
+
+  return {
+    pageWidthMm: wMm,
+    pageHeightMm: hMm,
+    pageWidthPx: widthPx,
+    pageHeightPx: heightPx,
+    marginTopPx,
+    marginBottomPx,
+    marginLeftPx,
+    marginRightPx,
+  };
 }
 
 export const TiptapEditor: React.FC<TiptapEditorProps> = ({
@@ -110,7 +166,10 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     } catch (e) {}
   }, [pageFormatOptions]);
 
-  // Inicializa o Tiptap Editor com suporte completo ao Google Docs
+  const pageDims = getPageDimensions(pageFormatOptions, zoom, isMobileView);
+  const { pageWidthMm } = pageDims;
+
+  // Inicializa o Tiptap Editor com suporte completo ao Google Docs e paginação dinâmica
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -145,6 +204,25 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         types: ["heading", "paragraph"],
       }),
       CharacterCount.configure(),
+      PaginationPlus.configure({
+        enabled: true,
+        pageBreakBackground: "#f0f4f9",
+        pageGapBorderColor: "#cbd5e1",
+        pageGapBorderSize: 1,
+        pageHeight: pageDims.pageHeightPx,
+        pageWidth: pageDims.pageWidthPx,
+        marginTop: pageDims.marginTopPx,
+        marginBottom: pageDims.marginBottomPx,
+        marginLeft: pageDims.marginLeftPx,
+        marginRight: pageDims.marginRightPx,
+        pageGap: 24,
+        contentMarginTop: 8,
+        contentMarginBottom: 8,
+        footerRight: "Página {page}",
+        footerLeft: "",
+        headerRight: "",
+        headerLeft: "",
+      }),
     ],
     content: chapter.content || "",
     onUpdate: ({ editor }) => {
@@ -153,7 +231,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     editorProps: {
       attributes: {
         class:
-          "prose prose-slate focus:outline-none max-w-none min-h-[500px] text-slate-900",
+          "prose prose-slate focus:outline-none max-w-none text-slate-900",
       },
     },
   });
@@ -192,25 +270,37 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     exportChapterToPdf(chapterTitle, editor?.getHTML() || "", options);
   };
 
-  // Cálculo das dimensões reais da folha em mm para a visualização no editor
-  let pageWidthMm = 210; // A4 por padrão
-  let pageHeightMm = 297;
-  if (pageFormatOptions.pageSize === "A5") {
-    pageWidthMm = 148;
-    pageHeightMm = 210;
-  } else if (pageFormatOptions.pageSize === "Letter") {
-    pageWidthMm = 216;
-    pageHeightMm = 279;
-  } else if (pageFormatOptions.pageSize === "Pocket") {
-    pageWidthMm = 125;
-    pageHeightMm = 180;
-  }
+  // Sincroniza dimensões de página e margens dinamicamente com a extensão de paginação
+  useEffect(() => {
+    if (!editor) return;
+    const currentDims = getPageDimensions(pageFormatOptions, zoom, isMobileView);
+    editor.commands.updatePageWidth(currentDims.pageWidthPx);
+    editor.commands.updatePageHeight(currentDims.pageHeightPx);
+    editor.commands.updateMargins({
+      top: currentDims.marginTopPx,
+      bottom: currentDims.marginBottomPx,
+      left: currentDims.marginLeftPx,
+      right: currentDims.marginRightPx,
+    });
+    // Força re-renderização das decorações de página
+    editor.view.dispatch(editor.state.tr);
+  }, [editor, pageFormatOptions, zoom, isMobileView]);
 
-  if (pageFormatOptions.orientation === "landscape") {
-    const tmp = pageWidthMm;
-    pageWidthMm = pageHeightMm;
-    pageHeightMm = tmp;
-  }
+  // Contagem dinâmica de páginas ativas no editor
+  const [pageCount, setPageCount] = useState(1);
+  useEffect(() => {
+    if (!editor) return;
+    const updateCount = () => {
+      const breaks = editor.view?.dom?.querySelectorAll(".rm-page-break");
+      const count = breaks && breaks.length > 0 ? breaks.length : 1;
+      setPageCount(count);
+    };
+    updateCount();
+    editor.on("update", updateCount);
+    return () => {
+      editor.off("update", updateCount);
+    };
+  }, [editor]);
 
   return (
     <div className="fixed inset-0 z-50 bg-[#f0f4f9] flex flex-col h-screen w-screen overflow-hidden select-none">
@@ -629,16 +719,21 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         </div>
       )}
 
-      {/* Área Principal de Escrita com Régua e Folha Flutuante */}
+      {/* Área Principal de Escrita com Régua e Folhas Paginadas estilo Google Docs */}
       <main
         className={`flex-1 overflow-y-auto flex flex-col items-center transition-colors ${
-          isMobileView ? "bg-white p-0" : "bg-[#f0f4f9] py-6 px-4"
+          isMobileView ? "bg-[#f0f4f9] py-3 px-2" : "bg-[#f0f4f9] py-6 px-4"
         }`}
+        style={{
+          "--editor-font-family": pageFormatOptions.fontFamily,
+          "--editor-font-size": `${pageFormatOptions.fontSizePt * zoom}pt`,
+          "--editor-line-height": pageFormatOptions.lineHeight || "1.6",
+        } as React.CSSProperties}
       >
         
         {/* Régua Superior do Google Docs (Apenas visível no Layout de Impressão) */}
         {showRuler && !isMobileView && (
-          <div className="mb-2 w-full flex justify-center">
+          <div className="mb-3 w-full flex justify-center sticky top-0 z-30 pb-1">
             <DocsRuler
               pageWidthMm={pageWidthMm}
               marginLeftMm={pageFormatOptions.marginLeftMm}
@@ -648,73 +743,62 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           </div>
         )}
 
-        {/* Folha de Papel Paginada com Sombra Realista ou Modo Celular Fluido */}
-        <div
-          className={`bg-white transition-all duration-200 relative select-text ${
-            isMobileView
-              ? "w-full max-w-full px-4 py-5 shadow-none min-h-full"
-              : "rounded-xs"
-          }`}
-          style={
-            isMobileView
-              ? ({
-                  width: "100%",
-                  maxWidth: "100%",
-                  minHeight: "calc(100vh - 120px)",
-                  fontFamily: pageFormatOptions.fontFamily,
-                  "--editor-font-family": pageFormatOptions.fontFamily,
-                  "--editor-font-size": "16px",
-                  "--editor-line-height": pageFormatOptions.lineHeight || "1.65",
-                } as React.CSSProperties)
-              : ({
-                  width: `${pageWidthMm * zoom}mm`,
-                  minHeight: `${pageHeightMm * zoom}mm`,
-                  maxWidth: "100%",
-                  paddingTop: `${pageFormatOptions.marginTopMm * zoom}mm`,
-                  paddingRight: `${pageFormatOptions.marginRightMm * zoom}mm`,
-                  paddingBottom: `${pageFormatOptions.marginBottomMm * zoom}mm`,
-                  paddingLeft: `${pageFormatOptions.marginLeftMm * zoom}mm`,
-                  fontFamily: pageFormatOptions.fontFamily,
-                  "--editor-font-family": pageFormatOptions.fontFamily,
-                  "--editor-font-size": `${pageFormatOptions.fontSizePt * zoom}pt`,
-                  "--editor-line-height": pageFormatOptions.lineHeight,
-                  boxShadow:
-                    "0 1px 3px 1px rgba(60,64,67,0.15), 0 1px 2px 0 rgba(60,64,67,0.30)",
-                } as React.CSSProperties)
-          }
-        >
-          {/* Guia visual pontilhada das margens ativas (Apenas no Layout de Impressão) */}
-          {!isMobileView && (
-            <div
-              className="absolute inset-0 pointer-events-none border border-dashed border-indigo-200/40 rounded-xs transition-all duration-300"
-              style={{
-                top: `${pageFormatOptions.marginTopMm * zoom}mm`,
-                right: `${pageFormatOptions.marginRightMm * zoom}mm`,
-                bottom: `${pageFormatOptions.marginBottomMm * zoom}mm`,
-                left: `${pageFormatOptions.marginLeftMm * zoom}mm`,
-              }}
-            />
-          )}
-
+        {/* Folha de Papel Paginada Dinamicamente com Quebra e Margens Reais */}
+        <div className="w-full flex justify-center pb-24 select-text">
           <style>{`
-            .ProseMirror {
+            .ProseMirror.rm-with-pagination {
+              background-color: #ffffff !important;
+              box-shadow: 0 1px 3px 1px rgba(60,64,67,0.15), 0 1px 2px 0 rgba(60,64,67,0.30) !important;
+              border-radius: 2px;
+              box-sizing: border-box;
+              margin: 0 auto;
+              min-height: var(--rm-page-height, 1123px);
+              position: relative;
+              outline: none !important;
               font-family: var(--editor-font-family, 'Figtree', sans-serif) !important;
               font-size: var(--editor-font-size, 12pt);
               line-height: var(--editor-line-height, 1.6);
-              min-height: 100%;
             }
+
+            /* Espaçamento e sombra realista entre as páginas (estilo Google Docs) */
+            .rm-pagination-gap {
+              box-shadow: inset 0 3px 4px -2px rgba(60,64,67,0.15), inset 0 -3px 4px -2px rgba(60,64,67,0.15);
+              cursor: default;
+              user-select: none;
+            }
+
+            /* Rodapé e Cabeçalho de páginas */
+            .rm-page-footer, .rm-page-header {
+              font-size: 11px;
+              color: #94a3b8;
+              font-family: var(--editor-font-family, 'Figtree', sans-serif);
+              line-height: 1;
+              user-select: none;
+            }
+
+            .rm-page-footer-right, .rm-page-footer-left, .rm-page-header-right, .rm-page-header-left {
+              font-size: 11px;
+              color: #94a3b8;
+            }
+
+            .rm-page-number, .rm-page-number-plus {
+              font-weight: 500;
+              color: #64748b;
+            }
+
             .ProseMirror p, .ProseMirror li {
               font-family: inherit;
               font-size: inherit;
               line-height: inherit;
             }
+
             .ProseMirror h1, .ProseMirror h2, .ProseMirror h3 {
               font-family: inherit;
               line-height: 1.3;
             }
           `}</style>
 
-          <EditorContent editor={editor} />
+          <EditorContent editor={editor} className="w-full flex justify-center" />
         </div>
       </main>
 
@@ -738,10 +822,17 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             <strong className="text-slate-900 font-semibold">{calculatedTotalBookWords}</strong>
           </div>
 
+          <div className="h-3 w-px bg-slate-200" />
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-600">Páginas:</span>
+            <strong className="text-slate-900 font-semibold">{pageCount}</strong>
+          </div>
+
           <div className="h-3 w-px bg-slate-200 hidden sm:block" />
 
           <div className="hidden sm:flex items-center gap-1.5 text-slate-600">
-            <span>Página:</span>
+            <span>Tamanho:</span>
             <strong className="text-slate-700 font-medium">
               {pageFormatOptions.pageSize} ({pageFormatOptions.orientation === "landscape" ? "Paisagem" : "Retrato"})
             </strong>
