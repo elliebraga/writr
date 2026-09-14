@@ -43,7 +43,7 @@ import { TiptapToolbar } from "./TiptapToolbar";
 import { DocsMenuBar } from "./DocsMenuBar";
 import { DocsRuler } from "./DocsRuler";
 import { DocsWordCountModal } from "./DocsWordCountModal";
-import { ChaptersGuideDrawer } from "./ChaptersGuideDrawer";
+import { FloatingChaptersMenu } from "./FloatingChaptersMenu";
 import type { Chapter } from "../../types/book";
 import type { PdfExportOptions } from "../../types/export";
 import { DEFAULT_PDF_OPTIONS } from "../../types/export";
@@ -356,16 +356,17 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         onExportPdf={() => exportChapterToPdf(chapterTitle, editor?.getHTML() || "", pageFormatOptions)}
       />
 
-      {/* Guia de Capítulos do Livro */}
+      {/* Menu Flutuante Retrátil de Capítulos */}
       {chapters && (
-        <ChaptersGuideDrawer
+        <FloatingChaptersMenu
           isOpen={isChaptersGuideOpen}
-          onClose={() => setIsChaptersGuideOpen(false)}
+          onToggle={setIsChaptersGuideOpen}
           chapters={chapters}
           activeChapterId={chapter.id}
           onSelectChapter={handleSelectChapter}
           onCreateChapter={onCreateChapter}
           totalBookWordCount={totalBookWordCount}
+          isMobileView={isMobileView}
         />
       )}
 

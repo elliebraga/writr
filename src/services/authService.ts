@@ -106,4 +106,21 @@ export const authService = {
       throw new Error(error.message || "Erro ao fazer logout.");
     }
   },
+
+  // Reenviar e-mail de confirmação
+  async resendConfirmationEmail(email: string) {
+    const { data, error } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message || "Erro ao reenviar e-mail de confirmação.");
+    }
+
+    return data;
+  },
 };

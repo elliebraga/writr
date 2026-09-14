@@ -144,7 +144,7 @@ export default function SignUp({ onSignUpSubmit, onNavigateToSignIn }: SignUpPro
             <div className="flex flex-col gap-1">
               <Input
                 label="Nome e Sobrenome:"
-                placeholder="placeholder"
+                placeholder="Nome e Sobrenome"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 error={errors.fullName}
@@ -159,7 +159,7 @@ export default function SignUp({ onSignUpSubmit, onNavigateToSignIn }: SignUpPro
               <Input
                 label="Email:"
                 type="email"
-                placeholder="placeholder"
+                placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 error={errors.email}
@@ -174,7 +174,7 @@ export default function SignUp({ onSignUpSubmit, onNavigateToSignIn }: SignUpPro
               <Input
                 label="Senha:"
                 type={showPassword ? "text" : "password"}
-                placeholder="placeholder"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 error={errors.password}
@@ -209,7 +209,7 @@ export default function SignUp({ onSignUpSubmit, onNavigateToSignIn }: SignUpPro
               <Input
                 label="Confirme sua senha:"
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="placeholder"
+                placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 error={errors.confirmPassword}

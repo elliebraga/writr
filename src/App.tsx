@@ -20,6 +20,7 @@ import { characterService } from "./services";
 import type { Character } from "./types/character";
 import { WhiteboardFlow } from "./features/whiteboard/WhiteboardFlow";
 import { BookSettingsFlow } from "./features/books/BookSettingsFlow";
+import { EmailConfirmationModal } from "./components/auth/EmailConfirmationModal";
 
 export default function App() {
   const { showAlert } = useDialog();
@@ -27,6 +28,10 @@ export default function App() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [userName, setUserName] = useState("Escritor");
   const [sessionUser, setSessionUser] = useState<any>(null);
+
+  // Modal de Confirmação de E-mail
+  const [isEmailConfirmationModalOpen, setIsEmailConfirmationModalOpen] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState("");
   
   const [books, setBooks] = useState<Book[]>([]);
   const [isLoadingBooks, setIsLoadingBooks] = useState(false);
@@ -105,9 +110,19 @@ export default function App() {
   };
 
   const handleSignInSubmit = async (formData: any) => {
-    const data = await authService.signIn(formData);
-    if (data?.session) {
-      handleSession(data.session);
+    try {
+      const data = await authService.signIn(formData);
+      if (data?.session) {
+        handleSession(data.session);
+      }
+    } catch (err: any) {
+      const msg = err.message?.toLowerCase() || "";
+      if (msg.includes("email not confirmed") || msg.includes("não confirmado")) {
+        setConfirmationEmail(formData.email);
+        setIsEmailConfirmationModalOpen(true);
+      } else {
+        throw err;
+      }
     }
   };
 
@@ -116,8 +131,8 @@ export default function App() {
     if (data?.session) {
       handleSession(data.session);
     } else if (data?.user && !data?.session) {
-      await showAlert("Cadastro realizado! Verifique seu e-mail para ativar a conta.", "Cadastro Realizado");
-      setScreen("signin");
+      setConfirmationEmail(formData.email);
+      setIsEmailConfirmationModalOpen(true);
     }
   };
 
@@ -416,6 +431,14 @@ export default function App() {
           onSignUpSubmit={handleSignUpSubmit}
         />
       )}
+
+      <EmailConfirmationModal
+        isOpen={isEmailConfirmationModalOpen}
+        onClose={() => setIsEmailConfirmationModalOpen(false)}
+        email={confirmationEmail}
+        onResend={(email) => authService.resendConfirmationEmail(email)}
+        onGoToSignIn={() => setScreen("signin")}
+      />
     </div>
   );
 }

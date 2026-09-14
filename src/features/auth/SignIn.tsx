@@ -190,7 +190,7 @@ export default function SignIn({ onSignInSubmit, onNavigateToSignUp }: SignInPro
               <Input
                 label="Email:"
                 type="email"
-                placeholder="placeholder"
+                placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 error={errors.email}
@@ -205,7 +205,7 @@ export default function SignIn({ onSignInSubmit, onNavigateToSignUp }: SignInPro
               <Input
                 label="Senha:"
                 type={showPassword ? "text" : "password"}
-                placeholder="placeholder"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 error={errors.password}
