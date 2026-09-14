@@ -4,6 +4,7 @@ import type { Book } from "../../types/book";
 import type { Character, CharacterRoleType } from "../../types/character";
 import { CharacterCard } from "../../components/characters/CharacterCard";
 import { CharacterDrawer } from "../../components/characters/CharacterDrawer";
+import { CharacterDetailsView } from "../../components/characters/CharacterDetailsView";
 import { characterService } from "../../services";
 import Button from "../../components/ui/Button";
 import { ensureValidUuid } from "../../utils/uuidUtils";
@@ -31,7 +32,10 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // Controle de estado do Drawer
+  // Controle de estado da Página de Detalhes do Personagem
+  const [selectedCharacterForDetails, setSelectedCharacterForDetails] = useState<Character | null>(null);
+
+  // Controle de estado do Drawer de Edição
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedCharacterToEdit, setSelectedCharacterToEdit] = useState<Character | null>(null);
 
@@ -109,6 +113,13 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
       return updated;
     });
 
+    // Se estiver visualizando a página de detalhes deste personagem, sincroniza os dados atualizados
+    setSelectedCharacterForDetails((prev) =>
+      prev && (prev.id === savedChar.id || prev.id === characterData.id)
+        ? { ...prev, ...savedChar }
+        : prev
+    );
+
     setIsDrawerOpen(false);
     setSelectedCharacterToEdit(null);
   };
@@ -124,6 +135,13 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
       return updated;
     });
 
+    if (
+      selectedCharacterForDetails &&
+      (selectedCharacterForDetails.id === characterId || selectedCharacterForDetails.id === safeCharId)
+    ) {
+      setSelectedCharacterForDetails(null);
+    }
+
     if (selectedCharacterToEdit && (selectedCharacterToEdit.id === characterId || selectedCharacterToEdit.id === safeCharId)) {
       setIsDrawerOpen(false);
       setSelectedCharacterToEdit(null);
@@ -134,6 +152,38 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
       console.warn("⚠️ Não foi possível confirmar a exclusão remota no Supabase. O personagem foi removido do cache local.");
     }
   };
+
+  // Se um personagem estiver selecionado para visualização, exibe a Página de Detalhes
+  if (selectedCharacterForDetails) {
+    const currentCharacter =
+      characters.find((c) => c.id === selectedCharacterForDetails.id) || selectedCharacterForDetails;
+
+    return (
+      <div className="flex-1 bg-white min-h-screen flex flex-col font-sans select-none overflow-y-auto">
+        <CharacterDetailsView
+          character={currentCharacter}
+          bookName={activeBook.book_name}
+          onBack={() => setSelectedCharacterForDetails(null)}
+          onEdit={() => handleOpenEditDrawer(currentCharacter)}
+          onDelete={handleDeleteCharacter}
+          onNavigateToTimeline={onNavigateToTimeline}
+        />
+
+        {/* Drawer Lateral para Edição dos Detalhes */}
+        <CharacterDrawer
+          isOpen={isDrawerOpen}
+          characterToEdit={selectedCharacterToEdit}
+          onClose={() => {
+            setIsDrawerOpen(false);
+            setSelectedCharacterToEdit(null);
+          }}
+          onSaveCharacter={handleSaveCharacter}
+          onDeleteCharacter={handleDeleteCharacter}
+          onNavigateToTimeline={onNavigateToTimeline}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 bg-white min-h-screen flex flex-col font-sans select-none overflow-y-auto">
@@ -219,7 +269,7 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
               <CharacterCard
                 key={character.id}
                 character={character}
-                onSelect={() => handleOpenEditDrawer(character)}
+                onSelect={() => setSelectedCharacterForDetails(character)}
                 onDelete={handleDeleteCharacter}
               />
             ))}
