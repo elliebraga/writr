@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import TypingLogo from "../../components/ui/TypingLogo";
+import { formatAuthError } from "../../services/authService";
 
 interface SignInProps {
   onSignInSubmit?: (formData: any) => Promise<void>;
@@ -121,9 +122,13 @@ export default function SignIn({ onSignInSubmit, onNavigateToSignUp }: SignInPro
           general: "Muitas tentativas incorretas. Por motivos de segurança, seu login foi bloqueado temporariamente por 60 segundos.",
         });
       } else {
+        const displayError = formatAuthError(
+          err,
+          `Credenciais incorretas. Tentativa ${attempts} de 5 antes do bloqueio temporário.`
+        );
         setErrors((prev) => ({
           ...prev,
-          general: err.message || `Credenciais incorretas. Tentativa ${attempts} de 5 antes do bloqueio temporário.`,
+          general: displayError,
         }));
       }
     } finally {

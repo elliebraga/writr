@@ -9,6 +9,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Button from "../ui/Button";
+import { formatAuthError } from "../../services/authService";
 
 interface EmailConfirmationModalProps {
   isOpen: boolean;
@@ -52,7 +53,7 @@ export const EmailConfirmationModal: React.FC<EmailConfirmationModalProps> = ({
       setCountdown(60); // 60 segundos de espera
     } catch (err: any) {
       setResendError(
-        err.message || "Erro ao reenviar e-mail de confirmação. Tente novamente mais tarde."
+        formatAuthError(err, "Erro ao reenviar e-mail de confirmação. Tente novamente mais tarde.")
       );
     } finally {
       setIsResending(false);

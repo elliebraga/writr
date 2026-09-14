@@ -3,6 +3,7 @@ import { useState } from "react";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import TypingLogo from "../../components/ui/TypingLogo";
+import { formatAuthError } from "../../services/authService";
 
 interface SignUpProps {
   onSignUpSubmit?: (formData: any) => Promise<void>;
@@ -79,7 +80,7 @@ export default function SignUp({ onSignUpSubmit, onNavigateToSignIn }: SignUpPro
     } catch (err: any) {
       setErrors((prev) => ({
         ...prev,
-        general: err.message || "Ocorreu um erro ao realizar o cadastro. Tente novamente.",
+        general: formatAuthError(err, "Ocorreu um erro ao realizar o cadastro. Tente novamente."),
       }));
     } finally {
       setIsLoading(false);

@@ -6,6 +6,74 @@ export interface AuthUser {
   userName?: string;
 }
 
+// Função para formatar e traduzir erros de autenticação do Supabase/GoTrue
+// Elimina mensagens vazias, "{}" e erros técnicos enigmáticos
+export function formatAuthError(
+  err: any,
+  fallbackMessage: string = "Ocorreu um erro no processamento da autenticação."
+): string {
+  if (!err) return fallbackMessage;
+
+  let raw = "";
+  if (typeof err === "string") {
+    raw = err;
+  } else if (typeof err.message === "string") {
+    raw = err.message;
+  } else if (typeof err.msg === "string") {
+    raw = err.msg;
+  } else if (typeof err.error_description === "string") {
+    raw = err.error_description;
+  } else if (typeof err.error === "string") {
+    raw = err.error;
+  }
+
+  raw = raw.trim();
+
+  // Previne mensagens vazias, "{}" ou "[object Object]"
+  if (!raw || raw === "{}" || raw === "[object Object]") {
+    if (err.status === 500 || err.statusCode === 500) {
+      return "Erro ao enviar o e-mail de confirmação. O serviço de e-mails (SMTP) do Supabase pode ter atingido a cota temporária ou precisa ser configurado no painel.";
+    }
+    return fallbackMessage;
+  }
+
+  const lower = raw.toLowerCase();
+
+  if (lower.includes("error sending confirmation email")) {
+    return "Erro ao enviar o e-mail de confirmação. O serviço de envio de e-mails (SMTP) do Supabase pode ter atingido a cota temporária ou precisa ser verificado no painel.";
+  }
+
+  if (lower.includes("user already registered")) {
+    return "Este e-mail já está cadastrado. Tente entrar com sua senha ou recuperar o acesso.";
+  }
+
+  if (lower.includes("invalid login credentials")) {
+    return "E-mail ou senha incorretos.";
+  }
+
+  if (lower.includes("email not confirmed")) {
+    return "Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada e spam.";
+  }
+
+  if (lower.includes("invalid format") || lower.includes("unable to validate email")) {
+    return "O formato do e-mail informado é inválido.";
+  }
+
+  if (lower.includes("password should be at least")) {
+    return "A senha precisa ter pelo menos 6 caracteres.";
+  }
+
+  if (lower.includes("rate limit") || lower.includes("only request this once every")) {
+    return "Muitas tentativas em pouco tempo. Por favor, aguarde alguns instantes antes de tentar novamente.";
+  }
+
+  if (lower.includes("signup is disabled") || lower.includes("signups not allowed")) {
+    return "O cadastro de novos usuários está temporariamente desativado no momento.";
+  }
+
+  return raw;
+}
+
 export const authService = {
   // Buscar sessão ativa
   async getSession() {
@@ -39,7 +107,7 @@ export const authService = {
     });
 
     if (error) {
-      throw new Error(error.message || "Erro ao realizar login.");
+      throw new Error(formatAuthError(error, "Erro ao realizar login. Verifique suas credenciais."));
     }
 
     return data;
@@ -59,7 +127,7 @@ export const authService = {
     });
 
     if (error) {
-      throw new Error(error.message || "Erro ao realizar cadastro.");
+      throw new Error(formatAuthError(error, "Erro ao realizar cadastro. Tente novamente."));
     }
 
     if (data.user) {
@@ -118,7 +186,7 @@ export const authService = {
     });
 
     if (error) {
-      throw new Error(error.message || "Erro ao reenviar e-mail de confirmação.");
+      throw new Error(formatAuthError(error, "Erro ao reenviar e-mail de confirmação. Tente novamente mais tarde."));
     }
 
     return data;
