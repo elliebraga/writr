@@ -381,20 +381,6 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             <ArrowLeft className="w-5 h-5" />
           </button>
 
-          {chapters && chapters.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setIsChaptersGuideOpen(true)}
-              className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors shrink-0 cursor-pointer flex items-center gap-1"
-              title="Abrir Guia de Capítulos"
-            >
-              <BookOpen className="w-4 h-4" />
-              <span className="text-[10px] font-bold px-1 py-0.2 bg-blue-200/70 text-blue-800 rounded-full leading-none">
-                {chapters.length}
-              </span>
-            </button>
-          )}
-
           <input
             type="text"
             value={chapterTitle}
@@ -483,21 +469,6 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
-
-          {chapters && chapters.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setIsChaptersGuideOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 rounded-lg transition-all cursor-pointer shadow-2xs mr-1 shrink-0"
-              title="Abrir Guia de Capítulos do Livro"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-blue-600" />
-              <span>Capítulos</span>
-              <span className="bg-blue-200/60 text-blue-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
-                {chapters.length}
-              </span>
-            </button>
-          )}
 
           <div className="w-8 h-8 rounded-lg bg-blue-600/10 border border-blue-200 text-blue-600 flex items-center justify-center shrink-0">
             <DocumentIcon className="w-4 h-4" />
