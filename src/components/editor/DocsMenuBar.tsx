@@ -12,6 +12,7 @@ import {
   CheckSquare,
   Image as ImageIcon,
   Check,
+  BookOpen,
 } from "lucide-react";
 import { Editor } from "@tiptap/react";
 
@@ -24,6 +25,7 @@ interface DocsMenuBarProps {
   onExportDocx: () => void;
   onOpenPageFormat: () => void;
   onOpenWordCount: () => void;
+  onOpenChaptersGuide?: () => void;
   onOpenImageModal: () => void;
   showRuler: boolean;
   onToggleRuler: () => void;
@@ -42,6 +44,7 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
   onExportDocx,
   onOpenPageFormat,
   onOpenWordCount,
+  onOpenChaptersGuide,
   onOpenImageModal,
   showRuler,
   onToggleRuler,
@@ -247,6 +250,22 @@ export const DocsMenuBar: React.FC<DocsMenuBarProps> = ({
 
         {activeMenu === "ver" && (
           <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+            {onOpenChaptersGuide && (
+              <>
+                <button
+                  onClick={() => {
+                    onOpenChaptersGuide();
+                    setActiveMenu(null);
+                  }}
+                  className="w-full text-left px-3 py-1.5 hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
+                >
+                  <span>Guia de Capítulos</span>
+                  <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                </button>
+                <div className="h-px bg-slate-100 my-1" />
+              </>
+            )}
+
             {onToggleMobileView && (
               <>
                 <button

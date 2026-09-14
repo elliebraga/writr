@@ -154,6 +154,9 @@ export const ChapterFlow: React.FC<ChapterFlowProps> = ({ activeBook }) => {
       <TiptapEditor
         chapter={activeEditingChapter}
         totalBookWordCount={totalBookWordCount}
+        chapters={chapters}
+        onSelectChapter={(targetChapter) => setActiveEditingChapter(targetChapter)}
+        onCreateChapter={handleCreateChapter}
         onSave={handleSaveChapter}
         onClose={() => {
           setActiveEditingChapter(null);

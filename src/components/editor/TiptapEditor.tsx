@@ -37,11 +37,13 @@ import {
   Undo,
   Redo,
   X,
+  BookOpen,
 } from "lucide-react";
 import { TiptapToolbar } from "./TiptapToolbar";
 import { DocsMenuBar } from "./DocsMenuBar";
 import { DocsRuler } from "./DocsRuler";
 import { DocsWordCountModal } from "./DocsWordCountModal";
+import { ChaptersGuideDrawer } from "./ChaptersGuideDrawer";
 import type { Chapter } from "../../types/book";
 import type { PdfExportOptions } from "../../types/export";
 import { DEFAULT_PDF_OPTIONS } from "../../types/export";
@@ -54,6 +56,9 @@ import { useChapterRealtime } from "../../hooks/useChapterRealtime";
 interface TiptapEditorProps {
   chapter: Chapter;
   totalBookWordCount: number;
+  chapters?: Chapter[];
+  onSelectChapter?: (chapter: Chapter) => void;
+  onCreateChapter?: (title: string) => Promise<void> | void;
   onSave: (updatedChapter: Partial<Chapter> & { id: string }) => Promise<void> | void;
   onClose: () => void;
 }
@@ -115,6 +120,9 @@ function getPageDimensions(options: PageFormatOptions, zoom: number, isMobile: b
 export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   chapter,
   totalBookWordCount,
+  chapters,
+  onSelectChapter,
+  onCreateChapter,
   onSave,
   onClose,
 }) => {
@@ -125,6 +133,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [isPageDrawerOpen, setIsPageDrawerOpen] = useState(false);
   const [isWordCountModalOpen, setIsWordCountModalOpen] = useState(false);
+  const [isChaptersGuideOpen, setIsChaptersGuideOpen] = useState(false);
   const [showRuler, setShowRuler] = useState(true);
   const [zoom, setZoom] = useState(1.0);
   const [isMobileView, setIsMobileView] = useState(() =>
@@ -238,7 +247,14 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
 
   useEffect(() => {
     setChapterTitle(chapter.title);
-  }, [chapter.title]);
+    if (editor) {
+      const currentHTML = editor.getHTML();
+      const targetContent = chapter.content || "";
+      if (currentHTML !== targetContent) {
+        editor.commands.setContent(targetContent, { emitUpdate: false });
+      }
+    }
+  }, [chapter.id, chapter.title, chapter.content, editor]);
 
   const currentChapterWords = editor?.storage.characterCount.words() || 0;
   const otherChaptersWords = totalBookWordCount - (chapter.word_count || 0);
@@ -263,6 +279,16 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       console.error("Erro ao salvar capítulo:", err);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSelectChapter = async (targetChapter: Chapter) => {
+    if (targetChapter.id === chapter.id) return;
+    if (editor) {
+      await handleSave();
+    }
+    if (onSelectChapter) {
+      onSelectChapter(targetChapter);
     }
   };
 
@@ -330,6 +356,19 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         onExportPdf={() => exportChapterToPdf(chapterTitle, editor?.getHTML() || "", pageFormatOptions)}
       />
 
+      {/* Guia de Capítulos do Livro */}
+      {chapters && (
+        <ChaptersGuideDrawer
+          isOpen={isChaptersGuideOpen}
+          onClose={() => setIsChaptersGuideOpen(false)}
+          chapters={chapters}
+          activeChapterId={chapter.id}
+          onSelectChapter={handleSelectChapter}
+          onCreateChapter={onCreateChapter}
+          totalBookWordCount={totalBookWordCount}
+        />
+      )}
+
       {/* Top Header Mobile (iPhone / Smartphones < 768px) */}
       <header className="flex md:hidden bg-white border-b border-slate-200 px-3 py-2 items-center justify-between gap-2 z-40 sticky top-0 shadow-2xs">
         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -340,6 +379,20 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
+
+          {chapters && chapters.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsChaptersGuideOpen(true)}
+              className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors shrink-0 cursor-pointer flex items-center gap-1"
+              title="Abrir Guia de Capítulos"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span className="text-[10px] font-bold px-1 py-0.2 bg-blue-200/70 text-blue-800 rounded-full leading-none">
+                {chapters.length}
+              </span>
+            </button>
+          )}
 
           <input
             type="text"
@@ -420,7 +473,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       {/* Top Header Desktop (Telas a partir de 768px) */}
       <header className="hidden md:flex bg-white border-b border-slate-200 px-3 py-1.5 items-center justify-between gap-3 z-40">
         
-        {/* Esquerda: Voltar + Ícone Documento + Título + Menu Bar */}
+        {/* Esquerda: Voltar + Botão Capítulos + Ícone Documento + Título + Menu Bar */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <button
             onClick={onClose}
@@ -429,6 +482,21 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
+
+          {chapters && chapters.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsChaptersGuideOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 rounded-lg transition-all cursor-pointer shadow-2xs mr-1 shrink-0"
+              title="Abrir Guia de Capítulos do Livro"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+              <span>Capítulos</span>
+              <span className="bg-blue-200/60 text-blue-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                {chapters.length}
+              </span>
+            </button>
+          )}
 
           <div className="w-8 h-8 rounded-lg bg-blue-600/10 border border-blue-200 text-blue-600 flex items-center justify-center shrink-0">
             <DocumentIcon className="w-4 h-4" />
@@ -481,6 +549,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
               onExportDocx={() => exportChapterToDocx(chapterTitle, editor?.getHTML() || "")}
               onOpenPageFormat={() => setIsPageDrawerOpen(true)}
               onOpenWordCount={() => setIsWordCountModalOpen(true)}
+              onOpenChaptersGuide={() => setIsChaptersGuideOpen(true)}
               onOpenImageModal={() => {
                 // acionado via menu
               }}
@@ -637,6 +706,24 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
 
             {/* Lista de Ações do Documento */}
             <div className="space-y-1 text-xs">
+              {chapters && chapters.length > 0 && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsChaptersGuideOpen(true);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-50/70 hover:bg-blue-100/80 text-blue-800 font-semibold text-left cursor-pointer border border-blue-200/60"
+                >
+                  <BookOpen className="w-4 h-4 text-blue-600" />
+                  <div className="flex-1 flex items-center justify-between">
+                    <span>Guia de Capítulos</span>
+                    <span className="bg-blue-200/70 text-blue-800 text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                      {chapters.length}
+                    </span>
+                  </div>
+                </button>
+              )}
+
               <button
                 onClick={() => {
                   handleSave();
