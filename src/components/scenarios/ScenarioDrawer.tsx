@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { X, MapPin, Image as ImageIcon, Users, Plus, Trash2, Check } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, MapPin, Image as ImageIcon, Users, Trash2, Check, Upload } from "lucide-react";
 import type { Scenario, ScenarioType } from "../../types/scenario";
 import type { Character } from "../../types/character";
 import Button from "../ui/Button";
+import { compressImageFile } from "../../utils/imageUtils";
 
 
 interface ScenarioDrawerProps {
@@ -38,9 +39,9 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
   const [sensoryDetails, setSensoryDetails] = useState("");
   const [historyNotes, setHistoryNotes] = useState("");
   const [images, setImages] = useState<string[]>([]);
-  const [newImageUrl, setNewImageUrl] = useState("");
   const [associatedCharacterIds, setAssociatedCharacterIds] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (scenario) {
@@ -60,18 +61,26 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
       setImages([]);
       setAssociatedCharacterIds([]);
     }
-    setNewImageUrl("");
   }, [scenario, isOpen]);
 
   if (!isOpen) return null;
 
-  const handleAddImage = () => {
-    if (!newImageUrl.trim()) return;
-    const url = newImageUrl.trim();
-    if (!images.includes(url)) {
-      setImages((prev) => [...prev, url]);
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      const newCompressedImages: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const compressed = await compressImageFile(files[i], 1200, 1200, 0.85);
+        newCompressedImages.push(compressed);
+      }
+      setImages((prev) => [...prev, ...newCompressedImages]);
+    } catch (err) {
+      console.error("Erro ao processar imagem de referência:", err);
+    } finally {
+      if (imageInputRef.current) imageInputRef.current.value = "";
     }
-    setNewImageUrl("");
   };
 
   const handleRemoveImage = (indexToRemove: number) => {
@@ -227,35 +236,35 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
               />
             </div>
 
-            {/* 5. Referências Visuais (Imagens por URL) */}
+            {/* 5. Referências Visuais (Upload do Computador/Celular) */}
             <div className="space-y-3 pt-2 border-t border-slate-100">
-              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                <ImageIcon className="w-4 h-4 text-slate-600" />
-                <span>Imagens de Referência / Moodboard</span>
-              </label>
-
-              <div className="flex gap-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4 text-slate-600" />
+                  <span>Imagens de Referência / Moodboard</span>
+                </label>
                 <input
-                  type="url"
-                  value={newImageUrl}
-                  onChange={(e) => setNewImageUrl(e.target.value)}
-                  placeholder="Cole o link de uma foto (https://...)"
-                  className="flex-1 px-3.5 py-2 text-base md:text-xs border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-slate-900"
+                  type="file"
+                  ref={imageInputRef}
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
                 />
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleAddImage}
-                  leftIcon={<Plus className="w-3.5 h-3.5" />}
-                  className="shrink-0"
+                  onClick={() => imageInputRef.current?.click()}
+                  leftIcon={<Upload className="w-3.5 h-3.5" />}
+                  className="shrink-0 text-xs"
                 >
-                  Adicionar
+                  Enviar Fotos
                 </Button>
               </div>
 
               {/* Grid de Imagens Carregadas */}
-              {images.length > 0 && (
+              {images.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
                   {images.map((imgUrl, idx) => (
                     <div
@@ -280,6 +289,15 @@ export const ScenarioDrawer: React.FC<ScenarioDrawerProps> = ({
                       </button>
                     </div>
                   ))}
+                </div>
+              ) : (
+                <div
+                  onClick={() => imageInputRef.current?.click()}
+                  className="border border-dashed border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-50 rounded-xl p-4 text-center cursor-pointer transition-colors"
+                >
+                  <Upload className="w-4 h-4 mx-auto text-slate-400 mb-1" />
+                  <p className="text-xs font-semibold text-slate-700">Selecione fotos do computador ou celular</p>
+                  <p className="text-[11px] text-slate-500">Adicione imagens para o moodboard do cenário</p>
                 </div>
               )}
             </div>

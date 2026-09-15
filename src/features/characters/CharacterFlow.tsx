@@ -3,7 +3,6 @@ import { Users, Plus, Sparkles } from "lucide-react";
 import type { Book } from "../../types/book";
 import type { Character, CharacterRoleType } from "../../types/character";
 import { CharacterCard } from "../../components/characters/CharacterCard";
-import { CharacterDrawer } from "../../components/characters/CharacterDrawer";
 import { CharacterDetailsView } from "../../components/characters/CharacterDetailsView";
 import { characterService } from "../../services";
 import Button from "../../components/ui/Button";
@@ -32,12 +31,9 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // Controle de estado da Página de Detalhes do Personagem
+  // Controle de estado da Página de Detalhes / Criação na Página
   const [selectedCharacterForDetails, setSelectedCharacterForDetails] = useState<Character | null>(null);
-
-  // Controle de estado do Drawer de Edição
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedCharacterToEdit, setSelectedCharacterToEdit] = useState<Character | null>(null);
+  const [isCreatingCharacter, setIsCreatingCharacter] = useState(false);
 
   // Salva no localStorage sempre que os personagens mudarem
   useEffect(() => {
@@ -75,14 +71,19 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
     }
   };
 
-  const handleOpenCreateDrawer = () => {
-    setSelectedCharacterToEdit(null);
-    setIsDrawerOpen(true);
+  const handleOpenCreate = () => {
+    setSelectedCharacterForDetails(null);
+    setIsCreatingCharacter(true);
   };
 
-  const handleOpenEditDrawer = (character: Character) => {
-    setSelectedCharacterToEdit(character);
-    setIsDrawerOpen(true);
+  const handleOpenDetails = (character: Character) => {
+    setSelectedCharacterForDetails(character);
+    setIsCreatingCharacter(false);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedCharacterForDetails(null);
+    setIsCreatingCharacter(false);
   };
 
   const handleSaveCharacter = async (characterData: {
@@ -102,9 +103,15 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
     const savedChar = await characterService.saveCharacter(safeBookId, characterData);
 
     setCharacters((prev) => {
-      const exists = prev.some((c) => c.id === savedChar.id || (characterData.id && c.id === characterData.id));
+      const exists = prev.some(
+        (c) => c.id === savedChar.id || (characterData.id && c.id === characterData.id)
+      );
       const updated = exists
-        ? prev.map((c) => (c.id === savedChar.id || (characterData.id && c.id === characterData.id) ? { ...c, ...savedChar } : c))
+        ? prev.map((c) =>
+            c.id === savedChar.id || (characterData.id && c.id === characterData.id)
+              ? { ...c, ...savedChar }
+              : c
+          )
         : [...prev, savedChar];
 
       try {
@@ -113,15 +120,9 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
       return updated;
     });
 
-    // Se estiver visualizando a página de detalhes deste personagem, sincroniza os dados atualizados
-    setSelectedCharacterForDetails((prev) =>
-      prev && (prev.id === savedChar.id || prev.id === characterData.id)
-        ? { ...prev, ...savedChar }
-        : prev
-    );
-
-    setIsDrawerOpen(false);
-    setSelectedCharacterToEdit(null);
+    // Atualiza a visualização com os dados do personagem salvo
+    setSelectedCharacterForDetails(savedChar);
+    setIsCreatingCharacter(false);
   };
 
   const handleDeleteCharacter = async (characterId: string) => {
@@ -140,11 +141,7 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
       (selectedCharacterForDetails.id === characterId || selectedCharacterForDetails.id === safeCharId)
     ) {
       setSelectedCharacterForDetails(null);
-    }
-
-    if (selectedCharacterToEdit && (selectedCharacterToEdit.id === characterId || selectedCharacterToEdit.id === safeCharId)) {
-      setIsDrawerOpen(false);
-      setSelectedCharacterToEdit(null);
+      setIsCreatingCharacter(false);
     }
 
     const success = await characterService.deleteCharacter(safeCharId, safeBookId);
@@ -153,54 +150,28 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
     }
   };
 
-  // Se um personagem estiver selecionado para visualização, exibe a Página de Detalhes
-  if (selectedCharacterForDetails) {
-    const currentCharacter =
-      characters.find((c) => c.id === selectedCharacterForDetails.id) || selectedCharacterForDetails;
+  // Se o usuário estiver criando ou visualizando um personagem, abre a Página Completa
+  if (isCreatingCharacter || selectedCharacterForDetails) {
+    const currentCharacter = selectedCharacterForDetails
+      ? characters.find((c) => c.id === selectedCharacterForDetails.id) || selectedCharacterForDetails
+      : null;
 
     return (
-      <div className="flex-1 bg-white min-h-screen flex flex-col font-sans select-none overflow-y-auto">
-        <CharacterDetailsView
-          character={currentCharacter}
-          bookName={activeBook.book_name}
-          onBack={() => setSelectedCharacterForDetails(null)}
-          onEdit={() => handleOpenEditDrawer(currentCharacter)}
-          onDelete={handleDeleteCharacter}
-          onNavigateToTimeline={onNavigateToTimeline}
-        />
-
-        {/* Drawer Lateral para Edição dos Detalhes */}
-        <CharacterDrawer
-          isOpen={isDrawerOpen}
-          characterToEdit={selectedCharacterToEdit}
-          onClose={() => {
-            setIsDrawerOpen(false);
-            setSelectedCharacterToEdit(null);
-          }}
-          onSaveCharacter={handleSaveCharacter}
-          onDeleteCharacter={handleDeleteCharacter}
-          onNavigateToTimeline={onNavigateToTimeline}
-        />
-      </div>
+      <CharacterDetailsView
+        character={currentCharacter}
+        isCreating={isCreatingCharacter}
+        bookName={activeBook.book_name}
+        onBack={handleCloseDetails}
+        onSave={handleSaveCharacter}
+        onDelete={handleDeleteCharacter}
+        onNavigateToTimeline={onNavigateToTimeline}
+      />
     );
   }
 
   return (
     <div className="flex-1 bg-white min-h-screen flex flex-col font-sans select-none overflow-y-auto">
       
-      {/* Drawer Lateral de Criação/Edição */}
-      <CharacterDrawer
-        isOpen={isDrawerOpen}
-        characterToEdit={selectedCharacterToEdit}
-        onClose={() => {
-          setIsDrawerOpen(false);
-          setSelectedCharacterToEdit(null);
-        }}
-        onSaveCharacter={handleSaveCharacter}
-        onDeleteCharacter={handleDeleteCharacter}
-        onNavigateToTimeline={onNavigateToTimeline}
-      />
-
       {/* Condicional de Estado: Carregando vs Vazio vs Lista de Cards */}
       {isLoading ? (
         <div className="flex-1 flex flex-col items-center justify-center text-slate-600 text-sm gap-2 py-20">
@@ -226,7 +197,7 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
           <Button
             variant="primary"
             size="lg"
-            onClick={handleOpenCreateDrawer}
+            onClick={handleOpenCreate}
             leftIcon={<Plus className="w-4 h-4" />}
           >
             Criar Personagem
@@ -256,7 +227,7 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
             <Button
               variant="primary"
               size="md"
-              onClick={handleOpenCreateDrawer}
+              onClick={handleOpenCreate}
               leftIcon={<Plus className="w-4 h-4" />}
             >
               Novo Personagem
@@ -269,7 +240,7 @@ export const CharacterFlow: React.FC<CharacterFlowProps> = ({
               <CharacterCard
                 key={character.id}
                 character={character}
-                onSelect={() => setSelectedCharacterForDetails(character)}
+                onSelect={() => handleOpenDetails(character)}
                 onDelete={handleDeleteCharacter}
               />
             ))}

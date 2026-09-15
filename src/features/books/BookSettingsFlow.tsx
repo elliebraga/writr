@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import type { Book, BookStatus } from "../../types/book";
 import { bookService } from "../../services/bookService";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import { useDialog } from "../../components/ui/DialogProvider";
+import { compressImageFile } from "../../utils/imageUtils";
 import {
   Save,
   Trash2,
@@ -13,6 +14,7 @@ import {
   FileText,
   AlertTriangle,
   Check,
+  Upload,
 } from "lucide-react";
 
 interface BookSettingsFlowProps {
@@ -53,6 +55,19 @@ export const BookSettingsFlow: React.FC<BookSettingsFlowProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCoverFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const compressedBase64 = await compressImageFile(file, 900, 1200, 0.85);
+      setCoverUrl(compressedBase64);
+    } catch (err) {
+      console.error("Erro ao processar imagem:", err);
+      showAlert("Não foi possível carregar a imagem selecionada.", "Erro ao processar imagem");
+    }
+  };
 
   // Manipular salvamento das configurações
   const handleSaveSettings = async (e?: React.FormEvent) => {
@@ -274,13 +289,21 @@ export const BookSettingsFlow: React.FC<BookSettingsFlowProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold font-funnel text-slate-900">Capa do Livro</h3>
-              <p className="text-xs text-slate-600">Adicione uma URL de imagem de capa para personalizar o card da obra.</p>
+              <p className="text-xs text-slate-600">Envie uma imagem do seu computador ou celular para personalizar a capa da obra.</p>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-6 items-start">
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleCoverFileChange}
+              className="hidden"
+            />
+
             {/* Preview da Capa */}
-            <div className="w-32 aspect-[3/2] bg-slate-100 border border-slate-200 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-xs relative group">
+            <div className="w-28 h-40 bg-slate-100 border border-slate-200 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-xs relative group">
               {coverUrl.trim() ? (
                 <img
                   src={coverUrl.trim()}
@@ -299,23 +322,33 @@ export const BookSettingsFlow: React.FC<BookSettingsFlowProps> = ({
             </div>
 
             <div className="flex-1 space-y-3 w-full">
-              <Input
-                label="URL da Imagem da Capa"
-                value={coverUrl}
-                onChange={(e) => setCoverUrl(e.target.value)}
-                placeholder="https://exemplo.com/minha-capa.jpg"
-                helperText="Insira um link direto para uma imagem (PNG, JPG ou WebP)."
-              />
-
-              {coverUrl && (
-                <button
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
                   type="button"
-                  onClick={() => setCoverUrl("")}
-                  className="text-xs text-red-600 hover:text-red-700 font-medium transition-colors cursor-pointer"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  leftIcon={<Upload className="w-3.5 h-3.5" />}
                 >
-                  Remover imagem de capa
-                </button>
-              )}
+                  {coverUrl ? "Trocar Imagem do Dispositivo" : "Selecionar do Dispositivo"}
+                </Button>
+
+                {coverUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCoverUrl("");
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}
+                    className="text-xs text-rose-600 hover:text-rose-700 font-medium px-2 py-1.5 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                  >
+                    Remover imagem de capa
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-slate-600">
+                Formatos suportados: PNG, JPG ou WebP. A imagem é otimizada automaticamente para não pesar no seu livro.
+              </p>
             </div>
           </div>
         </div>

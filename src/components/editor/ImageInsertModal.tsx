@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
-import { X, Image as ImageIcon, Link as LinkIcon, Upload as UploadIcon, Trash2 } from "lucide-react";
+import { X, Image as ImageIcon, Upload as UploadIcon, Trash2 } from "lucide-react";
 import Button from "../ui/Button";
+import { compressImageFile } from "../../utils/imageUtils";
 
 interface ImageInsertModalProps {
   isOpen: boolean;
@@ -13,40 +14,38 @@ export const ImageInsertModal: React.FC<ImageInsertModalProps> = ({
   onClose,
   onConfirm,
 }) => {
-  const [activeTab, setActiveTab] = useState<"upload" | "url">("upload");
-  const [imageUrl, setImageUrl] = useState("");
   const [localImageSrc, setLocalImageSrc] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
   const handleClose = () => {
-    setImageUrl("");
     setLocalImageSrc(null);
+    setIsProcessing(false);
     onClose();
   };
 
   const handleConfirm = () => {
-    if (activeTab === "upload" && localImageSrc) {
+    if (localImageSrc) {
       onConfirm(localImageSrc);
-      handleClose();
-    } else if (activeTab === "url" && imageUrl.trim()) {
-      onConfirm(imageUrl.trim());
       handleClose();
     }
   };
 
-  // Processamento do arquivo de imagem e conversão para Base64/DataURL
-  const processFile = (file: File) => {
+  // Processamento do arquivo de imagem com compressão
+  const processFile = async (file: File) => {
     if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result && typeof e.target.result === "string") {
-          setLocalImageSrc(e.target.result);
-        }
-      };
-      reader.readAsDataURL(file);
+      setIsProcessing(true);
+      try {
+        const compressedBase64 = await compressImageFile(file, 1600, 1600, 0.85);
+        setLocalImageSrc(compressedBase64);
+      } catch (err) {
+        console.error("Erro ao processar imagem para o editor:", err);
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -81,7 +80,7 @@ export const ImageInsertModal: React.FC<ImageInsertModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/30 backdrop-blur-xs flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
       {/* Backdrop click handles cancel */}
       <div className="fixed inset-0" onClick={handleClose} />
 
@@ -89,139 +88,84 @@ export const ImageInsertModal: React.FC<ImageInsertModalProps> = ({
         
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-white">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
               <ImageIcon className="w-4 h-4" />
             </div>
-            <h3 className="text-sm font-bold font-funnel text-slate-900">
-              Adicionar Imagem
-            </h3>
+            <div>
+              <h3 className="text-sm font-bold font-funnel text-slate-900 leading-tight">
+                Inserir Imagem
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Selecione do seu computador ou celular
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={handleClose}
-            className="text-slate-600 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100 transition-colors"
+            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Tabs de Opções */}
-        <div className="flex justify-center p-3 bg-slate-50/50 border-b border-slate-100">
-          <div className="flex bg-slate-200/60 p-0.5 rounded-full w-full max-w-[280px]">
-            <button
-              onClick={() => setActiveTab("upload")}
-              className={`flex-1 py-1 text-[11px] font-bold rounded-full transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                activeTab === "upload"
-                  ? "bg-white text-slate-900 shadow-2xs"
-                  : "text-slate-600 hover:text-slate-800"
-              }`}
-            >
-              <UploadIcon className="w-3.5 h-3.5" />
-              <span>Arquivo Local</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("url")}
-              className={`flex-1 py-1 text-[11px] font-bold rounded-full transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                activeTab === "url"
-                  ? "bg-white text-slate-900 shadow-2xs"
-                  : "text-slate-600 hover:text-slate-800"
-              }`}
-            >
-              <LinkIcon className="w-3.5 h-3.5" />
-              <span>Endereço URL</span>
-            </button>
-          </div>
-        </div>
-
         {/* Conteúdo Central */}
-        <div className="p-5 flex-1 min-h-[180px] flex flex-col justify-center">
-          
-          {activeTab === "upload" ? (
-            <div className="space-y-4">
-              {!localImageSrc ? (
-                <div
-                  onDragEnter={handleDrag}
-                  onDragOver={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDrop={handleDrop}
-                  onClick={triggerFileInput}
-                  className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors text-center ${
-                    dragActive
-                      ? "border-slate-800 bg-slate-50"
-                      : "border-slate-200 hover:border-slate-400 bg-white"
-                  }`}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  <div className="w-9 h-9 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600">
-                    <UploadIcon className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-800">
-                      Arraste e solte uma imagem aqui
-                    </p>
-                    <p className="text-[10px] text-slate-600 mt-0.5">
-                      ou clique para selecionar do computador
-                    </p>
-                  </div>
+        <div className="p-5 flex-1 min-h-[200px] flex flex-col justify-center">
+          <div className="space-y-4">
+            {!localImageSrc ? (
+              <div
+                onDragEnter={handleDrag}
+                onDragOver={handleDrag}
+                onDragLeave={handleDrag}
+                onDrop={handleDrop}
+                onClick={triggerFileInput}
+                className={`border-2 border-dashed rounded-2xl p-7 flex flex-col items-center justify-center gap-2.5 cursor-pointer transition-all text-center group ${
+                  dragActive
+                    ? "border-indigo-600 bg-indigo-50/50 scale-[1.01]"
+                    : "border-slate-200 hover:border-slate-400 bg-slate-50/40 hover:bg-slate-50"
+                }`}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <div className="w-11 h-11 rounded-2xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center text-slate-600 group-hover:text-indigo-600 group-hover:scale-105 transition-all">
+                  <UploadIcon className="w-5 h-5" />
                 </div>
-              ) : (
-                <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center max-h-[160px] p-2">
-                  <img
-                    src={localImageSrc}
-                    alt="Preview de upload"
-                    className="max-h-[144px] rounded-lg object-contain w-auto shadow-2xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setLocalImageSrc(null)}
-                    className="absolute top-2 right-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 p-1.5 rounded-full transition-colors shadow-xs"
-                    title="Remover Imagem"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[11px] font-bold text-slate-600 mb-1.5">
-                  Endereço URL da Imagem
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://exemplo.com/imagem.png"
-                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-slate-800 pr-9"
-                  />
-                  <LinkIcon className="absolute right-3 top-2.5 w-4 h-4 text-slate-600" />
+                <div>
+                  <p className="text-xs font-bold text-slate-800 group-hover:text-slate-900">
+                    {isProcessing ? "Otimizando imagem..." : "Clique para escolher ou arraste o arquivo"}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Formatos PNG, JPG, WebP ou GIF do seu dispositivo
+                  </p>
                 </div>
               </div>
-
-              {imageUrl.trim() && (
-                <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center max-h-[120px] p-2">
-                  <img
-                    src={imageUrl.trim()}
-                    alt="Preview por URL"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "";
-                    }}
-                    className="max-h-[104px] rounded-lg object-contain w-auto shadow-2xs"
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
+            ) : (
+              <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center max-h-[220px] p-2">
+                <img
+                  src={localImageSrc}
+                  alt="Pré-visualização da imagem"
+                  className="max-h-[200px] rounded-xl object-contain w-auto shadow-2xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLocalImageSrc(null);
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                  }}
+                  className="absolute top-3 right-3 bg-white/90 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-600 hover:text-rose-600 p-1.5 rounded-full transition-colors shadow-xs cursor-pointer"
+                  title="Remover Imagem"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
@@ -238,13 +182,10 @@ export const ImageInsertModal: React.FC<ImageInsertModalProps> = ({
             variant="primary"
             size="sm"
             onClick={handleConfirm}
-            disabled={
-              activeTab === "upload"
-                ? !localImageSrc
-                : !imageUrl.trim()
-            }
+            disabled={!localImageSrc || isProcessing}
+            isLoading={isProcessing}
           >
-            Inserir Imagem
+            Inserir no Texto
           </Button>
         </div>
 
